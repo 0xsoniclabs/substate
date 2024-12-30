@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'x86-4-16-s' }
+    agent { label 'pr' }
 
     options {
         timestamps ()
