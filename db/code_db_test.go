@@ -8,7 +8,7 @@ import (
 
 	"github.com/syndtr/goleveldb/leveldb"
 
-	"github.com/Fantom-foundation/Substate/types/hash"
+	"github.com/OxSonicLabs/Substate/types/hash"
 )
 
 var testCode = []byte{1}

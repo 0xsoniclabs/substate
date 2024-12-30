@@ -5,8 +5,8 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/Fantom-foundation/Substate/types"
-	"github.com/Fantom-foundation/Substate/types/rlp"
+	"github.com/OxSonicLabs/Substate/types"
+	"github.com/OxSonicLabs/Substate/types/rlp"
 )
 
 var (

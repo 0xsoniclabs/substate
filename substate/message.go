@@ -7,8 +7,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/Fantom-foundation/Substate/types"
-	"github.com/Fantom-foundation/Substate/types/hash"
+	"github.com/OxSonicLabs/Substate/types"
+	"github.com/OxSonicLabs/Substate/types/hash"
 )
 
 type Message struct {

@@ -8,9 +8,9 @@ import (
 
 	"github.com/syndtr/goleveldb/leveldb"
 
-	"github.com/Fantom-foundation/Substate/substate"
-	"github.com/Fantom-foundation/Substate/types"
-	"github.com/Fantom-foundation/Substate/updateset"
+	"github.com/OxSonicLabs/Substate/substate"
+	"github.com/OxSonicLabs/Substate/types"
+	"github.com/OxSonicLabs/Substate/updateset"
 )
 
 var testUpdateSet = &updateset.UpdateSet{

@@ -4,8 +4,8 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/Fantom-foundation/Substate/substate"
-	"github.com/Fantom-foundation/Substate/types/hash"
+	"github.com/OxSonicLabs/Substate/substate"
+	"github.com/OxSonicLabs/Substate/types/hash"
 )
 
 func TestNewMessage_InitCodeHashIsCreated_WhenToIsNil(t *testing.T) {

@@ -1,9 +1,9 @@
 package rlp
 
 import (
-	"github.com/Fantom-foundation/Substate/substate"
-	"github.com/Fantom-foundation/Substate/types"
-	"github.com/Fantom-foundation/Substate/types/rlp"
+	"github.com/OxSonicLabs/Substate/substate"
+	"github.com/OxSonicLabs/Substate/types"
+	"github.com/OxSonicLabs/Substate/types/rlp"
 )
 
 func NewRLP(substate *substate.Substate) *RLP {

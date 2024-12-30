@@ -6,8 +6,8 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/Fantom-foundation/Substate/types"
-	"github.com/Fantom-foundation/Substate/types/hash"
+	"github.com/OxSonicLabs/Substate/types"
+	"github.com/OxSonicLabs/Substate/types/hash"
 )
 
 // Account holds any information about account used in a transaction.

@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	pb "github.com/Fantom-foundation/Substate/protobuf"
-	"github.com/Fantom-foundation/Substate/rlp"
-	trlp "github.com/Fantom-foundation/Substate/types/rlp"
+	pb "github.com/OxSonicLabs/Substate/protobuf"
+	"github.com/OxSonicLabs/Substate/rlp"
+	trlp "github.com/OxSonicLabs/Substate/types/rlp"
 )
 
 type encTest struct {

@@ -3,9 +3,9 @@ package updateset
 import (
 	"errors"
 
-	"github.com/Fantom-foundation/Substate/rlp"
-	"github.com/Fantom-foundation/Substate/substate"
-	"github.com/Fantom-foundation/Substate/types"
+	"github.com/OxSonicLabs/Substate/rlp"
+	"github.com/OxSonicLabs/Substate/substate"
+	"github.com/OxSonicLabs/Substate/types"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 

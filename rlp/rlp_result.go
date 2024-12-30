@@ -1,8 +1,8 @@
 package rlp
 
 import (
-	"github.com/Fantom-foundation/Substate/substate"
-	"github.com/Fantom-foundation/Substate/types"
+	"github.com/OxSonicLabs/Substate/substate"
+	"github.com/OxSonicLabs/Substate/types"
 )
 
 func NewResult(result *substate.Result) *Result {
