@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'quick' }
+    agent { label 'x86-4-16-s' }
 
     options {
         timestamps ()
@@ -7,7 +7,6 @@ pipeline {
     }
 
     environment {
-        GOROOT = '/usr/lib/go-1.21/'
         GOMEMLIMIT = "5GiB"
     }
 
@@ -33,6 +32,7 @@ pipeline {
 
         stage('Run go tests') {
             steps {
+                sh 'go mod tidy'
                 sh 'go test ./... -timeout 30m'
             }
         }
