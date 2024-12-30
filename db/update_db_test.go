@@ -8,9 +8,9 @@ import (
 
 	"github.com/syndtr/goleveldb/leveldb"
 
-	"github.com/OxSonicLabs/Substate/substate"
-	"github.com/OxSonicLabs/Substate/types"
-	"github.com/OxSonicLabs/Substate/updateset"
+	"github.com/0xSonicLabs/Substate/substate"
+	"github.com/0xSonicLabs/Substate/types"
+	"github.com/0xSonicLabs/Substate/updateset"
 )
 
 var testUpdateSet = &updateset.UpdateSet{

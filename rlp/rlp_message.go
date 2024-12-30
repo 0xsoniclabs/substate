@@ -4,8 +4,8 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/OxSonicLabs/Substate/substate"
-	"github.com/OxSonicLabs/Substate/types"
+	"github.com/0xSonicLabs/Substate/substate"
+	"github.com/0xSonicLabs/Substate/types"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 

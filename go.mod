@@ -1,4 +1,4 @@
-module github.com/OxSonicLabs/Substate
+module github.com/0xSonicLabs/Substate
 
 go 1.21
 

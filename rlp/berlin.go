@@ -3,7 +3,7 @@ package rlp
 import (
 	"math/big"
 
-	"github.com/OxSonicLabs/Substate/types"
+	"github.com/0xSonicLabs/Substate/types"
 )
 
 // berlinRLP represents legacy RLP structure between Berlin and London fork starting at berlinBlock ending at londonBlock

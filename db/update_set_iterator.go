@@ -6,8 +6,8 @@ import (
 
 	"github.com/syndtr/goleveldb/leveldb/util"
 
-	"github.com/OxSonicLabs/Substate/types/rlp"
-	"github.com/OxSonicLabs/Substate/updateset"
+	"github.com/0xSonicLabs/Substate/types/rlp"
+	"github.com/0xSonicLabs/Substate/updateset"
 )
 
 func newUpdateSetIterator(db *updateDB, start, end uint64) *updateSetIterator {

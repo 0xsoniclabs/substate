@@ -3,9 +3,9 @@ package protobuf
 import (
 	"fmt"
 
-	"github.com/OxSonicLabs/Substate/substate"
-	"github.com/OxSonicLabs/Substate/types"
-	"github.com/OxSonicLabs/Substate/types/hash"
+	"github.com/0xSonicLabs/Substate/substate"
+	"github.com/0xSonicLabs/Substate/types"
+	"github.com/0xSonicLabs/Substate/types/hash"
 	"google.golang.org/protobuf/proto"
 )
 

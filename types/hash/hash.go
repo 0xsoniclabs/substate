@@ -21,7 +21,7 @@ import (
 
 	"golang.org/x/crypto/sha3"
 
-	"github.com/OxSonicLabs/Substate/types"
+	"github.com/0xSonicLabs/Substate/types"
 )
 
 // KeccakState wraps sha3.state. In addition to the usual hash methods, it also supports

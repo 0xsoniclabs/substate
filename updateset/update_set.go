@@ -3,9 +3,9 @@ package updateset
 import (
 	"errors"
 
-	"github.com/OxSonicLabs/Substate/rlp"
-	"github.com/OxSonicLabs/Substate/substate"
-	"github.com/OxSonicLabs/Substate/types"
+	"github.com/0xSonicLabs/Substate/rlp"
+	"github.com/0xSonicLabs/Substate/substate"
+	"github.com/0xSonicLabs/Substate/types"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 

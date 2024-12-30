@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/OxSonicLabs/Substate/types"
+	"github.com/0xSonicLabs/Substate/types"
 )
 
 func TestEnv_EqualCoinbase(t *testing.T) {

@@ -3,7 +3,7 @@ package db
 import (
 	"fmt"
 
-	"github.com/OxSonicLabs/Substate/substate"
+	"github.com/0xSonicLabs/Substate/substate"
 	"github.com/syndtr/goleveldb/leveldb/util"
 )
 

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/OxSonicLabs/Substate/substate"
-	"github.com/OxSonicLabs/Substate/types"
-	"github.com/OxSonicLabs/Substate/types/hash"
-	trlp "github.com/OxSonicLabs/Substate/types/rlp"
+	"github.com/0xSonicLabs/Substate/substate"
+	"github.com/0xSonicLabs/Substate/types"
+	"github.com/0xSonicLabs/Substate/types/hash"
+	trlp "github.com/0xSonicLabs/Substate/types/rlp"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 

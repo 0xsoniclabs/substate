@@ -4,8 +4,8 @@ import (
 	"math/big"
 	"sort"
 
-	"github.com/OxSonicLabs/Substate/substate"
-	"github.com/OxSonicLabs/Substate/types"
+	"github.com/0xSonicLabs/Substate/substate"
+	"github.com/0xSonicLabs/Substate/types"
 )
 
 func NewRLPAccount(acc *substate.Account) *SubstateAccountRLP {

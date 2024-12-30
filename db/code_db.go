@@ -6,8 +6,8 @@ import (
 
 	"github.com/syndtr/goleveldb/leveldb/opt"
 
-	"github.com/OxSonicLabs/Substate/types"
-	"github.com/OxSonicLabs/Substate/types/hash"
+	"github.com/0xSonicLabs/Substate/types"
+	"github.com/0xSonicLabs/Substate/types/hash"
 )
 
 const CodeDBPrefix = "1c" // CodeDBPrefix + codeHash (256-bit) -> code

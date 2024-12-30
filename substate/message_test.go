@@ -4,8 +4,8 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/OxSonicLabs/Substate/types"
-	"github.com/OxSonicLabs/Substate/types/hash"
+	"github.com/0xSonicLabs/Substate/types"
+	"github.com/0xSonicLabs/Substate/types/hash"
 )
 
 func TestMessage_EqualNonce(t *testing.T) {

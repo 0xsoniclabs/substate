@@ -8,8 +8,8 @@ import (
 
 	"github.com/syndtr/goleveldb/leveldb"
 
-	"github.com/OxSonicLabs/Substate/substate"
-	"github.com/OxSonicLabs/Substate/types"
+	"github.com/0xSonicLabs/Substate/substate"
+	"github.com/0xSonicLabs/Substate/types"
 )
 
 var testSubstate = &substate.Substate{
