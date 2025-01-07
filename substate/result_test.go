@@ -3,7 +3,7 @@ package substate
 import (
 	"testing"
 
-	"github.com/0xSonicLabs/Substate/types"
+	"github.com/0xsoniclabs/substate/types"
 )
 
 func TestAccount_EqualStatus(t *testing.T) {

@@ -3,11 +3,11 @@ package db
 import (
 	"fmt"
 
-	pb "github.com/0xSonicLabs/Substate/protobuf"
-	"github.com/0xSonicLabs/Substate/rlp"
-	"github.com/0xSonicLabs/Substate/substate"
-	"github.com/0xSonicLabs/Substate/types"
-	trlp "github.com/0xSonicLabs/Substate/types/rlp"
+	pb "github.com/0xsoniclabs/substate/protobuf"
+	"github.com/0xsoniclabs/substate/rlp"
+	"github.com/0xsoniclabs/substate/substate"
+	"github.com/0xsoniclabs/substate/types"
+	trlp "github.com/0xsoniclabs/substate/types/rlp"
 	"github.com/golang/protobuf/proto"
 )
 

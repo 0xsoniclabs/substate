@@ -8,7 +8,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/0xSonicLabs/Substate/substate"
+	"github.com/0xsoniclabs/substate/substate"
 	"github.com/urfave/cli/v2"
 )
 

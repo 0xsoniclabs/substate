@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/0xSonicLabs/Substate/substate"
+	"github.com/0xsoniclabs/substate/substate"
 )
 
 func TestSubstateTaskPool_Execute(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/0xSonicLabs/Substate/types"
+	"github.com/0xsoniclabs/substate/types"
 )
 
 // Result is the transaction result - hence receipt

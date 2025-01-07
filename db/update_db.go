@@ -9,9 +9,9 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/util"
 
-	"github.com/0xSonicLabs/Substate/types"
-	trlp "github.com/0xSonicLabs/Substate/types/rlp"
-	"github.com/0xSonicLabs/Substate/updateset"
+	"github.com/0xsoniclabs/substate/types"
+	trlp "github.com/0xsoniclabs/substate/types/rlp"
+	"github.com/0xsoniclabs/substate/updateset"
 )
 
 const (

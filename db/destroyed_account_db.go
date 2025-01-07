@@ -6,8 +6,8 @@ import (
 
 	"github.com/syndtr/goleveldb/leveldb/opt"
 
-	"github.com/0xSonicLabs/Substate/types"
-	"github.com/0xSonicLabs/Substate/types/rlp"
+	"github.com/0xsoniclabs/substate/types"
+	"github.com/0xsoniclabs/substate/types/rlp"
 )
 
 type DestroyedAccountDB struct {

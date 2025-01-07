@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/0xSonicLabs/Substate/types"
+	"github.com/0xsoniclabs/substate/types"
 )
 
 func TestAccount_EqualNonce(t *testing.T) {

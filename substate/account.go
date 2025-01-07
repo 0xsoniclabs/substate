@@ -6,8 +6,8 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/0xSonicLabs/Substate/types"
-	"github.com/0xSonicLabs/Substate/types/hash"
+	"github.com/0xsoniclabs/substate/types"
+	"github.com/0xsoniclabs/substate/types/hash"
 )
 
 // Account holds any information about account used in a transaction.

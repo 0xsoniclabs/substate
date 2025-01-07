@@ -3,7 +3,7 @@ package protobuf
 import (
 	"math/big"
 
-	"github.com/0xSonicLabs/Substate/types"
+	"github.com/0xsoniclabs/substate/types"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 )
 

@@ -7,8 +7,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/0xSonicLabs/Substate/types"
-	"github.com/0xSonicLabs/Substate/types/hash"
+	"github.com/0xsoniclabs/substate/types"
+	"github.com/0xsoniclabs/substate/types/hash"
 )
 
 type Message struct {

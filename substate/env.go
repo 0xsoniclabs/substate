@@ -5,7 +5,7 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/0xSonicLabs/Substate/types"
+	"github.com/0xsoniclabs/substate/types"
 )
 
 type Env struct {

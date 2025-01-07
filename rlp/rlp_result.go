@@ -1,8 +1,8 @@
 package rlp
 
 import (
-	"github.com/0xSonicLabs/Substate/substate"
-	"github.com/0xSonicLabs/Substate/types"
+	"github.com/0xsoniclabs/substate/substate"
+	"github.com/0xsoniclabs/substate/types"
 )
 
 func NewResult(result *substate.Result) *Result {

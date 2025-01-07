@@ -1,4 +1,4 @@
-module github.com/0xSonicLabs/Substate
+module github.com/0xsoniclabs/substate
 
 go 1.21
 
