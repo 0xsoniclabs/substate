@@ -1,6 +1,8 @@
 package protobuf
 
 import (
+	"github.com/0xsoniclabs/substate/types/hash"
+	"google.golang.org/protobuf/proto"
 	"math/big"
 
 	"github.com/0xsoniclabs/substate/types"
@@ -56,4 +58,54 @@ func BytesToBigInt(b []byte) *big.Int {
 		return nil
 	}
 	return new(big.Int).SetBytes(b)
+}
+
+func CodeHash(code []byte) types.Hash {
+	return hash.Keccak256Hash(code)
+}
+
+func HashToBytes(hash *types.Hash) []byte {
+	if hash == nil {
+		return nil
+	}
+	return hash.Bytes()
+}
+
+func (s *Substate) HashedCopy() *Substate {
+	y := proto.Clone(s).(*Substate)
+
+	if y == nil {
+		return nil
+	}
+
+	for _, entry := range y.InputAlloc.Alloc {
+		account := entry.Account
+		if code := account.GetCode(); code != nil {
+			codeHash := CodeHash(code)
+			account.Contract = &Substate_Account_CodeHash{
+				CodeHash: HashToBytes(&codeHash),
+			}
+		}
+	}
+
+	for _, entry := range y.OutputAlloc.Alloc {
+		account := entry.Account
+		if code := account.GetCode(); code != nil {
+			codeHash := CodeHash(code)
+			account.Contract = &Substate_Account_CodeHash{
+				CodeHash: HashToBytes(&codeHash),
+			}
+		}
+	}
+
+	if y.TxMessage.To == nil {
+		if code := y.TxMessage.GetData(); code != nil {
+			codeHash := CodeHash(code)
+			y.TxMessage.Input = &Substate_TxMessage_InitCodeHash{
+				InitCodeHash: HashToBytes(&codeHash),
+			}
+		}
+	}
+
+	return y
 }

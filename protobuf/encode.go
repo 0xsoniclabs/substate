@@ -2,16 +2,16 @@ package protobuf
 
 import (
 	"fmt"
+	"github.com/0xsoniclabs/substate/types/hash"
 
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
-	"github.com/0xsoniclabs/substate/types/hash"
 	"google.golang.org/protobuf/proto"
 )
 
 // Encode converts aida-substate into protobuf-encoded message
 func Encode(ss *substate.Substate, block uint64, tx int) ([]byte, error) {
-	bytes, err := proto.Marshal(toProtobufSubstate(ss))
+	bytes, err := proto.Marshal(toProtobufSubstate(ss).HashedCopy())
 	if err != nil {
 		return nil, fmt.Errorf("cannot encode substate into protobuf block: %v,tx %v; %w", block, tx, err)
 	}
@@ -91,7 +91,7 @@ func toProtobufTxMessage(sm *substate.Message) *Substate_TxMessage {
 
 	accessList := make([]*Substate_TxMessage_AccessListEntry, len(sm.AccessList))
 	for i, entry := range sm.AccessList {
-		accessList[i].toProtobufAccessListEntry(&entry)
+		accessList[i] = toProtobufAccessListEntry(&entry)
 	}
 
 	blobHashes := make([][]byte, len(sm.BlobHashes))
@@ -124,13 +124,13 @@ func toProtobufTxMessage(sm *substate.Message) *Substate_TxMessage {
 }
 
 // toProtobufAccessListEntry converts types.AccessTuple into protobuf-encoded Substate_TxMessage_AccessListEntry
-func (entry *Substate_TxMessage_AccessListEntry) toProtobufAccessListEntry(sat *types.AccessTuple) {
+func toProtobufAccessListEntry(sat *types.AccessTuple) *Substate_TxMessage_AccessListEntry {
 	keys := make([][]byte, len(sat.StorageKeys))
 	for i, key := range sat.StorageKeys {
 		keys[i] = key.Bytes()
 	}
 
-	entry = &Substate_TxMessage_AccessListEntry{
+	return &Substate_TxMessage_AccessListEntry{
 		Address:     sat.Address.Bytes(),
 		StorageKeys: keys,
 	}
