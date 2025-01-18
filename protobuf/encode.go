@@ -3,15 +3,18 @@ package protobuf
 import (
 	"fmt"
 
+	"github.com/0xsoniclabs/substate/types/hash"
+
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
-	"github.com/0xsoniclabs/substate/types/hash"
 	"google.golang.org/protobuf/proto"
 )
 
 // Encode converts aida-substate into protobuf-encoded message
 func Encode(ss *substate.Substate, block uint64, tx int) ([]byte, error) {
-	bytes, err := proto.Marshal(toProtobufSubstate(ss))
+	// Field `Account.contract.code_hash` and `TxMessage.input.init_code_hash` are required by the decoder
+	// We need to ensure that the code hashes are not nil by calling `HashedCopy` method
+	bytes, err := proto.Marshal(toProtobufSubstate(ss).HashedCopy())
 	if err != nil {
 		return nil, fmt.Errorf("cannot encode substate into protobuf block: %v,tx %v; %w", block, tx, err)
 	}
