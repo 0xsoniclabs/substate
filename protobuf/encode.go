@@ -133,7 +133,7 @@ func (entry *Substate_TxMessage_AccessListEntry) toProtobufAccessListEntry(sat *
 func toProtobufResult(sr *substate.Result) *Substate_Result {
 	logs := make([]*Substate_Result_Log, len(sr.Logs))
 	for i, log := range sr.Logs {
-		logs[i].toProtobufLog(log)
+		logs[i] = toProtobufLog(log)
 	}
 
 	return &Substate_Result{
@@ -145,13 +145,13 @@ func toProtobufResult(sr *substate.Result) *Substate_Result {
 }
 
 // toProtobufLog converts types.Log into protobuf-encoded Substate_Result_log
-func (log *Substate_Result_Log) toProtobufLog(sl *types.Log) {
+func toProtobufLog(sl *types.Log) *Substate_Result_Log {
 	topics := make([][]byte, len(sl.Topics))
 	for i, topic := range sl.Topics {
 		topics[i] = topic.Bytes()
 	}
 
-	log = &Substate_Result_Log{
+	return &Substate_Result_Log{
 		Address: sl.Address.Bytes(),
 		Topics:  topics,
 		Data:    sl.Data,
