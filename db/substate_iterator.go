@@ -2,9 +2,9 @@ package db
 
 import (
 	"fmt"
-
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/syndtr/goleveldb/leveldb/util"
+	"sync/atomic"
 )
 
 func newSubstateIterator(db *SubstateDB, start []byte) *substateIterator {
@@ -66,9 +66,6 @@ func (i *substateIterator) start(numWorkers int) {
 			select {
 			case <-i.stopCh:
 				return
-			case e := <-errCh:
-				i.err = e
-				return
 			case rawDataChs[step] <- res: // fall-through
 			}
 			step = (step + 1) % numWorkers
@@ -76,14 +73,20 @@ func (i *substateIterator) start(numWorkers int) {
 	}()
 
 	// Start raw data => parsed transaction stage (parallel)
+	var numWorkerRunning atomic.Int32
 	for w := 0; w < numWorkers; w++ {
 		i.wg.Add(1)
 		id := w
+		numWorkerRunning.Add(1)
 
 		go func() {
 			defer func() {
 				close(resultChs[id])
 				i.wg.Done()
+				numWorkerRunning.Add(-1)
+				if numWorkerRunning.Load() == 0 {
+					close(errCh)
+				}
 			}()
 			for {
 				select {
@@ -121,6 +124,7 @@ func (i *substateIterator) start(numWorkers int) {
 		for openProducers := numWorkers; openProducers > 0; {
 			next, ok := <-resultChs[step%numWorkers]
 			if !ok {
+				i.err = <-errCh
 				return
 			}
 			if next != nil {
