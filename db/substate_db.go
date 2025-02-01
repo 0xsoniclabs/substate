@@ -49,6 +49,9 @@ type SubstateDB interface {
 
 	// GetSubstateEncoding returns the currently configured encoding
 	GetSubstateEncoding() string
+
+	// decodeSubstate defensively defaults to "default" if nil
+	decodeToSubstate(bytes []byte, block uint64, tx int) (*substate.Substate, error)
 }
 
 // NewDefaultSubstateDB creates new instance of SubstateDB with default options.
