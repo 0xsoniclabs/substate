@@ -27,17 +27,25 @@ func getTestSubstate() *substate.Substate {
 		Message: substate.NewMessage(1, true, new(big.Int).SetUint64(1), 1, types.Address{1}, new(types.Address), new(big.Int).SetUint64(1), []byte{1}, nil, types.AccessList{}, new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), make([]types.Hash, 0)),
 		Result: substate.NewResult(1, types.Bloom{1}, []*types.Log{
 			{
-				Address:     types.Address{1},
-				Topics:      []types.Hash{{1}, {2}},
-				Data:        []byte{1, 2, 3},
-				BlockNumber: 1,
-				TxHash:      types.Hash{1},
-				TxIndex:     1,
-				BlockHash:   types.Hash{1},
-				Index:       1,
-				Removed:     false,
+				Address: types.Address{1},
+				Topics:  []types.Hash{{1}, {2}},
+				Data:    []byte{1, 2, 3},
+				// intentionally skipped, because protobuf Substate encoding doesn't use this value
+				//BlockNumber: 1,
+				TxHash: types.Hash{1},
+				// intentionally skipped, because protobuf Substate encoding doesn't use this value
+				//TxIndex:     1,
+				BlockHash: types.Hash{1},
+				// intentionally skipped, because protobuf Substate encoding doesn't use this value
+				//Index:       1,
+				Removed: false,
 			},
-		}, types.BytesToAddress([]byte{1}), 1),
+		},
+			// intentionally skipped, because protobuf Substate encoding doesn't use this value,
+			// during decoding contractAddress is loaded from message
+			//types.BytesToAddress([]byte{1}),
+			types.Address{},
+			1),
 		Block:       37_534_834,
 		Transaction: 1,
 	}
