@@ -1,7 +1,6 @@
 package db
 
 import (
-	"fmt"
 	"math/big"
 	"strings"
 	"testing"
@@ -120,7 +119,7 @@ func TestSubstateEncoding_TestDb(t *testing.T) {
 
 		err = testSubstateDB_GetSubstate(db, *ts)
 		if err != nil {
-			t.Fatal(fmt.Errorf("encoding: %s; err: %v", encoding, err))
+			t.Fatalf("getSubstate check failed: encoding: %s; err: %v", encoding, err)
 		}
 	}
 }
