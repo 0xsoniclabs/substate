@@ -30,14 +30,14 @@ func getTestSubstate() *substate.Substate {
 				Address: types.Address{1},
 				Topics:  []types.Hash{{1}, {2}},
 				Data:    []byte{1, 2, 3},
-				// intentionally skipped - BlockNumber, TxIndex, Index - because protobuf Substate encoding doesn't use this values
+				// intentionally skipped: BlockNumber, TxIndex, Index - because protobuf Substate encoding doesn't use these values
 				TxHash:    types.Hash{1},
 				BlockHash: types.Hash{1},
 				Removed:   false,
 			},
 		},
-			// intentionally skipped ContractAddress - because protobuf Substate encoding doesn't use this value,
-			// during decoding contractAddress is loaded from message
+			// intentionally skipped: ContractAddress - because protobuf Substate encoding doesn't use this value,
+			// instead the ContractAddress is derived from Message.From and Message.Nonce
 			types.Address{},
 			1),
 		Block:       37_534_834,
