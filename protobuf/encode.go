@@ -99,6 +99,13 @@ func toProtobufTxMessage(sm *substate.Message) *Substate_TxMessage {
 		blobHashes[i] = hash.Bytes()
 	}
 
+	var dd isSubstate_TxMessage_Input
+	if sm.To == nil {
+		dd = &Substate_TxMessage_InitCodeHash{InitCodeHash: sm.DataHash().Bytes()}
+	} else {
+		dd = &Substate_TxMessage_Data{Data: sm.Data}
+	}
+
 	return &Substate_TxMessage{
 		Nonce:         &sm.Nonce,
 		GasPrice:      sm.GasPrice.Bytes(),
@@ -106,7 +113,7 @@ func toProtobufTxMessage(sm *substate.Message) *Substate_TxMessage {
 		From:          sm.From.Bytes(),
 		To:            AddressToWrapperspbBytes(sm.To),
 		Value:         sm.Value.Bytes(),
-		Input:         &Substate_TxMessage_Data{Data: sm.Data},
+		Input:         dd,
 		TxType:        txType,
 		AccessList:    accessList,
 		GasFeeCap:     BigIntToWrapperspbBytes(sm.GasFeeCap),
