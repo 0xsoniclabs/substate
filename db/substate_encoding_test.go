@@ -1,11 +1,13 @@
 package db
 
 import (
+	"math/big"
 	"strings"
 	"testing"
 
 	pb "github.com/0xsoniclabs/substate/protobuf"
 	"github.com/0xsoniclabs/substate/rlp"
+	"github.com/0xsoniclabs/substate/types"
 	trlp "github.com/0xsoniclabs/substate/types/rlp"
 )
 
@@ -16,13 +18,13 @@ type encTest struct {
 }
 
 var (
-	blk = testSubstate.Block
-	tx  = testSubstate.Transaction
+	blk = getTestSubstate().Block
+	tx  = getTestSubstate().Transaction
 
-	simplePb, _ = pb.Encode(testSubstate, blk, tx)
+	simplePb, _ = pb.Encode(getTestSubstate(), blk, tx)
 	testPb      = encTest{bytes: simplePb, blk: blk, tx: tx}
 
-	simpleRlp, _ = trlp.EncodeToBytes(rlp.NewRLP(testSubstate))
+	simpleRlp, _ = trlp.EncodeToBytes(rlp.NewRLP(getTestSubstate()))
 	testRlp      = encTest{bytes: simpleRlp, blk: blk, tx: tx}
 
 	supportedEncoding = map[string]encTest{
@@ -94,25 +96,31 @@ func TestSubstateEncoding_TestDb(t *testing.T) {
 		path := t.TempDir() + "test-db-" + encoding
 		db, err := newSubstateDB(path, nil, nil, nil)
 		if err != nil {
-			t.Errorf("cannot open db; %v", err)
+			t.Fatalf("cannot open db; %v", err)
 		}
 
+		ts := getTestSubstate()
 		db, err = db.SetSubstateEncoding(encoding)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 
 		ss, err := db.decodeToSubstate(et.bytes, et.blk, et.tx)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
+		ss.InputSubstate.Add(types.Address{1}, 1, new(big.Int).SetUint64(1), []byte{1})
+		ss.OutputSubstate.Add(types.Address{2}, 2, new(big.Int).SetUint64(2), []byte{2})
 
 		err = addCustomSubstate(db, et.blk, ss)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 
-		testSubstateDB_GetSubstate(db, t)
+		err = testSubstateDB_GetSubstate(db, *ts)
+		if err != nil {
+			t.Fatalf("getSubstate check failed: encoding: %s; err: %v", encoding, err)
+		}
 	}
 }
 

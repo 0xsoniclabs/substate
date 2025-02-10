@@ -16,8 +16,9 @@ func TestSubstateTaskPool_Execute(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	ts := getTestSubstate()
 	// add one more substate
-	if err = addSubstate(db, testSubstate.Block+1); err != nil {
+	if err = addSubstate(db, ts.Block+1); err != nil {
 		t.Fatal(err)
 	}
 
@@ -28,8 +29,8 @@ func TestSubstateTaskPool_Execute(t *testing.T) {
 			return nil
 		},
 
-		First: testSubstate.Block,
-		Last:  testSubstate.Block + 1,
+		First: ts.Block,
+		Last:  ts.Block + 1,
 
 		Workers: 1,
 		DB:      db,
@@ -48,6 +49,7 @@ func TestSubstateTaskPool_ExecuteBlock(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	ts := getTestSubstate()
 	stPool := SubstateTaskPool{
 		Name: "test",
 
@@ -55,17 +57,17 @@ func TestSubstateTaskPool_ExecuteBlock(t *testing.T) {
 			return nil
 		},
 
-		First: testSubstate.Block,
-		Last:  testSubstate.Block + 1,
+		First: ts.Block,
+		Last:  ts.Block + 1,
 
 		Workers: 1,
 		DB:      db,
 	}
 
-	numTx, gas, err := stPool.ExecuteBlock(testSubstate.Block)
+	numTx, gas, err := stPool.ExecuteBlock(ts.Block)
 	require.Nil(t, err)
 	require.Equal(t, int64(1), numTx)
-	require.Equal(t, testSubstate.Message.Gas, uint64(gas))
+	require.Equal(t, ts.Message.Gas, uint64(gas))
 }
 
 func TestSubstateTaskPool_ExecuteBlock_TaskFuncErr(t *testing.T) {
@@ -75,6 +77,7 @@ func TestSubstateTaskPool_ExecuteBlock_TaskFuncErr(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	ts := getTestSubstate()
 	stPool := SubstateTaskPool{
 		Name: "test",
 
@@ -82,14 +85,14 @@ func TestSubstateTaskPool_ExecuteBlock_TaskFuncErr(t *testing.T) {
 			return errors.New("test error")
 		},
 
-		First: testSubstate.Block,
-		Last:  testSubstate.Block + 1,
+		First: ts.Block,
+		Last:  ts.Block + 1,
 
 		Workers: 1,
 		DB:      db,
 	}
 
-	_, _, err = stPool.ExecuteBlock(testSubstate.Block)
+	_, _, err = stPool.ExecuteBlock(ts.Block)
 	require.Error(t, err)
 }
 
@@ -100,6 +103,7 @@ func TestSubstateTaskPool_ExecuteBlockNilTaskFunc(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	ts := getTestSubstate()
 	stPool := SubstateTaskPool{
 		Name: "test",
 
@@ -107,14 +111,14 @@ func TestSubstateTaskPool_ExecuteBlockNilTaskFunc(t *testing.T) {
 			return nil
 		},
 
-		First: testSubstate.Block,
-		Last:  testSubstate.Block + 1,
+		First: ts.Block,
+		Last:  ts.Block + 1,
 
 		Workers: 1,
 		DB:      db,
 	}
 
-	numTx, gas, err := stPool.ExecuteBlock(testSubstate.Block)
+	numTx, gas, err := stPool.ExecuteBlock(ts.Block)
 	require.Nil(t, err)
 	require.Equal(t, int64(1), numTx)
 	require.Equal(t, int64(0), gas)
@@ -127,6 +131,7 @@ func TestSubstateTaskPool_ExecuteBlockDBError(t *testing.T) {
 		t.Fatalf("cannot open db; %v", err)
 	}
 
+	ts := getTestSubstate()
 	stPool := SubstateTaskPool{
 		Name: "test",
 
@@ -134,14 +139,14 @@ func TestSubstateTaskPool_ExecuteBlockDBError(t *testing.T) {
 			return errors.New("test error")
 		},
 
-		First: testSubstate.Block,
-		Last:  testSubstate.Block + 1,
+		First: ts.Block,
+		Last:  ts.Block + 1,
 
 		Workers: 1,
 		DB:      db,
 	}
 
-	_, _, err = stPool.ExecuteBlock(testSubstate.Block)
+	_, _, err = stPool.ExecuteBlock(ts.Block)
 	require.Error(t, err)
 }
 
@@ -152,6 +157,7 @@ func TestSubstateTaskPool_ExecuteBlockSkipTransferTx(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	ts := getTestSubstate()
 	stPool := SubstateTaskPool{
 		Name: "test",
 
@@ -159,8 +165,8 @@ func TestSubstateTaskPool_ExecuteBlockSkipTransferTx(t *testing.T) {
 			return nil
 		},
 
-		First: testSubstate.Block,
-		Last:  testSubstate.Block + 1,
+		First: ts.Block,
+		Last:  ts.Block + 1,
 
 		SkipTransferTxs: true,
 
@@ -168,7 +174,7 @@ func TestSubstateTaskPool_ExecuteBlockSkipTransferTx(t *testing.T) {
 		DB:      db,
 	}
 
-	numTx, gas, err := stPool.ExecuteBlock(testSubstate.Block)
+	numTx, gas, err := stPool.ExecuteBlock(ts.Block)
 	require.Nil(t, err)
 	require.Equal(t, int64(0), numTx)
 	require.Equal(t, int64(0), gas)

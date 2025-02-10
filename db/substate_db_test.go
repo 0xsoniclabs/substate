@@ -12,21 +12,37 @@ import (
 	"github.com/0xsoniclabs/substate/types"
 )
 
-var testSubstate = &substate.Substate{
-	InputSubstate:  substate.NewWorldState(),
-	OutputSubstate: substate.NewWorldState(),
-	Env: &substate.Env{
-		Coinbase:   types.Address{1},
-		Difficulty: new(big.Int).SetUint64(1),
-		GasLimit:   1,
-		Number:     1,
-		Timestamp:  1,
-		BaseFee:    new(big.Int).SetUint64(1),
-	},
-	Message:     substate.NewMessage(1, true, new(big.Int).SetUint64(1), 1, types.Address{1}, new(types.Address), new(big.Int).SetUint64(1), []byte{1}, nil, types.AccessList{}, new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), make([]types.Hash, 0)),
-	Result:      substate.NewResult(1, types.Bloom{}, []*types.Log{}, types.Address{}, 1),
-	Block:       37_534_834,
-	Transaction: 1,
+func getTestSubstate() *substate.Substate {
+	return &substate.Substate{
+		InputSubstate:  substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), []byte{1}),
+		OutputSubstate: substate.NewWorldState().Add(types.Address{2}, 2, new(big.Int).SetUint64(2), []byte{2}),
+		Env: &substate.Env{
+			Coinbase:   types.Address{1},
+			Difficulty: new(big.Int).SetUint64(1),
+			GasLimit:   1,
+			Number:     1,
+			Timestamp:  1,
+			BaseFee:    new(big.Int).SetUint64(1),
+		},
+		Message: substate.NewMessage(1, true, new(big.Int).SetUint64(1), 1, types.Address{1}, new(types.Address), new(big.Int).SetUint64(1), []byte{1}, nil, types.AccessList{}, new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), make([]types.Hash, 0)),
+		Result: substate.NewResult(1, types.Bloom{1}, []*types.Log{
+			{
+				Address: types.Address{1},
+				Topics:  []types.Hash{{1}, {2}},
+				Data:    []byte{1, 2, 3},
+				// intentionally skipped: BlockNumber, TxIndex, Index - because protobuf Substate encoding doesn't use these values
+				TxHash:    types.Hash{1},
+				BlockHash: types.Hash{1},
+				Removed:   false,
+			},
+		},
+			// intentionally skipped: ContractAddress - because protobuf Substate encoding doesn't use this value,
+			// instead the ContractAddress is derived from Message.From and Message.Nonce
+			types.Address{},
+			1),
+		Block:       37_534_834,
+		Transaction: 1,
+	}
 }
 
 func TestSubstateDB_PutSubstate(t *testing.T) {
@@ -72,23 +88,26 @@ func TestSubstateDB_GetSubstate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	testSubstateDB_GetSubstate(db, t)
+	err = testSubstateDB_GetSubstate(db, *getTestSubstate())
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func testSubstateDB_GetSubstate(db *substateDB, t *testing.T) {
+func testSubstateDB_GetSubstate(db *substateDB, want substate.Substate) error {
 	ss, err := db.GetSubstate(37_534_834, 1)
 	if err != nil {
-		t.Fatalf("get substate returned error; %v", err)
+		return fmt.Errorf("get substate returned error; %v", err)
 	}
 
 	if ss == nil {
-		t.Fatal("substate is nil")
+		return errors.New("substate is nil")
 	}
 
-	if err = ss.Equal(testSubstate); err != nil {
-		t.Fatalf("substates are different; %v", err)
+	if err = want.Equal(ss); err != nil {
+		return fmt.Errorf("substates are different; %v", err)
 	}
-
+	return nil
 }
 
 func TestSubstateDB_DeleteSubstate(t *testing.T) {
@@ -124,8 +143,9 @@ func TestSubstateDB_getLastBlock(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	ts := getTestSubstate()
 	// add one more substate
-	if err = addSubstate(db, testSubstate.Block+1); err != nil {
+	if err = addSubstate(db, ts.Block+1); err != nil {
 		t.Fatal(err)
 	}
 
@@ -135,14 +155,14 @@ func TestSubstateDB_getLastBlock(t *testing.T) {
 	}
 
 	if block != 37534835 {
-		t.Fatalf("incorrect block number\ngot: %v\nwant: %v", block, testSubstate.Block+1)
+		t.Fatalf("incorrect block number\ngot: %v\nwant: %v", block, ts.Block+1)
 	}
 
 }
 
 func TestSubstateDB_GetFirstSubstate(t *testing.T) {
 	// save data for comparison
-	want := *testSubstate
+	want := *getTestSubstate()
 	want.Block = 1
 
 	dbPath := t.TempDir() + "test-db"
@@ -158,7 +178,7 @@ func TestSubstateDB_GetFirstSubstate(t *testing.T) {
 
 	got := db.GetFirstSubstate()
 
-	if err = got.Equal(&want); err != nil {
+	if err = (&want).Equal(got); err != nil {
 		t.Fatalf("substates are different\nerr: %v\ngot: %s\nwant: %s", err, got, &want)
 	}
 
@@ -166,7 +186,7 @@ func TestSubstateDB_GetFirstSubstate(t *testing.T) {
 
 func TestSubstateDB_GetLastSubstate(t *testing.T) {
 	// save data for comparison
-	want := *testSubstate
+	want := *getTestSubstate()
 	want.Block = 2
 
 	dbPath := t.TempDir() + "test-db"
@@ -185,7 +205,7 @@ func TestSubstateDB_GetLastSubstate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = got.Equal(&want); err != nil {
+	if err = (&want).Equal(got); err != nil {
 		t.Fatalf("substates are different\nerr: %v\ngot: %s\nwant: %s", err, got, &want)
 	}
 
@@ -197,7 +217,7 @@ func createDbAndPutSubstate(dbPath string) (*substateDB, error) {
 		return nil, fmt.Errorf("cannot open db; %v", err)
 	}
 
-	if err = addSubstate(db, testSubstate.Block); err != nil {
+	if err = addSubstate(db, getTestSubstate().Block); err != nil {
 		return nil, err
 	}
 
@@ -205,20 +225,11 @@ func createDbAndPutSubstate(dbPath string) (*substateDB, error) {
 }
 
 func addSubstate(db *substateDB, blk uint64) error {
-	return addCustomSubstate(db, blk, testSubstate)
+	return addCustomSubstate(db, blk, getTestSubstate())
 }
 
 func addCustomSubstate(db *substateDB, blk uint64, ss *substate.Substate) error {
-	h1 := types.Hash{}
-	h1.SetBytes(nil)
-
-	h2 := types.Hash{}
-	h2.SetBytes(nil)
-
 	s := *ss
-
-	s.InputSubstate[types.Address{1}] = substate.NewAccount(1, new(big.Int).SetUint64(1), h1[:])
-	s.OutputSubstate[types.Address{2}] = substate.NewAccount(2, new(big.Int).SetUint64(2), h2[:])
 	s.Block = blk
 
 	return db.PutSubstate(&s)
