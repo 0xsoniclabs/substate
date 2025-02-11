@@ -87,7 +87,7 @@ func TestSubstateIterator_FromBlock(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	test2 := *getTestSubstate()
+	test2 := *getTestSubstate("default")
 	test2.Block++
 
 	err = db.PutSubstate(&test2)

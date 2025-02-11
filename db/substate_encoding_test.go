@@ -18,13 +18,13 @@ type encTest struct {
 }
 
 var (
-	blk = getTestSubstate().Block
-	tx  = getTestSubstate().Transaction
+	blk = getTestSubstate("default").Block
+	tx  = getTestSubstate("default").Transaction
 
-	simplePb, _ = pb.Encode(getTestSubstate(), blk, tx)
+	simplePb, _ = pb.Encode(getTestSubstate("protobuf"), blk, tx)
 	testPb      = encTest{bytes: simplePb, blk: blk, tx: tx}
 
-	simpleRlp, _ = trlp.EncodeToBytes(rlp.NewRLP(getTestSubstate()))
+	simpleRlp, _ = trlp.EncodeToBytes(rlp.NewRLP(getTestSubstate("rlp")))
 	testRlp      = encTest{bytes: simpleRlp, blk: blk, tx: tx}
 
 	supportedEncoding = map[string]encTest{
@@ -99,7 +99,7 @@ func TestSubstateEncoding_TestDb(t *testing.T) {
 			t.Fatalf("cannot open db; %v", err)
 		}
 
-		ts := getTestSubstate()
+		ts := getTestSubstate(encoding)
 		db, err = db.SetSubstateEncoding(encoding)
 		if err != nil {
 			t.Fatal(err)

@@ -14,6 +14,8 @@ import (
 
 func getTestSubstate() *substate.Substate {
 	return &substate.Substate{
+func getTestSubstate(encoding string) *substate.Substate {
+	ss := &substate.Substate{
 		InputSubstate:  substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), []byte{1}),
 		OutputSubstate: substate.NewWorldState().Add(types.Address{2}, 2, new(big.Int).SetUint64(2), []byte{2}),
 		Env: &substate.Env{
@@ -23,6 +25,7 @@ func getTestSubstate() *substate.Substate {
 			Number:     1,
 			Timestamp:  1,
 			BaseFee:    new(big.Int).SetUint64(1),
+			Random:     &types.Hash{1},
 		},
 		Message: substate.NewMessage(1, true, new(big.Int).SetUint64(1), 1, types.Address{1}, new(types.Address), new(big.Int).SetUint64(1), []byte{1}, nil, types.AccessList{}, new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), make([]types.Hash, 0)),
 		Result: substate.NewResult(1, types.Bloom{1}, []*types.Log{
@@ -43,6 +46,13 @@ func getTestSubstate() *substate.Substate {
 		Block:       37_534_834,
 		Transaction: 1,
 	}
+
+	// remove fields that are not supported in rlp encoding
+	// TODO once protobuf becomes default add ' && encoding != "default" ' to the condition
+	if encoding != "protobuf" {
+		ss.Env.Random = nil
+	}
+	return ss
 }
 
 func TestSubstateDB_PutSubstate(t *testing.T) {
@@ -88,7 +98,7 @@ func TestSubstateDB_GetSubstate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = testSubstateDB_GetSubstate(db, *getTestSubstate())
+	err = testSubstateDB_GetSubstate(db, *getTestSubstate("default"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -143,7 +153,7 @@ func TestSubstateDB_getLastBlock(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ts := getTestSubstate()
+	ts := getTestSubstate("default")
 	// add one more substate
 	if err = addSubstate(db, ts.Block+1); err != nil {
 		t.Fatal(err)
@@ -162,7 +172,7 @@ func TestSubstateDB_getLastBlock(t *testing.T) {
 
 func TestSubstateDB_GetFirstSubstate(t *testing.T) {
 	// save data for comparison
-	want := *getTestSubstate()
+	want := *getTestSubstate("default")
 	want.Block = 1
 
 	dbPath := t.TempDir() + "test-db"
@@ -186,7 +196,7 @@ func TestSubstateDB_GetFirstSubstate(t *testing.T) {
 
 func TestSubstateDB_GetLastSubstate(t *testing.T) {
 	// save data for comparison
-	want := *getTestSubstate()
+	want := *getTestSubstate("default")
 	want.Block = 2
 
 	dbPath := t.TempDir() + "test-db"
@@ -217,7 +227,7 @@ func createDbAndPutSubstate(dbPath string) (*substateDB, error) {
 		return nil, fmt.Errorf("cannot open db; %v", err)
 	}
 
-	if err = addSubstate(db, getTestSubstate().Block); err != nil {
+	if err = addSubstate(db, getTestSubstate("default").Block); err != nil {
 		return nil, err
 	}
 
@@ -225,7 +235,7 @@ func createDbAndPutSubstate(dbPath string) (*substateDB, error) {
 }
 
 func addSubstate(db *substateDB, blk uint64) error {
-	return addCustomSubstate(db, blk, getTestSubstate())
+	return addCustomSubstate(db, blk, getTestSubstate("default"))
 }
 
 func addCustomSubstate(db *substateDB, blk uint64, ss *substate.Substate) error {
