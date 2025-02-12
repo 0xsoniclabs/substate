@@ -12,8 +12,6 @@ import (
 	"github.com/0xsoniclabs/substate/types"
 )
 
-func getTestSubstate() *substate.Substate {
-	return &substate.Substate{
 func getTestSubstate(encoding string) *substate.Substate {
 	ss := &substate.Substate{
 		InputSubstate:  substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), []byte{1}),
