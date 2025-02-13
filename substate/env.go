@@ -33,7 +33,9 @@ func NewEnv(
 	timestamp uint64,
 	baseFee *big.Int,
 	blobBaseFee *big.Int,
-	blockHashes map[uint64]types.Hash) *Env {
+	blockHashes map[uint64]types.Hash,
+	random *types.Hash,
+) *Env {
 	return &Env{
 		Coinbase:    coinbase,
 		Difficulty:  difficulty,
@@ -43,6 +45,7 @@ func NewEnv(
 		BlockHashes: blockHashes,
 		BaseFee:     baseFee,
 		BlobBaseFee: blobBaseFee,
+		Random:      random,
 	}
 }
 
@@ -64,7 +67,8 @@ func (e *Env) Equal(y *Env) bool {
 		e.Timestamp == y.Timestamp &&
 		len(e.BlockHashes) == len(y.BlockHashes) &&
 		e.BaseFee.Cmp(y.BaseFee) == 0 &&
-		e.BlobBaseFee.Cmp(y.BlobBaseFee) == 0
+		e.BlobBaseFee.Cmp(y.BlobBaseFee) == 0 &&
+		((e.Random == nil && y.Random == nil) || (e.Random.String() == y.Random.String()))
 	if !equal {
 		return false
 	}
@@ -90,6 +94,7 @@ func (e *Env) String() string {
 	builder.WriteString(fmt.Sprintf("Base Fee: %v\n", e.BaseFee.String()))
 	builder.WriteString(fmt.Sprintf("Blob Base Fee: %v\n", e.BlobBaseFee.String()))
 	builder.WriteString("Block Hashes: \n")
+	builder.WriteString(fmt.Sprintf("Random: %s\n", e.Random))
 
 	for number, hash := range e.BlockHashes {
 		builder.WriteString(fmt.Sprintf("%v: %s\n", number, hash))

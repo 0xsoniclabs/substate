@@ -16,7 +16,7 @@ func TestSubstateTaskPool_Execute(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ts := getTestSubstate()
+	ts := getTestSubstate("default")
 	// add one more substate
 	if err = addSubstate(db, ts.Block+1); err != nil {
 		t.Fatal(err)
@@ -49,7 +49,7 @@ func TestSubstateTaskPool_ExecuteBlock(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ts := getTestSubstate()
+	ts := getTestSubstate("default")
 	stPool := SubstateTaskPool{
 		Name: "test",
 
@@ -77,7 +77,7 @@ func TestSubstateTaskPool_ExecuteBlock_TaskFuncErr(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ts := getTestSubstate()
+	ts := getTestSubstate("default")
 	stPool := SubstateTaskPool{
 		Name: "test",
 
@@ -103,7 +103,7 @@ func TestSubstateTaskPool_ExecuteBlockNilTaskFunc(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ts := getTestSubstate()
+	ts := getTestSubstate("default")
 	stPool := SubstateTaskPool{
 		Name: "test",
 
@@ -131,7 +131,7 @@ func TestSubstateTaskPool_ExecuteBlockDBError(t *testing.T) {
 		t.Fatalf("cannot open db; %v", err)
 	}
 
-	ts := getTestSubstate()
+	ts := getTestSubstate("default")
 	stPool := SubstateTaskPool{
 		Name: "test",
 
@@ -157,7 +157,7 @@ func TestSubstateTaskPool_ExecuteBlockSkipTransferTx(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	ts := getTestSubstate()
+	ts := getTestSubstate("default")
 	stPool := SubstateTaskPool{
 		Name: "test",
 
