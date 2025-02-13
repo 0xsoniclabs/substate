@@ -1,13 +1,11 @@
 package db
 
 import (
-	"math/big"
 	"strings"
 	"testing"
 
 	pb "github.com/0xsoniclabs/substate/protobuf"
 	"github.com/0xsoniclabs/substate/rlp"
-	"github.com/0xsoniclabs/substate/types"
 	trlp "github.com/0xsoniclabs/substate/types/rlp"
 )
 
@@ -109,8 +107,6 @@ func TestSubstateEncoding_TestDb(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		ss.InputSubstate.Add(types.Address{1}, 1, new(big.Int).SetUint64(1), []byte{1})
-		ss.OutputSubstate.Add(types.Address{2}, 2, new(big.Int).SetUint64(2), []byte{2})
 
 		err = addCustomSubstate(db, et.blk, ss)
 		if err != nil {

@@ -188,20 +188,35 @@ func (msg *Substate_TxMessage) decode(lookup getCodeFunc) (*substate.Message, er
 		}
 	}
 
+	var txTypeInt int32
+	switch x := *msg.TxType; x {
+	case Substate_TxMessage_TXTYPE_LEGACY:
+		txTypeInt = substate.LegacyTxType
+	case Substate_TxMessage_TXTYPE_ACCESSLIST:
+		txTypeInt = substate.AccessListTxType
+	case Substate_TxMessage_TXTYPE_DYNAMICFEE:
+		txTypeInt = substate.DynamicFeeTxType
+	case Substate_TxMessage_TXTYPE_BLOB:
+		txTypeInt = substate.BlobTxType
+	default:
+		panic(fmt.Errorf("tx type %v is not supported", x))
+	}
+
 	return &substate.Message{
-		Nonce:         msg.GetNonce(),
-		CheckNonce:    true,
-		GasPrice:      BytesToBigInt(msg.GetGasPrice()),
-		Gas:           msg.GetGas(),
-		From:          types.BytesToAddress(msg.GetFrom()),
-		To:            pTo,
-		Value:         BytesToBigInt(msg.GetValue()),
-		Data:          data,
-		AccessList:    accessList,
-		GasFeeCap:     gasFeeCap,
-		GasTipCap:     gasTipCap,
-		BlobGasFeeCap: BytesValueToBigInt(msg.GetBlobGasFeeCap()),
-		BlobHashes:    blobHashes,
+		Nonce:          msg.GetNonce(),
+		CheckNonce:     true,
+		GasPrice:       BytesToBigInt(msg.GetGasPrice()),
+		Gas:            msg.GetGas(),
+		From:           types.BytesToAddress(msg.GetFrom()),
+		To:             pTo,
+		Value:          BytesToBigInt(msg.GetValue()),
+		Data:           data,
+		ProtobufTxType: &txTypeInt,
+		AccessList:     accessList,
+		GasFeeCap:      gasFeeCap,
+		GasTipCap:      gasTipCap,
+		BlobGasFeeCap:  BytesValueToBigInt(msg.GetBlobGasFeeCap()),
+		BlobHashes:     blobHashes,
 	}, nil
 }
 

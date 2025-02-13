@@ -82,16 +82,14 @@ func toProtobufBlockEnv(se *substate.Env) *Substate_BlockEnv {
 
 // encode converts substate.Message into protobuf-encoded Substate_TxMessage
 func toProtobufTxMessage(sm *substate.Message) *Substate_TxMessage {
-	dt := Substate_TxMessage_TXTYPE_LEGACY
-	txType := &dt
+	txType := Substate_TxMessage_TXTYPE_LEGACY
 	if sm.ProtobufTxType != nil {
-		t := Substate_TxMessage_TxType(*sm.ProtobufTxType)
-		txType = &t
+		txType = Substate_TxMessage_TxType(*sm.ProtobufTxType)
 	}
 
 	accessList := make([]*Substate_TxMessage_AccessListEntry, len(sm.AccessList))
 	for i, entry := range sm.AccessList {
-		accessList[i].toProtobufAccessListEntry(&entry)
+		accessList[i] = toProtobufAccessListEntry(&entry)
 	}
 
 	blobHashes := make([][]byte, len(sm.BlobHashes))
@@ -114,7 +112,7 @@ func toProtobufTxMessage(sm *substate.Message) *Substate_TxMessage {
 		To:            AddressToWrapperspbBytes(sm.To),
 		Value:         sm.Value.Bytes(),
 		Input:         txInput,
-		TxType:        txType,
+		TxType:        &txType,
 		AccessList:    accessList,
 		GasFeeCap:     BigIntToWrapperspbBytes(sm.GasFeeCap),
 		GasTipCap:     BigIntToWrapperspbBytes(sm.GasTipCap),
@@ -124,13 +122,13 @@ func toProtobufTxMessage(sm *substate.Message) *Substate_TxMessage {
 }
 
 // toProtobufAccessListEntry converts types.AccessTuple into protobuf-encoded Substate_TxMessage_AccessListEntry
-func (entry *Substate_TxMessage_AccessListEntry) toProtobufAccessListEntry(sat *types.AccessTuple) {
+func toProtobufAccessListEntry(sat *types.AccessTuple) *Substate_TxMessage_AccessListEntry {
 	keys := make([][]byte, len(sat.StorageKeys))
 	for i, key := range sat.StorageKeys {
 		keys[i] = key.Bytes()
 	}
 
-	entry = &Substate_TxMessage_AccessListEntry{
+	return &Substate_TxMessage_AccessListEntry{
 		Address:     sat.Address.Bytes(),
 		StorageKeys: keys,
 	}

@@ -13,9 +13,10 @@ import (
 )
 
 func getTestSubstate(encoding string) *substate.Substate {
+	txType := int32(substate.AccessListTxType)
 	ss := &substate.Substate{
-		InputSubstate:  substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), []byte{1}),
-		OutputSubstate: substate.NewWorldState().Add(types.Address{2}, 2, new(big.Int).SetUint64(2), []byte{2}),
+		InputSubstate:  substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+		OutputSubstate: substate.NewWorldState().Add(types.Address{2}, 2, new(big.Int).SetUint64(2), nil),
 		Env: &substate.Env{
 			Coinbase:   types.Address{1},
 			Difficulty: new(big.Int).SetUint64(1),
@@ -25,7 +26,10 @@ func getTestSubstate(encoding string) *substate.Substate {
 			BaseFee:    new(big.Int).SetUint64(1),
 			Random:     &types.Hash{1},
 		},
-		Message: substate.NewMessage(1, true, new(big.Int).SetUint64(1), 1, types.Address{1}, new(types.Address), new(big.Int).SetUint64(1), []byte{1}, nil, types.AccessList{}, new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), make([]types.Hash, 0)),
+		Message: substate.NewMessage(1, true, new(big.Int).SetUint64(1), 1, types.Address{1},
+			new(types.Address), new(big.Int).SetUint64(1), []byte{1}, nil, &txType,
+			types.AccessList{{types.Address{1}, []types.Hash{{1}, {2}}}}, new(big.Int).SetUint64(1),
+			new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), make([]types.Hash, 0)),
 		Result: substate.NewResult(1, types.Bloom{1}, []*types.Log{
 			{
 				Address: types.Address{1},
@@ -49,6 +53,7 @@ func getTestSubstate(encoding string) *substate.Substate {
 	// TODO once protobuf becomes default add ' && encoding != "default" ' to the condition
 	if encoding != "protobuf" {
 		ss.Env.Random = nil
+		ss.Message.AccessList = types.AccessList{}
 	}
 	return ss
 }
