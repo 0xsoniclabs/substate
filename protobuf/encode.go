@@ -2,6 +2,7 @@ package protobuf
 
 import (
 	"fmt"
+
 	"github.com/0xsoniclabs/substate/types/hash"
 
 	"github.com/0xsoniclabs/substate/substate"

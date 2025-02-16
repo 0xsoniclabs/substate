@@ -3,12 +3,13 @@ package protobuf
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"math/big"
+	"testing"
+
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
-	"math/big"
-	"testing"
 )
 
 func bytesToMD5(data []byte) string {

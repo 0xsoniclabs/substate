@@ -4,71 +4,74 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"math/big"
+	"testing"
+
 	"github.com/0xsoniclabs/substate/db"
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/urfave/cli/v2"
-	"math/big"
-	"testing"
+	"go.uber.org/mock/gomock"
 )
-import "go.uber.org/mock/gomock"
 
 func TestRLPtoProtobufCommand_ParsingFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	src := db.NewMockSubstateDB(ctrl)
-	dst := db.NewMockSubstateDB(ctrl)
+	src := db.NewMockISubstateDB(ctrl)
+	dst := db.NewMockISubstateDB(ctrl)
 
 	set := flag.NewFlagSet("test", 0)
 	_ = set.String(BlockSegmentFlag.Name, "0-abc", "")
 	_ = set.String(WorkersFlag.Name, "1", "")
 	ctx := cli.NewContext(&cli.App{}, set, nil)
 
-	command := RLPtoProtobufCommand{
+	command := rlpToProtobufCommand{
 		src: src,
 		dst: dst,
 		ctx: ctx,
 	}
 
-	err := command.Execute()
+	err := command.execute()
 	expected := errors.New("invalid block segment string: \"0-abc\"")
 	assert.Equal(t, expected, err)
 }
 
 func TestRLPtoProtobufCommand_SetEncodingFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	src := db.NewMockSubstateDB(ctrl)
-	dst := db.NewMockSubstateDB(ctrl)
+	src := db.NewMockISubstateDB(ctrl)
+	dst := db.NewMockISubstateDB(ctrl)
 
 	set := flag.NewFlagSet("test", 0)
 	_ = set.String(BlockSegmentFlag.Name, "0-2", "")
 	_ = set.String(WorkersFlag.Name, "1", "")
 	ctx := cli.NewContext(&cli.App{}, set, nil)
+	mockErr := errors.New("error")
 
-	dst.EXPECT().SetSubstateEncoding("protobuf").Return(nil, errors.New("error"))
+	dst.EXPECT().SetSubstateEncoding("protobuf").Return(nil, mockErr)
 
-	command := RLPtoProtobufCommand{
+	command := rlpToProtobufCommand{
 		src: src,
 		dst: dst,
 		ctx: ctx,
 	}
 
-	err := command.Execute()
-	expected := errors.New("error")
-	assert.Equal(t, expected, err)
+	err := command.execute()
+
+	assert.Equal(t, mockErr, err)
 }
 
 func TestRLPtoProtobufCommand_ExecuteUpgradeFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	src := db.NewMockSubstateDB(ctrl)
-	dst := db.NewMockSubstateDB(ctrl)
+	src := db.NewMockISubstateDB(ctrl)
+	dst := db.NewMockISubstateDB(ctrl)
 
 	set := flag.NewFlagSet("test", 0)
 	_ = set.String(BlockSegmentFlag.Name, "0-2", "")
 	_ = set.String(WorkersFlag.Name, "1", "")
 	ctx := cli.NewContext(&cli.App{}, set, nil)
 
-	command := RLPtoProtobufCommand{
+	mockErr := errors.New("error")
+	command := rlpToProtobufCommand{
 		src: src,
 		dst: dst,
 		ctx: ctx,
@@ -85,13 +88,28 @@ func TestRLPtoProtobufCommand_ExecuteUpgradeFail(t *testing.T) {
 			Timestamp:  1,
 			BaseFee:    new(big.Int).SetUint64(1),
 		},
-		Message:     substate.NewMessage(1, true, new(big.Int).SetUint64(1), 1, types.Address{1}, new(types.Address), new(big.Int).SetUint64(1), []byte{1}, nil, types.AccessList{}, new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), make([]types.Hash, 0)),
+		Message: substate.NewMessage(
+			1,
+			true,
+			new(big.Int).SetUint64(1),
+			1,
+			types.Address{1},
+			new(types.Address),
+			new(big.Int).SetUint64(1),
+			[]byte{1},
+			nil,
+			types.AccessList{},
+			new(big.Int).SetUint64(1),
+			new(big.Int).SetUint64(1),
+			new(big.Int).SetUint64(1),
+			make([]types.Hash, 0),
+		),
 		Result:      substate.NewResult(1, types.Bloom{}, []*types.Log{}, types.Address{}, 1),
 		Block:       37_534_834,
 		Transaction: 1,
 	}
 
-	dst.EXPECT().SetSubstateEncoding("protobuf").Return(&db.CSubstateDB{}, nil)
+	dst.EXPECT().SetSubstateEncoding("protobuf").Return(&db.SubstateDB{}, nil)
 	gomock.InOrder(
 		src.EXPECT().GetBlockSubstates(uint64(0)).Return(map[int]*substate.Substate{
 			0: input0,
@@ -106,24 +124,24 @@ func TestRLPtoProtobufCommand_ExecuteUpgradeFail(t *testing.T) {
 
 	dst.EXPECT().PutSubstate(input0).Return(nil)
 	dst.EXPECT().PutSubstate(input0).Return(nil)
-	dst.EXPECT().PutSubstate(input0).Return(errors.New("error"))
-	err := command.Execute()
+	dst.EXPECT().PutSubstate(input0).Return(mockErr)
+	err := command.execute()
 
-	expected := fmt.Errorf("rlp-to-protobuf: 2_0: %w", errors.New("error"))
+	expected := fmt.Errorf("rlp-to-protobuf: 2_0: %w", fmt.Errorf("failed to put substate: %w", mockErr))
 	assert.Equal(t, expected, err)
 }
 
 func TestRLPtoProtobufCommand_ExecuteSuccessful(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	src := db.NewMockSubstateDB(ctrl)
-	dst := db.NewMockSubstateDB(ctrl)
+	src := db.NewMockISubstateDB(ctrl)
+	dst := db.NewMockISubstateDB(ctrl)
 
 	set := flag.NewFlagSet("test", 0)
 	_ = set.String(BlockSegmentFlag.Name, "0-2", "")
 	_ = set.String(WorkersFlag.Name, "1", "")
 	ctx := cli.NewContext(&cli.App{}, set, nil)
 
-	command := RLPtoProtobufCommand{
+	command := rlpToProtobufCommand{
 		src: src,
 		dst: dst,
 		ctx: ctx,
@@ -140,13 +158,27 @@ func TestRLPtoProtobufCommand_ExecuteSuccessful(t *testing.T) {
 			Timestamp:  1,
 			BaseFee:    new(big.Int).SetUint64(1),
 		},
-		Message:     substate.NewMessage(1, true, new(big.Int).SetUint64(1), 1, types.Address{1}, new(types.Address), new(big.Int).SetUint64(1), []byte{1}, nil, types.AccessList{}, new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), make([]types.Hash, 0)),
+		Message: substate.NewMessage(
+			1,
+			true,
+			new(big.Int).SetUint64(1),
+			1, types.Address{1},
+			new(types.Address),
+			new(big.Int).SetUint64(1),
+			[]byte{1},
+			nil,
+			types.AccessList{},
+			new(big.Int).SetUint64(1),
+			new(big.Int).SetUint64(1),
+			new(big.Int).SetUint64(1),
+			make([]types.Hash, 0),
+		),
 		Result:      substate.NewResult(1, types.Bloom{}, []*types.Log{}, types.Address{}, 1),
 		Block:       37_534_834,
 		Transaction: 1,
 	}
 
-	dst.EXPECT().SetSubstateEncoding("protobuf").Return(&db.CSubstateDB{}, nil)
+	dst.EXPECT().SetSubstateEncoding("protobuf").Return(&db.SubstateDB{}, nil)
 	gomock.InOrder(
 		src.EXPECT().GetBlockSubstates(uint64(0)).Return(map[int]*substate.Substate{
 			0: input0,
@@ -161,21 +193,21 @@ func TestRLPtoProtobufCommand_ExecuteSuccessful(t *testing.T) {
 
 	dst.EXPECT().PutSubstate(input0).Return(nil).Times(3)
 
-	err := command.Execute()
+	err := command.execute()
 	assert.Nil(t, err)
 }
 
 func TestRLPtoProtobufCommand_ExecuteParallelSuccessful(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	src := db.NewMockSubstateDB(ctrl)
-	dst := db.NewMockSubstateDB(ctrl)
+	src := db.NewMockISubstateDB(ctrl)
+	dst := db.NewMockISubstateDB(ctrl)
 
 	set := flag.NewFlagSet("test", 0)
 	_ = set.String(BlockSegmentFlag.Name, "0-2", "")
 	_ = set.String(WorkersFlag.Name, "4", "")
 	ctx := cli.NewContext(&cli.App{}, set, nil)
 
-	command := RLPtoProtobufCommand{
+	command := rlpToProtobufCommand{
 		src: src,
 		dst: dst,
 		ctx: ctx,
@@ -192,13 +224,28 @@ func TestRLPtoProtobufCommand_ExecuteParallelSuccessful(t *testing.T) {
 			Timestamp:  1,
 			BaseFee:    new(big.Int).SetUint64(1),
 		},
-		Message:     substate.NewMessage(1, true, new(big.Int).SetUint64(1), 1, types.Address{1}, new(types.Address), new(big.Int).SetUint64(1), []byte{1}, nil, types.AccessList{}, new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), make([]types.Hash, 0)),
+		Message: substate.NewMessage(
+			1,
+			true,
+			new(big.Int).SetUint64(1),
+			1,
+			types.Address{1},
+			new(types.Address),
+			new(big.Int).SetUint64(1),
+			[]byte{1},
+			nil,
+			types.AccessList{},
+			new(big.Int).SetUint64(1),
+			new(big.Int).SetUint64(1),
+			new(big.Int).SetUint64(1),
+			make([]types.Hash, 0),
+		),
 		Result:      substate.NewResult(1, types.Bloom{}, []*types.Log{}, types.Address{}, 1),
 		Block:       37_534_834,
 		Transaction: 1,
 	}
 
-	dst.EXPECT().SetSubstateEncoding("protobuf").Return(&db.CSubstateDB{}, nil)
+	dst.EXPECT().SetSubstateEncoding("protobuf").Return(&db.SubstateDB{}, nil)
 
 	src.EXPECT().GetBlockSubstates(uint64(0)).Return(map[int]*substate.Substate{
 		0: input0,
@@ -212,21 +259,22 @@ func TestRLPtoProtobufCommand_ExecuteParallelSuccessful(t *testing.T) {
 
 	dst.EXPECT().PutSubstate(input0).Return(nil).Times(3)
 
-	err := command.Execute()
+	err := command.execute()
 	assert.Nil(t, err)
 }
 
 func TestRLPtoProtobufCommand_ExecuteFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	src := db.NewMockSubstateDB(ctrl)
-	dst := db.NewMockSubstateDB(ctrl)
+	src := db.NewMockISubstateDB(ctrl)
+	dst := db.NewMockISubstateDB(ctrl)
 
 	set := flag.NewFlagSet("test", 0)
 	_ = set.String(BlockSegmentFlag.Name, "0-2", "")
 	_ = set.String(WorkersFlag.Name, "1", "")
 	ctx := cli.NewContext(&cli.App{}, set, nil)
+	mockErr := errors.New("error")
 
-	command := RLPtoProtobufCommand{
+	command := rlpToProtobufCommand{
 		src: src,
 		dst: dst,
 		ctx: ctx,
@@ -243,18 +291,33 @@ func TestRLPtoProtobufCommand_ExecuteFail(t *testing.T) {
 			Timestamp:  1,
 			BaseFee:    new(big.Int).SetUint64(1),
 		},
-		Message:     substate.NewMessage(1, true, new(big.Int).SetUint64(1), 1, types.Address{1}, new(types.Address), new(big.Int).SetUint64(1), []byte{1}, nil, types.AccessList{}, new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), make([]types.Hash, 0)),
+		Message: substate.NewMessage(
+			1,
+			true,
+			new(big.Int).SetUint64(1),
+			1,
+			types.Address{1},
+			new(types.Address),
+			new(big.Int).SetUint64(1),
+			[]byte{1},
+			nil,
+			types.AccessList{},
+			new(big.Int).SetUint64(1),
+			new(big.Int).SetUint64(1),
+			new(big.Int).SetUint64(1),
+			make([]types.Hash, 0),
+		),
 		Result:      substate.NewResult(1, types.Bloom{}, []*types.Log{}, types.Address{}, 1),
 		Block:       37_534_834,
 		Transaction: 1,
 	}
 
-	dst.EXPECT().SetSubstateEncoding("protobuf").Return(&db.CSubstateDB{}, nil)
+	dst.EXPECT().SetSubstateEncoding("protobuf").Return(&db.SubstateDB{}, nil)
 	gomock.InOrder(
 		src.EXPECT().GetBlockSubstates(uint64(0)).Return(map[int]*substate.Substate{
 			0: input0,
 		}, nil),
-		src.EXPECT().GetBlockSubstates(uint64(1)).Return(nil, errors.New("error")),
+		src.EXPECT().GetBlockSubstates(uint64(1)).Return(nil, mockErr),
 		src.EXPECT().GetBlockSubstates(uint64(2)).Return(map[int]*substate.Substate{
 			0: input0,
 		}, nil),
@@ -262,21 +325,22 @@ func TestRLPtoProtobufCommand_ExecuteFail(t *testing.T) {
 
 	dst.EXPECT().PutSubstate(input0).Return(nil).Times(2)
 
-	err := command.Execute()
-	assert.Equal(t, errors.New("error"), err)
+	err := command.execute()
+	assert.Equal(t, mockErr, err)
 }
 
 func TestRLPtoProtobufCommand_ExecuteParallelFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	src := db.NewMockSubstateDB(ctrl)
-	dst := db.NewMockSubstateDB(ctrl)
+	src := db.NewMockISubstateDB(ctrl)
+	dst := db.NewMockISubstateDB(ctrl)
 
 	set := flag.NewFlagSet("test", 0)
 	_ = set.String(BlockSegmentFlag.Name, "0-2", "")
 	_ = set.String(WorkersFlag.Name, "4", "")
 	ctx := cli.NewContext(&cli.App{}, set, nil)
+	mockErr := errors.New("error")
 
-	command := RLPtoProtobufCommand{
+	command := rlpToProtobufCommand{
 		src: src,
 		dst: dst,
 		ctx: ctx,
@@ -293,24 +357,39 @@ func TestRLPtoProtobufCommand_ExecuteParallelFail(t *testing.T) {
 			Timestamp:  1,
 			BaseFee:    new(big.Int).SetUint64(1),
 		},
-		Message:     substate.NewMessage(1, true, new(big.Int).SetUint64(1), 1, types.Address{1}, new(types.Address), new(big.Int).SetUint64(1), []byte{1}, nil, types.AccessList{}, new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), make([]types.Hash, 0)),
+		Message: substate.NewMessage(
+			1,
+			true,
+			new(big.Int).SetUint64(1),
+			1,
+			types.Address{1},
+			new(types.Address),
+			new(big.Int).SetUint64(1),
+			[]byte{1},
+			nil,
+			types.AccessList{},
+			new(big.Int).SetUint64(1),
+			new(big.Int).SetUint64(1),
+			new(big.Int).SetUint64(1),
+			make([]types.Hash, 0),
+		),
 		Result:      substate.NewResult(1, types.Bloom{}, []*types.Log{}, types.Address{}, 1),
 		Block:       37_534_834,
 		Transaction: 1,
 	}
 
-	dst.EXPECT().SetSubstateEncoding("protobuf").Return(&db.CSubstateDB{}, nil)
+	dst.EXPECT().SetSubstateEncoding("protobuf").Return(&db.SubstateDB{}, nil)
 
 	src.EXPECT().GetBlockSubstates(uint64(0)).Return(map[int]*substate.Substate{
 		0: input0,
 	}, nil)
-	src.EXPECT().GetBlockSubstates(uint64(1)).Return(nil, errors.New("error"))
+	src.EXPECT().GetBlockSubstates(uint64(1)).Return(nil, mockErr)
 	src.EXPECT().GetBlockSubstates(uint64(2)).Return(map[int]*substate.Substate{
 		0: input0,
 	}, nil)
 
 	dst.EXPECT().PutSubstate(input0).Return(nil).Times(2)
 
-	err := command.Execute()
-	assert.Equal(t, errors.New("error"), err)
+	err := command.execute()
+	assert.Equal(t, mockErr, err)
 }

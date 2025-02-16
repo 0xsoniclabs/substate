@@ -1,9 +1,10 @@
 package protobuf
 
 import (
+	"math/big"
+
 	"github.com/0xsoniclabs/substate/types/hash"
 	"google.golang.org/protobuf/proto"
-	"math/big"
 
 	"github.com/0xsoniclabs/substate/types"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"

@@ -2,10 +2,11 @@ package protobuf
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/assert"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 	"math/big"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	"github.com/0xsoniclabs/substate/types"
 	"github.com/0xsoniclabs/substate/types/hash"
