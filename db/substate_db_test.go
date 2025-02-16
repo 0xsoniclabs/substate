@@ -102,7 +102,7 @@ func TestSubstateDB_GetSubstate(t *testing.T) {
 	}
 }
 
-func testSubstateDB_GetSubstate(db *substateDB, want substate.Substate) error {
+func testSubstateDB_GetSubstate(db *SubstateDB, want substate.Substate) error {
 	ss, err := db.GetSubstate(37_534_834, 1)
 	if err != nil {
 		return fmt.Errorf("get substate returned error; %v", err)
@@ -219,7 +219,7 @@ func TestSubstateDB_GetLastSubstate(t *testing.T) {
 
 }
 
-func createDbAndPutSubstate(dbPath string) (*substateDB, error) {
+func createDbAndPutSubstate(dbPath string) (*SubstateDB, error) {
 	db, err := newSubstateDB(dbPath, nil, nil, nil)
 	if err != nil {
 		return nil, fmt.Errorf("cannot open db; %v", err)
@@ -232,11 +232,11 @@ func createDbAndPutSubstate(dbPath string) (*substateDB, error) {
 	return db, nil
 }
 
-func addSubstate(db *substateDB, blk uint64) error {
+func addSubstate(db *SubstateDB, blk uint64) error {
 	return addCustomSubstate(db, blk, getTestSubstate("default"))
 }
 
-func addCustomSubstate(db *substateDB, blk uint64, ss *substate.Substate) error {
+func addCustomSubstate(db *SubstateDB, blk uint64, ss *substate.Substate) error {
 	s := *ss
 	s.Block = blk
 
