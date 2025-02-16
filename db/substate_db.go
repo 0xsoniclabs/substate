@@ -13,8 +13,8 @@ import (
 
 const SubstateDBPrefix = "1s" // SubstateDBPrefix + block (64-bit) + tx (64-bit) -> substateRLP
 
-// SubstateDB is a wrapper around CodeDB. It extends it with Has/Get/Put/DeleteSubstate functions.
-type SubstateDB interface {
+// ISubstateDB is a wrapper around CodeDB. It extends it with Has/Get/Put/DeleteSubstate functions.
+type ISubstateDB interface {
 	CodeDB
 
 	// HasSubstate returns true if the DB does contain Substate for given block and tx number.
@@ -49,35 +49,35 @@ type SubstateDB interface {
 	GetSubstateEncoding() string
 }
 
-// NewDefaultSubstateDB creates new instance of SubstateDB with default options.
-func NewDefaultSubstateDB(path string) (SubstateDB, error) {
+// NewDefaultSubstateDB creates new instance of ISubstateDB with default options.
+func NewDefaultSubstateDB(path string) (ISubstateDB, error) {
 	return newSubstateDB(path, nil, nil, nil)
 }
 
-// NewSubstateDB creates new instance of SubstateDB with customizable options.
+// NewSubstateDB creates new instance of ISubstateDB with customizable options.
 // Note: Any of three options is nillable. If that's the case a default value for the option is set.
-func NewSubstateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.ReadOptions) (SubstateDB, error) {
+func NewSubstateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.ReadOptions) (ISubstateDB, error) {
 	return newSubstateDB(path, o, wo, ro)
 }
 
-func MakeDefaultSubstateDB(db *leveldb.DB) SubstateDB {
+func MakeDefaultSubstateDB(db *leveldb.DB) ISubstateDB {
 	sdb := &substateDB{&codeDB{&baseDB{backend: db}}, nil}
 	sdb, _ = sdb.SetSubstateEncoding("default")
 	return sdb
 }
 
-func MakeDefaultSubstateDBFromBaseDB(db BaseDB) SubstateDB {
+func MakeDefaultSubstateDBFromBaseDB(db BaseDB) ISubstateDB {
 	sdb := &substateDB{&codeDB{&baseDB{backend: db.getBackend()}}, nil}
 	sdb, _ = sdb.SetSubstateEncoding("default")
 	return sdb
 }
 
-// NewReadOnlySubstateDB creates a new instance of read-only SubstateDB.
-func NewReadOnlySubstateDB(path string) (SubstateDB, error) {
+// NewReadOnlySubstateDB creates a new instance of read-only ISubstateDB.
+func NewReadOnlySubstateDB(path string) (ISubstateDB, error) {
 	return newSubstateDB(path, &opt.Options{ReadOnly: true}, nil, nil)
 }
 
-func MakeSubstateDB(db *leveldb.DB, wo *opt.WriteOptions, ro *opt.ReadOptions) SubstateDB {
+func MakeSubstateDB(db *leveldb.DB, wo *opt.WriteOptions, ro *opt.ReadOptions) ISubstateDB {
 	sdb := &substateDB{&codeDB{&baseDB{backend: db, wo: wo, ro: ro}}, nil}
 	sdb, _ = sdb.SetSubstateEncoding("default")
 	return sdb
