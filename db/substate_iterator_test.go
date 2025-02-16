@@ -42,15 +42,15 @@ func testSubstatorIterator_Value(db *SubstateDB, t *testing.T) {
 	tx := iter.Value()
 
 	if tx == nil {
-		t.Fatal("iterator returned nil")
+		t.Fatal("Iterator returned nil")
 	}
 
 	if tx.Block != 37_534_834 {
-		t.Fatalf("iterator returned transaction with different block number\ngot: %v\n want: %v", tx.Block, 37_534_834)
+		t.Fatalf("Iterator returned transaction with different block number\ngot: %v\n want: %v", tx.Block, 37_534_834)
 	}
 
 	if tx.Transaction != 1 {
-		t.Fatalf("iterator returned transaction with different transaction number\ngot: %v\n want: %v", tx.Transaction, 1)
+		t.Fatalf("Iterator returned transaction with different transaction number\ngot: %v\n want: %v", tx.Transaction, 1)
 	}
 
 }
@@ -124,14 +124,14 @@ func TestSubstateIterator_FromBlock(t *testing.T) {
 	ss2 := iter2.Value()
 
 	if ss2 == nil {
-		t.Fatal("iterator returned nil")
+		t.Fatal("Iterator returned nil")
 	}
 
 	if ss2.Block != 37_534_835 {
-		t.Fatalf("iterator returned transaction with different block number\ngot: %v\n want: %v", ss.Block, 37_534_835)
+		t.Fatalf("Iterator returned transaction with different block number\ngot: %v\n want: %v", ss.Block, 37_534_835)
 	}
 
 	if ss2.Transaction != 1 {
-		t.Fatalf("iterator returned transaction with different transaction number\ngot: %v\n want: %v", ss2.Transaction, 1)
+		t.Fatalf("Iterator returned transaction with different transaction number\ngot: %v\n want: %v", ss2.Transaction, 1)
 	}
 }

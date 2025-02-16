@@ -13,12 +13,12 @@ import (
 // value pairs. The error can be queried by calling the Error method. Calling
 // Release is still necessary.
 //
-// An iterator must be released after use, but it is not necessary to read an
-// iterator until exhaustion. An iterator is not safe for concurrent use, but it
+// An Iterator must be released after use, but it is not necessary to read an
+// Iterator until exhaustion. An Iterator is not safe for concurrent use, but it
 // is safe to use multiple iterators concurrently.
 type IIterator[T comparable] interface {
-	// Next moves the iterator to the next key/value pair. It returns whether the
-	// iterator is exhausted.
+	// Next moves the Iterator to the next key/value pair. It returns whether the
+	// Iterator is exhausted.
 	Next() bool
 
 	// Error returns any accumulated error. Exhausting all the key/value pairs
@@ -46,7 +46,7 @@ type rawEntry struct {
 	value []byte
 }
 
-type iterator[T comparable] struct {
+type Iterator[T comparable] struct {
 	err      error
 	iter     ldbiterator.Iterator
 	resultCh chan T
@@ -55,8 +55,8 @@ type iterator[T comparable] struct {
 	stopCh   chan any
 }
 
-func newIterator[T comparable](iter ldbiterator.Iterator) iterator[T] {
-	return iterator[T]{
+func newIterator[T comparable](iter ldbiterator.Iterator) Iterator[T] {
+	return Iterator[T]{
 		iter:     iter,
 		resultCh: make(chan T, 10),
 		wg:       new(sync.WaitGroup),
@@ -64,9 +64,9 @@ func newIterator[T comparable](iter ldbiterator.Iterator) iterator[T] {
 	}
 }
 
-// Next returns false if iterator is at its end. Otherwise, it returns true.
-// Note: False does not stop the iterator. Release() should be called.
-func (i *iterator[T]) Next() bool {
+// Next returns false if Iterator is at its end. Otherwise, it returns true.
+// Note: False does not stop the Iterator. Release() should be called.
+func (i *Iterator[T]) Next() bool {
 	if i.err != nil {
 		return false
 	}
@@ -76,17 +76,17 @@ func (i *iterator[T]) Next() bool {
 }
 
 // Error returns iterators error if any.
-func (i *iterator[T]) Error() error {
+func (i *Iterator[T]) Error() error {
 	return errors.Join(i.err, i.iter.Error())
 }
 
-// Value returns current value hold by the iterator.
-func (i *iterator[T]) Value() T {
+// Value returns current value hold by the Iterator.
+func (i *Iterator[T]) Value() T {
 	return i.cur
 }
 
-// Release the iterator and wait until all threads are closed gracefully.
-func (i *iterator[T]) Release() {
+// Release the Iterator and wait until all threads are closed gracefully.
+func (i *Iterator[T]) Release() {
 	close(i.stopCh)
 	i.wg.Wait()
 	i.iter.Release()

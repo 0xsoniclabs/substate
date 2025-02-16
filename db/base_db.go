@@ -36,7 +36,7 @@ type BaseDB interface {
 	// until a final write is called.
 	NewBatch() Batch
 
-	// NewIterator creates a binary-alphabetical iterator over a subset
+	// NewIterator creates a binary-alphabetical Iterator over a subset
 	// of database content with a particular key prefix, starting at a particular
 	// initial key (or after, if it does not exist).
 	//
@@ -146,7 +146,7 @@ func (db *baseDB) NewBatch() Batch {
 	return newBatch(db.backend)
 }
 
-// newIterator returns iterator which iterates over values depending on the prefix.
+// newIterator returns Iterator which iterates over values depending on the prefix.
 // Note: If prefix is nil, everything is iterated.
 func (db *baseDB) NewIterator(prefix []byte, start []byte) ldbiterator.Iterator {
 	r := util.BytesPrefix(prefix)

@@ -18,14 +18,14 @@ func newUpdateSetIterator(db *updateDB, start, end uint64) *updateSetIterator {
 	r.Start = append(r.Start, num...)
 
 	return &updateSetIterator{
-		iterator: newIterator[*updateset.UpdateSet](db.backend.NewIterator(r, db.ro)),
+		Iterator: newIterator[*updateset.UpdateSet](db.backend.NewIterator(r, db.ro)),
 		db:       db,
 		endBlock: end,
 	}
 }
 
 type updateSetIterator struct {
-	iterator[*updateset.UpdateSet]
+	Iterator[*updateset.UpdateSet]
 	db       *updateDB
 	endBlock uint64
 }
