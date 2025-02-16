@@ -40,7 +40,7 @@ type UpdateDB interface {
 	// DeleteUpdateSet deletes UpdateSet for given block. It returns an error if there is no UpdateSet on given block.
 	DeleteUpdateSet(block uint64) error
 
-	NewUpdateSetIterator(start, end uint64) Iterator[*updateset.UpdateSet]
+	NewUpdateSetIterator(start, end uint64) IIterator[*updateset.UpdateSet]
 
 	PutMetadata(interval, size uint64) error
 }
@@ -161,7 +161,7 @@ func (db *updateDB) DeleteUpdateSet(block uint64) error {
 	return db.Delete(key)
 }
 
-func (db *updateDB) NewUpdateSetIterator(start, end uint64) Iterator[*updateset.UpdateSet] {
+func (db *updateDB) NewUpdateSetIterator(start, end uint64) IIterator[*updateset.UpdateSet] {
 	iter := newUpdateSetIterator(db, start, end)
 
 	iter.start(0)

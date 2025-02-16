@@ -7,7 +7,7 @@ import (
 	ldbiterator "github.com/syndtr/goleveldb/leveldb/iterator"
 )
 
-// Iterator iterates over a database's key/value pairs in ascending key order.
+// IIterator iterates over a database's key/value pairs in ascending key order.
 //
 // When it encounters an error any seek will return false and will yield no key/
 // value pairs. The error can be queried by calling the Error method. Calling
@@ -16,7 +16,7 @@ import (
 // An iterator must be released after use, but it is not necessary to read an
 // iterator until exhaustion. An iterator is not safe for concurrent use, but it
 // is safe to use multiple iterators concurrently.
-type Iterator[T comparable] interface {
+type IIterator[T comparable] interface {
 	// Next moves the iterator to the next key/value pair. It returns whether the
 	// iterator is exhausted.
 	Next() bool

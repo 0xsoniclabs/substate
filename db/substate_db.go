@@ -32,7 +32,7 @@ type ISubstateDB interface {
 	// DeleteSubstate deletes Substate for given block and tx number.
 	DeleteSubstate(block uint64, tx int) error
 
-	NewSubstateIterator(start int, numWorkers int) Iterator[*substate.Substate]
+	NewSubstateIterator(start int, numWorkers int) IIterator[*substate.Substate]
 
 	NewSubstateTaskPool(name string, taskFunc SubstateTaskFunc, first, last uint64, ctx *cli.Context) *SubstateTaskPool
 
@@ -200,7 +200,7 @@ func (db *SubstateDB) DeleteSubstate(block uint64, tx int) error {
 }
 
 // NewSubstateIterator returns iterator which iterates over Substates.
-func (db *SubstateDB) NewSubstateIterator(start int, numWorkers int) Iterator[*substate.Substate] {
+func (db *SubstateDB) NewSubstateIterator(start int, numWorkers int) IIterator[*substate.Substate] {
 	blockTx := make([]byte, 8)
 	binary.BigEndian.PutUint64(blockTx, uint64(start))
 	iter := newSubstateIterator(db, blockTx)
