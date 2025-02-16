@@ -1,0 +1,17 @@
+linters-settings:
+  lll:
+    line-length: 120
+    tab-width: 1
+linters:
+  enable:
+    - lll
+    - gosec
+    - gocyclo
+    - goimports
+    - gofmt
+    - staticcheck
+issues:
+  exclude-rules:
+    - source: "^\\s*// "
+      linters:
+        - lll
