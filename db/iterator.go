@@ -13,12 +13,12 @@ import (
 // value pairs. The error can be queried by calling the Error method. Calling
 // Release is still necessary.
 //
-// An Iterator must be released after use, but it is not necessary to read an
-// Iterator until exhaustion. An Iterator is not safe for concurrent use, but it
+// An iterator must be released after use, but it is not necessary to read
+// until exhaustion. An iterator is not safe for concurrent use, but it
 // is safe to use multiple iterators concurrently.
 type IIterator[T comparable] interface {
-	// Next moves the Iterator to the next key/value pair. It returns whether the
-	// Iterator is exhausted.
+	// Next moves the iterator to the next key/value pair. It returns whether the
+	// iterator is exhausted.
 	Next() bool
 
 	// Error returns any accumulated error. Exhausting all the key/value pairs

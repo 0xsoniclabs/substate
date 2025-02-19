@@ -36,7 +36,7 @@ type BaseDB interface {
 	// until a final write is called.
 	NewBatch() Batch
 
-	// NewIterator creates a binary-alphabetical Iterator over a subset
+	// NewIterator creates a binary-alphabetical iterates over a subset
 	// of database content with a particular key prefix, starting at a particular
 	// initial key (or after, if it does not exist).
 	//
