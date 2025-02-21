@@ -26,7 +26,12 @@ func getTestSubstate(encoding string) *substate.Substate {
 			BaseFee:    new(big.Int).SetUint64(1),
 			Random:     &types.Hash{1},
 		},
-		Message: substate.NewMessage(1, true, new(big.Int).SetUint64(1), 1, types.Address{1},
+		Message: substate.NewMessage(
+			1,
+			true,
+			new(big.Int).SetUint64(1),
+			1,
+			types.Address{1},
 			new(types.Address), new(big.Int).SetUint64(1), []byte{1}, nil, &txType,
 			types.AccessList{{types.Address{1}, []types.Hash{{1}, {2}}}}, new(big.Int).SetUint64(1),
 			new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), make([]types.Hash, 0)),
