@@ -3,7 +3,6 @@ package db
 import (
 	"encoding/binary"
 	"fmt"
-
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
@@ -49,37 +48,40 @@ type ISubstateDB interface {
 
 	// GetSubstateEncoding returns the currently configured encoding
 	GetSubstateEncoding() string
+
+	// decodeSubstate defensively defaults to "default" if nil
+	decodeToSubstate(bytes []byte, block uint64, tx int) (*substate.Substate, error)
 }
 
 // NewDefaultSubstateDB creates new instance of ISubstateDB with default options.
-func NewDefaultSubstateDB(path string) (ISubstateDB, error) {
+func NewDefaultSubstateDB(path string) (*SubstateDB, error) {
 	return newSubstateDB(path, nil, nil, nil)
 }
 
 // NewSubstateDB creates new instance of ISubstateDB with customizable options.
 // Note: Any of three options is nillable. If that's the case a default value for the option is set.
-func NewSubstateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.ReadOptions) (ISubstateDB, error) {
+func NewSubstateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.ReadOptions) (*SubstateDB, error) {
 	return newSubstateDB(path, o, wo, ro)
 }
 
-func MakeDefaultSubstateDB(db *leveldb.DB) ISubstateDB {
+func MakeDefaultSubstateDB(db *leveldb.DB) *SubstateDB {
 	sdb := &SubstateDB{&codeDB{&baseDB{backend: db}}, nil}
 	sdb, _ = sdb.SetSubstateEncoding("default")
 	return sdb
 }
 
-func MakeDefaultSubstateDBFromBaseDB(db BaseDB) ISubstateDB {
+func MakeDefaultSubstateDBFromBaseDB(db BaseDB) *SubstateDB {
 	sdb := &SubstateDB{&codeDB{&baseDB{backend: db.getBackend()}}, nil}
 	sdb, _ = sdb.SetSubstateEncoding("default")
 	return sdb
 }
 
-// NewReadOnlySubstateDB creates a new instance of read-only ISubstateDB.
-func NewReadOnlySubstateDB(path string) (ISubstateDB, error) {
+// NewReadOnlySubstateDB creates a new instance of read-only SubstateDB.
+func NewReadOnlySubstateDB(path string) (*SubstateDB, error) {
 	return newSubstateDB(path, &opt.Options{ReadOnly: true}, nil, nil)
 }
 
-func MakeSubstateDB(db *leveldb.DB, wo *opt.WriteOptions, ro *opt.ReadOptions) ISubstateDB {
+func MakeSubstateDB(db *leveldb.DB, wo *opt.WriteOptions, ro *opt.ReadOptions) *SubstateDB {
 	sdb := &SubstateDB{&codeDB{&baseDB{backend: db, wo: wo, ro: ro}}, nil}
 	sdb, _ = sdb.SetSubstateEncoding("default")
 	return sdb

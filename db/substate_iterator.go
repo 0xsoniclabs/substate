@@ -3,23 +3,19 @@ package db
 import (
 	"fmt"
 	"github.com/0xsoniclabs/substate/substate"
-	"github.com/syndtr/goleveldb/leveldb/util"
 	"sync/atomic"
 )
 
-func newSubstateIterator(db *SubstateDB, start []byte) *substateIterator {
-	r := util.BytesPrefix([]byte(SubstateDBPrefix))
-	r.Start = append(r.Start, start...)
-
+func newSubstateIterator(db ISubstateDB, start []byte) *substateIterator {
 	return &substateIterator{
-		genericIterator: newIterator[*substate.Substate](db.backend.NewIterator(r, db.ro)),
+		genericIterator: newIterator[*substate.Substate](db.NewIterator([]byte(SubstateDBPrefix), start)),
 		db:              db,
 	}
 }
 
 type substateIterator struct {
 	genericIterator[*substate.Substate]
-	db *SubstateDB
+	db ISubstateDB
 }
 
 func (i *substateIterator) decode(data rawEntry) (*substate.Substate, error) {
