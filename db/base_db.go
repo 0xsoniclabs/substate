@@ -146,7 +146,7 @@ func (db *baseDB) NewBatch() Batch {
 	return newBatch(db.backend)
 }
 
-// newIterator returns Iterator which iterates over values depending on the prefix.
+// newIterator returns iterator which iterates over values depending on the prefix.
 // Note: If prefix is nil, everything is iterated.
 func (db *baseDB) NewIterator(prefix []byte, start []byte) ldbiterator.Iterator {
 	r := util.BytesPrefix(prefix)

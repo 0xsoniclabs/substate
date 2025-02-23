@@ -18,14 +18,14 @@ func newUpdateSetIterator(db *updateDB, start, end uint64) *updateSetIterator {
 	r.Start = append(r.Start, num...)
 
 	return &updateSetIterator{
-		Iterator: newIterator[*updateset.UpdateSet](db.backend.NewIterator(r, db.ro)),
-		db:       db,
-		endBlock: end,
+		genericIterator: newIterator[*updateset.UpdateSet](db.backend.NewIterator(r, db.ro)),
+		db:              db,
+		endBlock:        end,
 	}
 }
 
 type updateSetIterator struct {
-	Iterator[*updateset.UpdateSet]
+	genericIterator[*updateset.UpdateSet]
 	db       *updateDB
 	endBlock uint64
 }

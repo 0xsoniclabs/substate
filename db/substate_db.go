@@ -199,7 +199,7 @@ func (db *SubstateDB) DeleteSubstate(block uint64, tx int) error {
 	return db.Delete(SubstateDBKey(block, tx))
 }
 
-// NewSubstateIterator returns Iterator which iterates over Substates.
+// NewSubstateIterator returns iterator which iterates over Substates.
 func (db *SubstateDB) NewSubstateIterator(start int, numWorkers int) IIterator[*substate.Substate] {
 	blockTx := make([]byte, 8)
 	binary.BigEndian.PutUint64(blockTx, uint64(start))

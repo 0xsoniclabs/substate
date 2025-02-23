@@ -46,7 +46,7 @@ type rawEntry struct {
 	value []byte
 }
 
-type Iterator[T comparable] struct {
+type genericIterator[T comparable] struct {
 	err      error
 	iter     ldbiterator.Iterator
 	resultCh chan T
@@ -55,8 +55,8 @@ type Iterator[T comparable] struct {
 	stopCh   chan any
 }
 
-func newIterator[T comparable](iter ldbiterator.Iterator) Iterator[T] {
-	return Iterator[T]{
+func newIterator[T comparable](iter ldbiterator.Iterator) genericIterator[T] {
+	return genericIterator[T]{
 		iter:     iter,
 		resultCh: make(chan T, 10),
 		wg:       new(sync.WaitGroup),
@@ -64,9 +64,9 @@ func newIterator[T comparable](iter ldbiterator.Iterator) Iterator[T] {
 	}
 }
 
-// Next returns false if Iterator is at its end. Otherwise, it returns true.
-// Note: False does not stop the Iterator. Release() should be called.
-func (i *Iterator[T]) Next() bool {
+// Next returns false if genericIterator is at its end. Otherwise, it returns true.
+// Note: False does not stop the genericIterator. Release() should be called.
+func (i *genericIterator[T]) Next() bool {
 	if i.err != nil {
 		return false
 	}
@@ -76,17 +76,17 @@ func (i *Iterator[T]) Next() bool {
 }
 
 // Error returns iterators error if any.
-func (i *Iterator[T]) Error() error {
+func (i *genericIterator[T]) Error() error {
 	return errors.Join(i.err, i.iter.Error())
 }
 
-// Value returns current value hold by the Iterator.
-func (i *Iterator[T]) Value() T {
+// Value returns current value hold by the genericIterator.
+func (i *genericIterator[T]) Value() T {
 	return i.cur
 }
 
-// Release the Iterator and wait until all threads are closed gracefully.
-func (i *Iterator[T]) Release() {
+// Release the genericIterator and wait until all threads are closed gracefully.
+func (i *genericIterator[T]) Release() {
 	close(i.stopCh)
 	i.wg.Wait()
 	i.iter.Release()

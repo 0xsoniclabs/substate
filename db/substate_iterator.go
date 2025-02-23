@@ -12,13 +12,13 @@ func newSubstateIterator(db *SubstateDB, start []byte) *substateIterator {
 	r.Start = append(r.Start, start...)
 
 	return &substateIterator{
-		Iterator: newIterator[*substate.Substate](db.backend.NewIterator(r, db.ro)),
-		db:       db,
+		genericIterator: newIterator[*substate.Substate](db.backend.NewIterator(r, db.ro)),
+		db:              db,
 	}
 }
 
 type substateIterator struct {
-	Iterator[*substate.Substate]
+	genericIterator[*substate.Substate]
 	db *SubstateDB
 }
 
