@@ -14,6 +14,8 @@ import (
 const SubstateDBPrefix = "1s" // SubstateDBPrefix + block (64-bit) + tx (64-bit) -> substateRLP
 
 // ISubstateDB is a wrapper around CodeDB. It extends it with Has/Get/Put/DeleteSubstate functions.
+//
+//go:generate mockgen -source=substate_db.go -destination=./substate_db_mock.go -package=db
 type ISubstateDB interface {
 	CodeDB
 
