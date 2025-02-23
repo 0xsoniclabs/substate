@@ -1,12 +1,15 @@
 module github.com/0xsoniclabs/substate
 
-go 1.21
+go 1.22
+
+toolchain go1.22.11
 
 require (
 	github.com/golang/protobuf v1.5.4
 	github.com/stretchr/testify v1.9.0
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 	github.com/urfave/cli/v2 v2.25.7
+	go.uber.org/mock v0.5.0
 	golang.org/x/crypto v0.22.0
 	google.golang.org/protobuf v1.34.2
 )
