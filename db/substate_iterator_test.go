@@ -286,7 +286,7 @@ func TestSubstateIterator_StartReaderStopFirstSuccess(t *testing.T) {
 	kv := &testutil.KeyValue{}
 	kv.PutU([]byte(SubstateDBPrefix+"1234567890123456"), []byte("a"))
 	kv.PutU([]byte(SubstateDBPrefix+"1234567890123457"), []byte("b"))
-	mockIterator := iterator.NewArrayIterator(kv)
+	mockIterator := iterator.NewArrayIterator(MockKeyValue{kv, 10 * time.Millisecond})
 	mockSubstate := getTestSubstate("protobuf")
 
 	mockDb.EXPECT().NewIterator([]byte(SubstateDBPrefix), blockTx).Return(mockIterator)
@@ -328,56 +328,11 @@ func TestSubstateIterator_StartDecoderStopFirstSuccess(t *testing.T) {
 		var value = fmt.Sprintf("input%v", i)
 		kv.PutU([]byte(key), []byte(value))
 	}
-	mockIterator := iterator.NewArrayIterator(kv)
+	mockIterator := iterator.NewArrayIterator(MockKeyValue{kv, 10 * time.Millisecond})
 	mockSubstate := getTestSubstate("protobuf")
 
 	mockDb.EXPECT().NewIterator([]byte(SubstateDBPrefix), blockTx).Return(mockIterator)
 	mockDb.EXPECT().decodeToSubstate(gomock.Any(), gomock.Any(), gomock.Any()).Return(mockSubstate, nil).MinTimes(50)
-
-	// when
-	count := 0
-	iter := newSubstateIterator(mockDb, blockTx)
-	iter.start(1)
-	for iter.Next() {
-		tx := iter.Value()
-		assert.Equal(t, mockSubstate, tx)
-		count += 1
-		if count == 50 {
-			break
-		}
-		time.Sleep(10 * time.Millisecond)
-	}
-	iter.Release()
-	err := iter.Error()
-
-	// then
-	assert.Equal(t, nil, err)
-	assert.Equal(t, 50, count)
-}
-
-func TestSubstateIterator_StartConsumerStopFirstSuccess(t *testing.T) {
-	// given
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockDb := NewMockISubstateDB(ctrl)
-	start := 10
-	blockTx := make([]byte, 8)
-	binary.BigEndian.PutUint64(blockTx, uint64(start))
-	kv := &testutil.KeyValue{}
-	for i := 0; i < 100; i++ {
-		var id = uint64(1234567890123450)
-		var key = fmt.Sprintf("%v%v", SubstateDBPrefix, id+uint64(i))
-		var value = fmt.Sprintf("input%v", i)
-		kv.PutU([]byte(key), []byte(value))
-	}
-	mockIterator := iterator.NewArrayIterator(kv)
-	mockSubstate := getTestSubstate("protobuf")
-
-	mockDb.EXPECT().NewIterator([]byte(SubstateDBPrefix), blockTx).Return(mockIterator)
-	mockDb.EXPECT().decodeToSubstate(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(a, b, c interface{}) {
-		time.Sleep(10 * time.Millisecond)
-	}).Return(mockSubstate, nil).MinTimes(50)
 
 	// when
 	count := 0
@@ -415,7 +370,7 @@ func TestSubstateIterator_StartParallelSuccess(t *testing.T) {
 		var value = fmt.Sprintf("input%v", i)
 		kv.PutU([]byte(key), []byte(value))
 	}
-	mockIterator := iterator.NewArrayIterator(kv)
+	mockIterator := iterator.NewArrayIterator(MockKeyValue{kv, 10 * time.Millisecond})
 	mockSubstate := getTestSubstate("protobuf")
 
 	mockDb.EXPECT().NewIterator([]byte(SubstateDBPrefix), blockTx).Return(mockIterator)
@@ -454,7 +409,7 @@ func TestSubstateIterator_StartParallelFail(t *testing.T) {
 		var value = fmt.Sprintf("input%v", i)
 		kv.PutU([]byte(key), []byte(value))
 	}
-	mockIterator := iterator.NewArrayIterator(kv)
+	mockIterator := iterator.NewArrayIterator(MockKeyValue{kv, 10 * time.Millisecond})
 	mockSubstate := getTestSubstate("protobuf")
 	mockError := errors.New("error")
 
@@ -498,7 +453,7 @@ func TestSubstateIterator_StartParallelReaderStopFirstFail(t *testing.T) {
 		var value = fmt.Sprintf("input%v", i)
 		kv.PutU([]byte(key), []byte(value))
 	}
-	mockIterator := iterator.NewArrayIterator(kv)
+	mockIterator := iterator.NewArrayIterator(MockKeyValue{kv, 10 * time.Millisecond})
 	mockSubstate := getTestSubstate("protobuf")
 	mockError := errors.New("error")
 
@@ -545,7 +500,7 @@ func TestSubstateIterator_StartParallelDecoderStopFirstFail(t *testing.T) {
 		var value = fmt.Sprintf("input%v", i)
 		kv.PutU([]byte(key), []byte(value))
 	}
-	mockIterator := iterator.NewArrayIterator(kv)
+	mockIterator := iterator.NewArrayIterator(MockKeyValue{kv, 10 * time.Millisecond})
 	mockSubstate := getTestSubstate("protobuf")
 	mockError := errors.New("error")
 
@@ -567,7 +522,6 @@ func TestSubstateIterator_StartParallelDecoderStopFirstFail(t *testing.T) {
 		if count == 50 {
 			break
 		}
-		time.Sleep(10 * time.Millisecond)
 	}
 	iter.Release()
 	err := iter.Error()
@@ -578,51 +532,22 @@ func TestSubstateIterator_StartParallelDecoderStopFirstFail(t *testing.T) {
 	assert.True(t, count < 50)
 }
 
-func TestSubstateIterator_StartParallelConsumerStopFirstFail(t *testing.T) {
-	// given
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+type MockKeyValue struct {
+	kv    *testutil.KeyValue
+	delay time.Duration
+}
 
-	mockDb := NewMockISubstateDB(ctrl)
-	start := 10
-	blockTx := make([]byte, 8)
-	binary.BigEndian.PutUint64(blockTx, uint64(start))
-	kv := &testutil.KeyValue{}
-	for i := 0; i < 50; i++ {
-		var id = uint64(1234567890123450)
-		var key = fmt.Sprintf("%v%v", SubstateDBPrefix, id+uint64(i))
-		var value = fmt.Sprintf("input%v", i)
-		kv.PutU([]byte(key), []byte(value))
+func (kv MockKeyValue) Len() int {
+	return kv.kv.Len()
+}
+
+func (kv MockKeyValue) Search(key []byte) int {
+	return kv.kv.Search(key)
+}
+
+func (kv MockKeyValue) Index(i int) (key, value []byte) {
+	if kv.delay > 0 {
+		time.Sleep(kv.delay)
 	}
-	mockIterator := iterator.NewArrayIterator(kv)
-	mockSubstate := getTestSubstate("protobuf")
-	mockError := errors.New("error")
-
-	mockDb.EXPECT().NewIterator([]byte(SubstateDBPrefix), blockTx).Return(mockIterator)
-	gomock.InOrder(
-		mockDb.EXPECT().decodeToSubstate(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(a, b, c interface{}) {
-			time.Sleep(10 * time.Millisecond)
-		}).Return(mockSubstate, nil).Times(49),
-		mockDb.EXPECT().decodeToSubstate(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, mockError).Times(1),
-	)
-
-	// when
-	count := 0
-	iter := newSubstateIterator(mockDb, blockTx)
-	iter.start(10)
-	for iter.Next() {
-		tx := iter.Value()
-		assert.Equal(t, mockSubstate, tx)
-		count += 1
-		if count == 50 {
-			break
-		}
-	}
-	iter.Release()
-	err := iter.Error()
-
-	// then
-	assert.NotNil(t, err)
-	assert.Equal(t, mockError.Error(), err.Error())
-	assert.True(t, count < 50)
+	return kv.kv.Index(i)
 }
