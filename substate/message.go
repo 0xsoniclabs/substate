@@ -11,6 +11,15 @@ import (
 	"github.com/0xsoniclabs/substate/types/hash"
 )
 
+// Transaction types.
+const (
+	LegacyTxType     = 0x00
+	AccessListTxType = 0x01
+	DynamicFeeTxType = 0x02
+	BlobTxType       = 0x03
+	SetCodeTxType    = 0x04
+)
+
 type Message struct {
 	Nonce      uint64
 	CheckNonce bool // inversion of IsFake
@@ -48,6 +57,7 @@ func NewMessage(
 	value *big.Int,
 	data []byte,
 	dataHash *types.Hash,
+	ProtobufTxType *int32,
 	accessList types.AccessList,
 	gasFeeCap *big.Int,
 	gasTipCap *big.Int,
@@ -55,20 +65,21 @@ func NewMessage(
 	blobHashes []types.Hash,
 ) *Message {
 	return &Message{
-		Nonce:         nonce,
-		CheckNonce:    checkNonce,
-		GasPrice:      gasPrice,
-		Gas:           gas,
-		From:          from,
-		To:            to,
-		Value:         value,
-		Data:          data,
-		dataHash:      dataHash,
-		AccessList:    accessList,
-		GasFeeCap:     gasFeeCap,
-		GasTipCap:     gasTipCap,
-		BlobGasFeeCap: blobGasFeeCap,
-		BlobHashes:    blobHashes,
+		Nonce:          nonce,
+		CheckNonce:     checkNonce,
+		GasPrice:       gasPrice,
+		Gas:            gas,
+		From:           from,
+		To:             to,
+		Value:          value,
+		Data:           data,
+		dataHash:       dataHash,
+		ProtobufTxType: ProtobufTxType,
+		AccessList:     accessList,
+		GasFeeCap:      gasFeeCap,
+		GasTipCap:      gasTipCap,
+		BlobGasFeeCap:  blobGasFeeCap,
+		BlobHashes:     blobHashes,
 	}
 }
 

@@ -78,6 +78,8 @@ message Substate {
             TXTYPE_DYNAMICFEE = 2;
             // Cancun hard fork introduced optional tx blob
             TXTYPE_BLOB = 3;
+            // eip-7702 introduced setcode transaction type
+            TXTYPE_SETCODE = 4;
         }
         required TxType tx_type = 9;
 

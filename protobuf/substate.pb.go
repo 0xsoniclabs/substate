@@ -31,6 +31,8 @@ const (
 	Substate_TxMessage_TXTYPE_DYNAMICFEE Substate_TxMessage_TxType = 2
 	// Cancun hard fork introduced optional tx blob
 	Substate_TxMessage_TXTYPE_BLOB Substate_TxMessage_TxType = 3
+	// eip-7702 introduced setcode transaction type
+	Substate_TxMessage_TXTYPE_SETCODE Substate_TxMessage_TxType = 4
 )
 
 // Enum value maps for Substate_TxMessage_TxType.
