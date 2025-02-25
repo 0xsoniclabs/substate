@@ -3,7 +3,6 @@ package db
 import (
 	"fmt"
 	"github.com/0xsoniclabs/substate/substate"
-	"sync/atomic"
 )
 
 func newSubstateIterator(db ISubstateDB, start []byte) *substateIterator {
@@ -71,20 +70,14 @@ func (i *substateIterator) start(numWorkers int) {
 	}()
 
 	// Start raw data => parsed transaction stage (parallel)
-	var numWorkerRunning atomic.Int32
 	for w := 0; w < numWorkers; w++ {
 		i.wg.Add(1)
 		id := w
-		numWorkerRunning.Add(1)
 
 		go func() {
 			defer func() {
 				close(resultChs[id])
 				i.wg.Done()
-				numWorkerRunning.Add(-1)
-				if numWorkerRunning.Load() == 0 {
-					close(errCh)
-				}
 			}()
 			for {
 				select {

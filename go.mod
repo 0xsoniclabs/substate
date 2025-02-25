@@ -6,7 +6,6 @@ toolchain go1.22.12
 
 require (
 	github.com/golang/protobuf v1.5.4
-	github.com/onsi/gomega v1.36.2
 	github.com/stretchr/testify v1.9.0
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 	github.com/urfave/cli/v2 v2.25.7
@@ -23,6 +22,7 @@ require (
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/nxadm/tail v1.4.4 // indirect
 	github.com/onsi/ginkgo v1.14.0 // indirect
+	github.com/onsi/gomega v1.36.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
