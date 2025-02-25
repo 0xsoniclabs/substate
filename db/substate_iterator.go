@@ -62,6 +62,8 @@ func (i *substateIterator) start(numWorkers int) {
 			select {
 			case <-i.stopCh:
 				return
+			case <-errCh:
+				return
 			case rawDataChs[step] <- res: // fall-through
 			}
 			step = (step + 1) % numWorkers
@@ -94,6 +96,7 @@ func (i *substateIterator) start(numWorkers int) {
 					}
 					transaction, err := i.decode(raw)
 					if err != nil {
+						i.err = err
 						errCh <- err
 						return
 					}
@@ -120,7 +123,6 @@ func (i *substateIterator) start(numWorkers int) {
 		for openProducers := numWorkers; openProducers > 0; {
 			next, ok := <-resultChs[step%numWorkers]
 			if !ok {
-				i.err = <-errCh
 				return
 			}
 			if next != nil {
