@@ -142,7 +142,7 @@ func (msg *Substate_TxMessage) decode(lookup getCodeFunc) (*substate.Message, er
 	var accessList types.AccessList = []types.AccessTuple{}
 	switch txType {
 	case Substate_TxMessage_TXTYPE_SETCODE:
-		panic("setcode tx type is not supported")
+		return nil, fmt.Errorf("setcode tx type is not supported")
 	case Substate_TxMessage_TXTYPE_ACCESSLIST,
 		Substate_TxMessage_TXTYPE_DYNAMICFEE,
 		Substate_TxMessage_TXTYPE_BLOB:
@@ -169,7 +169,7 @@ func (msg *Substate_TxMessage) decode(lookup getCodeFunc) (*substate.Message, er
 	var gasTipCap *big.Int = BytesToBigInt(msg.GetGasPrice())
 	switch txType {
 	case Substate_TxMessage_TXTYPE_SETCODE:
-		panic("setcode tx type is not supported")
+		return nil, fmt.Errorf("setcode tx type is not supported")
 	case Substate_TxMessage_TXTYPE_DYNAMICFEE,
 		Substate_TxMessage_TXTYPE_BLOB:
 
@@ -181,7 +181,7 @@ func (msg *Substate_TxMessage) decode(lookup getCodeFunc) (*substate.Message, er
 	var blobHashes []types.Hash = nil
 	switch txType {
 	case Substate_TxMessage_TXTYPE_SETCODE:
-		panic("setcode tx type is not supported")
+		return nil, fmt.Errorf("setcode tx type is not supported")
 	case Substate_TxMessage_TXTYPE_BLOB:
 		msgBlobHashes := msg.GetBlobHashes()
 		if msgBlobHashes == nil {
@@ -197,7 +197,7 @@ func (msg *Substate_TxMessage) decode(lookup getCodeFunc) (*substate.Message, er
 	var txTypeInt int32
 	switch x := *msg.TxType; x {
 	case Substate_TxMessage_TXTYPE_SETCODE:
-		panic("setcode tx type is not supported")
+		return nil, fmt.Errorf("setcode tx type is not supported")
 	case Substate_TxMessage_TXTYPE_LEGACY:
 		txTypeInt = substate.LegacyTxType
 	case Substate_TxMessage_TXTYPE_ACCESSLIST:
@@ -207,7 +207,7 @@ func (msg *Substate_TxMessage) decode(lookup getCodeFunc) (*substate.Message, er
 	case Substate_TxMessage_TXTYPE_BLOB:
 		txTypeInt = substate.BlobTxType
 	default:
-		panic(fmt.Errorf("tx type %v is not supported", x))
+		return nil, fmt.Errorf("unknown tx type: %d", x)
 	}
 
 	return &substate.Message{
