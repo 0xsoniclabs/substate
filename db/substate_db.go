@@ -45,7 +45,7 @@ type ISubstateDB interface {
 	GetLastSubstate() (*substate.Substate, error)
 
 	// SetSubstateEncoding sets the decoder func to the provided encoding
-	SetSubstateEncoding(encoding string) (*substateDB, error)
+	SetSubstateEncoding(encoding string) (*SubstateDB, error)
 
 	// GetSubstateEncoding returns the currently configured encoding
 	GetSubstateEncoding() string
@@ -63,13 +63,13 @@ func NewSubstateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.Re
 }
 
 func MakeDefaultSubstateDB(db *leveldb.DB) ISubstateDB {
-	sdb := &substateDB{&codeDB{&baseDB{backend: db}}, nil}
+	sdb := &SubstateDB{&codeDB{&baseDB{backend: db}}, nil}
 	sdb, _ = sdb.SetSubstateEncoding("default")
 	return sdb
 }
 
 func MakeDefaultSubstateDBFromBaseDB(db BaseDB) ISubstateDB {
-	sdb := &substateDB{&codeDB{&baseDB{backend: db.getBackend()}}, nil}
+	sdb := &SubstateDB{&codeDB{&baseDB{backend: db.getBackend()}}, nil}
 	sdb, _ = sdb.SetSubstateEncoding("default")
 	return sdb
 }
@@ -80,28 +80,28 @@ func NewReadOnlySubstateDB(path string) (ISubstateDB, error) {
 }
 
 func MakeSubstateDB(db *leveldb.DB, wo *opt.WriteOptions, ro *opt.ReadOptions) ISubstateDB {
-	sdb := &substateDB{&codeDB{&baseDB{backend: db, wo: wo, ro: ro}}, nil}
+	sdb := &SubstateDB{&codeDB{&baseDB{backend: db, wo: wo, ro: ro}}, nil}
 	sdb, _ = sdb.SetSubstateEncoding("default")
 	return sdb
 }
 
-func newSubstateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.ReadOptions) (*substateDB, error) {
+func newSubstateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.ReadOptions) (*SubstateDB, error) {
 	base, err := newCodeDB(path, o, wo, ro)
 	if err != nil {
 		return nil, err
 	}
 
-	sdb := &substateDB{base, nil}
+	sdb := &SubstateDB{base, nil}
 	sdb, _ = sdb.SetSubstateEncoding("default")
 	return sdb, nil
 }
 
-type substateDB struct {
+type SubstateDB struct {
 	*codeDB
 	encoding *substateEncoding
 }
 
-func (db *substateDB) GetFirstSubstate() *substate.Substate {
+func (db *SubstateDB) GetFirstSubstate() *substate.Substate {
 	iter := db.NewSubstateIterator(0, 1)
 
 	defer iter.Release()
@@ -113,12 +113,12 @@ func (db *substateDB) GetFirstSubstate() *substate.Substate {
 	return nil
 }
 
-func (db *substateDB) HasSubstate(block uint64, tx int) (bool, error) {
+func (db *SubstateDB) HasSubstate(block uint64, tx int) (bool, error) {
 	return db.Has(SubstateDBKey(block, tx))
 }
 
 // GetSubstate returns substate for given block and tx number if exists within DB.
-func (db *substateDB) GetSubstate(block uint64, tx int) (*substate.Substate, error) {
+func (db *SubstateDB) GetSubstate(block uint64, tx int) (*substate.Substate, error) {
 	val, err := db.Get(SubstateDBKey(block, tx))
 	if err != nil {
 		return nil, fmt.Errorf("cannot get substate block: %v, tx: %v from db; %w", block, tx, err)
@@ -128,7 +128,7 @@ func (db *substateDB) GetSubstate(block uint64, tx int) (*substate.Substate, err
 }
 
 // GetBlockSubstates returns substates for given block if exists within DB.
-func (db *substateDB) GetBlockSubstates(block uint64) (map[int]*substate.Substate, error) {
+func (db *SubstateDB) GetBlockSubstates(block uint64) (map[int]*substate.Substate, error) {
 	var err error
 
 	txSubstate := make(map[int]*substate.Substate)
@@ -165,7 +165,7 @@ func (db *substateDB) GetBlockSubstates(block uint64) (map[int]*substate.Substat
 	return txSubstate, nil
 }
 
-func (db *substateDB) PutSubstate(ss *substate.Substate) error {
+func (db *SubstateDB) PutSubstate(ss *substate.Substate) error {
 	for i, account := range ss.InputSubstate {
 		err := db.PutCode(account.Code)
 		if err != nil {
@@ -197,12 +197,12 @@ func (db *substateDB) PutSubstate(ss *substate.Substate) error {
 	return db.Put(key, value)
 }
 
-func (db *substateDB) DeleteSubstate(block uint64, tx int) error {
+func (db *SubstateDB) DeleteSubstate(block uint64, tx int) error {
 	return db.Delete(SubstateDBKey(block, tx))
 }
 
 // NewSubstateIterator returns iterator which iterates over Substates.
-func (db *substateDB) NewSubstateIterator(start int, numWorkers int) IIterator[*substate.Substate] {
+func (db *SubstateDB) NewSubstateIterator(start int, numWorkers int) IIterator[*substate.Substate] {
 	blockTx := make([]byte, 8)
 	binary.BigEndian.PutUint64(blockTx, uint64(start))
 	iter := newSubstateIterator(db, blockTx)
@@ -212,7 +212,7 @@ func (db *substateDB) NewSubstateIterator(start int, numWorkers int) IIterator[*
 	return iter
 }
 
-func (db *substateDB) NewSubstateTaskPool(name string, taskFunc SubstateTaskFunc, first, last uint64, ctx *cli.Context) *SubstateTaskPool {
+func (db *SubstateDB) NewSubstateTaskPool(name string, taskFunc SubstateTaskFunc, first, last uint64, ctx *cli.Context) *SubstateTaskPool {
 	return &SubstateTaskPool{
 		Name:     name,
 		TaskFunc: taskFunc,
@@ -232,7 +232,7 @@ func (db *substateDB) NewSubstateTaskPool(name string, taskFunc SubstateTaskFunc
 }
 
 // getLongestEncodedKeyZeroPrefixLength returns longest index of biggest block number to be search for in its search
-func (db *substateDB) getLongestEncodedKeyZeroPrefixLength() (byte, error) {
+func (db *SubstateDB) getLongestEncodedKeyZeroPrefixLength() (byte, error) {
 	var i byte
 	for i = 0; i < 8; i++ {
 		startingIndex := make([]byte, 8)
@@ -246,7 +246,7 @@ func (db *substateDB) getLongestEncodedKeyZeroPrefixLength() (byte, error) {
 }
 
 // getLastBlock returns block number of last substate
-func (db *substateDB) getLastBlock() (uint64, error) {
+func (db *SubstateDB) getLastBlock() (uint64, error) {
 	zeroBytes, err := db.getLongestEncodedKeyZeroPrefixLength()
 	if err != nil {
 		return 0, err
@@ -283,7 +283,7 @@ func (db *substateDB) getLastBlock() (uint64, error) {
 	}
 }
 
-func (db *substateDB) GetLastSubstate() (*substate.Substate, error) {
+func (db *SubstateDB) GetLastSubstate() (*substate.Substate, error) {
 	block, err := db.getLastBlock()
 	if err != nil {
 		return nil, err

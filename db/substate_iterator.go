@@ -7,7 +7,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
-func newSubstateIterator(db *substateDB, start []byte) *substateIterator {
+func newSubstateIterator(db *SubstateDB, start []byte) *substateIterator {
 	r := util.BytesPrefix([]byte(SubstateDBPrefix))
 	r.Start = append(r.Start, start...)
 
@@ -19,7 +19,7 @@ func newSubstateIterator(db *substateDB, start []byte) *substateIterator {
 
 type substateIterator struct {
 	genericIterator[*substate.Substate]
-	db *substateDB
+	db *SubstateDB
 }
 
 func (i *substateIterator) decode(data rawEntry) (*substate.Substate, error) {
