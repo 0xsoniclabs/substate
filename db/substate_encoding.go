@@ -11,13 +11,13 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-// SetSubstateEncoding sets the runtime encoding/decoding behavior of SubstateDB
+// SetSubstateEncoding sets the runtime encoding/decoding behavior of substateDB
 // intended usage:
 //
-//	db := &SubstateDB{..} // default to rlp
+//	db := &substateDB{..} // default to rlp
 //	     db, err := db.SetSubstateEncoding(<schema>) // set encoding
 //	     db.GetSubstateDecoder() // returns configured encoding
-func (db *SubstateDB) SetSubstateEncoding(schema string) (*SubstateDB, error) {
+func (db *substateDB) SetSubstateEncoding(schema string) (*substateDB, error) {
 	encoding, err := newSubstateEncoding(schema, db.GetCode)
 	if err != nil {
 		return nil, fmt.Errorf("failed to set decoder; %w", err)
@@ -28,7 +28,7 @@ func (db *SubstateDB) SetSubstateEncoding(schema string) (*SubstateDB, error) {
 }
 
 // GetDecoder returns the encoding in use
-func (db *SubstateDB) GetSubstateEncoding() string {
+func (db *substateDB) GetSubstateEncoding() string {
 	if db.encoding == nil {
 		return ""
 	}
@@ -79,12 +79,12 @@ func newSubstateEncoding(encoding string, lookup codeLookupFunc) (*substateEncod
 }
 
 // decodeSubstate defensively defaults to "default" if nil
-func (db *SubstateDB) decodeToSubstate(bytes []byte, block uint64, tx int) (*substate.Substate, error) {
+func (db *substateDB) decodeToSubstate(bytes []byte, block uint64, tx int) (*substate.Substate, error) {
 	return db.encoding.decode(bytes, block, tx)
 }
 
 // encodeSubstate defensively defaults to "default" if nil
-func (db *SubstateDB) encodeSubstate(ss *substate.Substate, block uint64, tx int) ([]byte, error) {
+func (db *substateDB) encodeSubstate(ss *substate.Substate, block uint64, tx int) ([]byte, error) {
 	return db.encoding.encode(ss, block, tx)
 }
 
