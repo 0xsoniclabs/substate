@@ -32,7 +32,7 @@ func TestSubstateIterator_Value(t *testing.T) {
 	testSubstatorIterator_Value(db, t)
 }
 
-func testSubstatorIterator_Value(db *SubstateDB, t *testing.T) {
+func testSubstatorIterator_Value(db *substateDB, t *testing.T) {
 	iter := db.NewSubstateIterator(0, 10)
 
 	if !iter.Next() {
