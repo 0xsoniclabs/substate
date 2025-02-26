@@ -50,7 +50,7 @@ type SubstateTaskPool struct {
 
 	Ctx *cli.Context // CLI context required to read additional flags
 
-	DB ISubstateDB
+	DB SubstateDB
 }
 
 // ExecuteBlock function iterates on substates of a given block call TaskFunc
