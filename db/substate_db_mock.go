@@ -20,32 +20,32 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MockISubstateDB is a mock of ISubstateDB interface.
-type MockISubstateDB struct {
+// MockSubstateDB is a mock of SubstateDB interface.
+type MockSubstateDB struct {
 	ctrl     *gomock.Controller
-	recorder *MockISubstateDBMockRecorder
+	recorder *MockSubstateDBMockRecorder
 	isgomock struct{}
 }
 
-// MockISubstateDBMockRecorder is the mock recorder for MockISubstateDB.
-type MockISubstateDBMockRecorder struct {
-	mock *MockISubstateDB
+// MockSubstateDBMockRecorder is the mock recorder for MockSubstateDB.
+type MockSubstateDBMockRecorder struct {
+	mock *MockSubstateDB
 }
 
-// NewMockISubstateDB creates a new mock instance.
-func NewMockISubstateDB(ctrl *gomock.Controller) *MockISubstateDB {
-	mock := &MockISubstateDB{ctrl: ctrl}
-	mock.recorder = &MockISubstateDBMockRecorder{mock}
+// NewMockSubstateDB creates a new mock instance.
+func NewMockSubstateDB(ctrl *gomock.Controller) *MockSubstateDB {
+	mock := &MockSubstateDB{ctrl: ctrl}
+	mock.recorder = &MockSubstateDBMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockISubstateDB) EXPECT() *MockISubstateDBMockRecorder {
+func (m *MockSubstateDB) EXPECT() *MockSubstateDBMockRecorder {
 	return m.recorder
 }
 
 // Close mocks base method.
-func (m *MockISubstateDB) Close() error {
+func (m *MockSubstateDB) Close() error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Close")
 	ret0, _ := ret[0].(error)
@@ -53,13 +53,13 @@ func (m *MockISubstateDB) Close() error {
 }
 
 // Close indicates an expected call of Close.
-func (mr *MockISubstateDBMockRecorder) Close() *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) Close() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockISubstateDB)(nil).Close))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockSubstateDB)(nil).Close))
 }
 
 // Compact mocks base method.
-func (m *MockISubstateDB) Compact(start, limit []byte) error {
+func (m *MockSubstateDB) Compact(start, limit []byte) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Compact", start, limit)
 	ret0, _ := ret[0].(error)
@@ -67,13 +67,13 @@ func (m *MockISubstateDB) Compact(start, limit []byte) error {
 }
 
 // Compact indicates an expected call of Compact.
-func (mr *MockISubstateDBMockRecorder) Compact(start, limit any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) Compact(start, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Compact", reflect.TypeOf((*MockISubstateDB)(nil).Compact), start, limit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Compact", reflect.TypeOf((*MockSubstateDB)(nil).Compact), start, limit)
 }
 
 // Delete mocks base method.
-func (m *MockISubstateDB) Delete(key []byte) error {
+func (m *MockSubstateDB) Delete(key []byte) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", key)
 	ret0, _ := ret[0].(error)
@@ -81,13 +81,13 @@ func (m *MockISubstateDB) Delete(key []byte) error {
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockISubstateDBMockRecorder) Delete(key any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) Delete(key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockISubstateDB)(nil).Delete), key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockSubstateDB)(nil).Delete), key)
 }
 
 // DeleteCode mocks base method.
-func (m *MockISubstateDB) DeleteCode(arg0 types.Hash) error {
+func (m *MockSubstateDB) DeleteCode(arg0 types.Hash) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteCode", arg0)
 	ret0, _ := ret[0].(error)
@@ -95,13 +95,13 @@ func (m *MockISubstateDB) DeleteCode(arg0 types.Hash) error {
 }
 
 // DeleteCode indicates an expected call of DeleteCode.
-func (mr *MockISubstateDBMockRecorder) DeleteCode(arg0 any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) DeleteCode(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCode", reflect.TypeOf((*MockISubstateDB)(nil).DeleteCode), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCode", reflect.TypeOf((*MockSubstateDB)(nil).DeleteCode), arg0)
 }
 
 // DeleteSubstate mocks base method.
-func (m *MockISubstateDB) DeleteSubstate(block uint64, tx int) error {
+func (m *MockSubstateDB) DeleteSubstate(block uint64, tx int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteSubstate", block, tx)
 	ret0, _ := ret[0].(error)
@@ -109,13 +109,13 @@ func (m *MockISubstateDB) DeleteSubstate(block uint64, tx int) error {
 }
 
 // DeleteSubstate indicates an expected call of DeleteSubstate.
-func (mr *MockISubstateDBMockRecorder) DeleteSubstate(block, tx any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) DeleteSubstate(block, tx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSubstate", reflect.TypeOf((*MockISubstateDB)(nil).DeleteSubstate), block, tx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSubstate", reflect.TypeOf((*MockSubstateDB)(nil).DeleteSubstate), block, tx)
 }
 
 // Get mocks base method.
-func (m *MockISubstateDB) Get(arg0 []byte) ([]byte, error) {
+func (m *MockSubstateDB) Get(arg0 []byte) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0)
 	ret0, _ := ret[0].([]byte)
@@ -124,13 +124,13 @@ func (m *MockISubstateDB) Get(arg0 []byte) ([]byte, error) {
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockISubstateDBMockRecorder) Get(arg0 any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) Get(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockISubstateDB)(nil).Get), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockSubstateDB)(nil).Get), arg0)
 }
 
 // GetBlockSubstates mocks base method.
-func (m *MockISubstateDB) GetBlockSubstates(block uint64) (map[int]*substate.Substate, error) {
+func (m *MockSubstateDB) GetBlockSubstates(block uint64) (map[int]*substate.Substate, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBlockSubstates", block)
 	ret0, _ := ret[0].(map[int]*substate.Substate)
@@ -139,13 +139,13 @@ func (m *MockISubstateDB) GetBlockSubstates(block uint64) (map[int]*substate.Sub
 }
 
 // GetBlockSubstates indicates an expected call of GetBlockSubstates.
-func (mr *MockISubstateDBMockRecorder) GetBlockSubstates(block any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) GetBlockSubstates(block any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlockSubstates", reflect.TypeOf((*MockISubstateDB)(nil).GetBlockSubstates), block)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlockSubstates", reflect.TypeOf((*MockSubstateDB)(nil).GetBlockSubstates), block)
 }
 
 // GetCode mocks base method.
-func (m *MockISubstateDB) GetCode(arg0 types.Hash) ([]byte, error) {
+func (m *MockSubstateDB) GetCode(arg0 types.Hash) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetCode", arg0)
 	ret0, _ := ret[0].([]byte)
@@ -154,13 +154,13 @@ func (m *MockISubstateDB) GetCode(arg0 types.Hash) ([]byte, error) {
 }
 
 // GetCode indicates an expected call of GetCode.
-func (mr *MockISubstateDBMockRecorder) GetCode(arg0 any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) GetCode(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCode", reflect.TypeOf((*MockISubstateDB)(nil).GetCode), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCode", reflect.TypeOf((*MockSubstateDB)(nil).GetCode), arg0)
 }
 
 // GetFirstSubstate mocks base method.
-func (m *MockISubstateDB) GetFirstSubstate() *substate.Substate {
+func (m *MockSubstateDB) GetFirstSubstate() *substate.Substate {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetFirstSubstate")
 	ret0, _ := ret[0].(*substate.Substate)
@@ -168,13 +168,13 @@ func (m *MockISubstateDB) GetFirstSubstate() *substate.Substate {
 }
 
 // GetFirstSubstate indicates an expected call of GetFirstSubstate.
-func (mr *MockISubstateDBMockRecorder) GetFirstSubstate() *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) GetFirstSubstate() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFirstSubstate", reflect.TypeOf((*MockISubstateDB)(nil).GetFirstSubstate))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFirstSubstate", reflect.TypeOf((*MockSubstateDB)(nil).GetFirstSubstate))
 }
 
 // GetLastSubstate mocks base method.
-func (m *MockISubstateDB) GetLastSubstate() (*substate.Substate, error) {
+func (m *MockSubstateDB) GetLastSubstate() (*substate.Substate, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetLastSubstate")
 	ret0, _ := ret[0].(*substate.Substate)
@@ -183,13 +183,13 @@ func (m *MockISubstateDB) GetLastSubstate() (*substate.Substate, error) {
 }
 
 // GetLastSubstate indicates an expected call of GetLastSubstate.
-func (mr *MockISubstateDBMockRecorder) GetLastSubstate() *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) GetLastSubstate() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastSubstate", reflect.TypeOf((*MockISubstateDB)(nil).GetLastSubstate))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastSubstate", reflect.TypeOf((*MockSubstateDB)(nil).GetLastSubstate))
 }
 
 // GetSubstate mocks base method.
-func (m *MockISubstateDB) GetSubstate(block uint64, tx int) (*substate.Substate, error) {
+func (m *MockSubstateDB) GetSubstate(block uint64, tx int) (*substate.Substate, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSubstate", block, tx)
 	ret0, _ := ret[0].(*substate.Substate)
@@ -198,13 +198,13 @@ func (m *MockISubstateDB) GetSubstate(block uint64, tx int) (*substate.Substate,
 }
 
 // GetSubstate indicates an expected call of GetSubstate.
-func (mr *MockISubstateDBMockRecorder) GetSubstate(block, tx any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) GetSubstate(block, tx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubstate", reflect.TypeOf((*MockISubstateDB)(nil).GetSubstate), block, tx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubstate", reflect.TypeOf((*MockSubstateDB)(nil).GetSubstate), block, tx)
 }
 
 // GetSubstateEncoding mocks base method.
-func (m *MockISubstateDB) GetSubstateEncoding() string {
+func (m *MockSubstateDB) GetSubstateEncoding() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSubstateEncoding")
 	ret0, _ := ret[0].(string)
@@ -212,13 +212,13 @@ func (m *MockISubstateDB) GetSubstateEncoding() string {
 }
 
 // GetSubstateEncoding indicates an expected call of GetSubstateEncoding.
-func (mr *MockISubstateDBMockRecorder) GetSubstateEncoding() *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) GetSubstateEncoding() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubstateEncoding", reflect.TypeOf((*MockISubstateDB)(nil).GetSubstateEncoding))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubstateEncoding", reflect.TypeOf((*MockSubstateDB)(nil).GetSubstateEncoding))
 }
 
 // Has mocks base method.
-func (m *MockISubstateDB) Has(arg0 []byte) (bool, error) {
+func (m *MockSubstateDB) Has(arg0 []byte) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Has", arg0)
 	ret0, _ := ret[0].(bool)
@@ -227,13 +227,13 @@ func (m *MockISubstateDB) Has(arg0 []byte) (bool, error) {
 }
 
 // Has indicates an expected call of Has.
-func (mr *MockISubstateDBMockRecorder) Has(arg0 any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) Has(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockISubstateDB)(nil).Has), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Has", reflect.TypeOf((*MockSubstateDB)(nil).Has), arg0)
 }
 
 // HasCode mocks base method.
-func (m *MockISubstateDB) HasCode(arg0 types.Hash) (bool, error) {
+func (m *MockSubstateDB) HasCode(arg0 types.Hash) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "HasCode", arg0)
 	ret0, _ := ret[0].(bool)
@@ -242,13 +242,13 @@ func (m *MockISubstateDB) HasCode(arg0 types.Hash) (bool, error) {
 }
 
 // HasCode indicates an expected call of HasCode.
-func (mr *MockISubstateDBMockRecorder) HasCode(arg0 any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) HasCode(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasCode", reflect.TypeOf((*MockISubstateDB)(nil).HasCode), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasCode", reflect.TypeOf((*MockSubstateDB)(nil).HasCode), arg0)
 }
 
 // HasSubstate mocks base method.
-func (m *MockISubstateDB) HasSubstate(block uint64, tx int) (bool, error) {
+func (m *MockSubstateDB) HasSubstate(block uint64, tx int) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "HasSubstate", block, tx)
 	ret0, _ := ret[0].(bool)
@@ -257,13 +257,13 @@ func (m *MockISubstateDB) HasSubstate(block uint64, tx int) (bool, error) {
 }
 
 // HasSubstate indicates an expected call of HasSubstate.
-func (mr *MockISubstateDBMockRecorder) HasSubstate(block, tx any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) HasSubstate(block, tx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasSubstate", reflect.TypeOf((*MockISubstateDB)(nil).HasSubstate), block, tx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasSubstate", reflect.TypeOf((*MockSubstateDB)(nil).HasSubstate), block, tx)
 }
 
 // NewBatch mocks base method.
-func (m *MockISubstateDB) NewBatch() Batch {
+func (m *MockSubstateDB) NewBatch() Batch {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewBatch")
 	ret0, _ := ret[0].(Batch)
@@ -271,13 +271,13 @@ func (m *MockISubstateDB) NewBatch() Batch {
 }
 
 // NewBatch indicates an expected call of NewBatch.
-func (mr *MockISubstateDBMockRecorder) NewBatch() *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) NewBatch() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewBatch", reflect.TypeOf((*MockISubstateDB)(nil).NewBatch))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewBatch", reflect.TypeOf((*MockSubstateDB)(nil).NewBatch))
 }
 
 // NewIterator mocks base method.
-func (m *MockISubstateDB) NewIterator(prefix, start []byte) iterator.Iterator {
+func (m *MockSubstateDB) NewIterator(prefix, start []byte) iterator.Iterator {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewIterator", prefix, start)
 	ret0, _ := ret[0].(iterator.Iterator)
@@ -285,13 +285,13 @@ func (m *MockISubstateDB) NewIterator(prefix, start []byte) iterator.Iterator {
 }
 
 // NewIterator indicates an expected call of NewIterator.
-func (mr *MockISubstateDBMockRecorder) NewIterator(prefix, start any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) NewIterator(prefix, start any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewIterator", reflect.TypeOf((*MockISubstateDB)(nil).NewIterator), prefix, start)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewIterator", reflect.TypeOf((*MockSubstateDB)(nil).NewIterator), prefix, start)
 }
 
 // NewSubstateIterator mocks base method.
-func (m *MockISubstateDB) NewSubstateIterator(start, numWorkers int) IIterator[*substate.Substate] {
+func (m *MockSubstateDB) NewSubstateIterator(start, numWorkers int) IIterator[*substate.Substate] {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewSubstateIterator", start, numWorkers)
 	ret0, _ := ret[0].(IIterator[*substate.Substate])
@@ -299,13 +299,13 @@ func (m *MockISubstateDB) NewSubstateIterator(start, numWorkers int) IIterator[*
 }
 
 // NewSubstateIterator indicates an expected call of NewSubstateIterator.
-func (mr *MockISubstateDBMockRecorder) NewSubstateIterator(start, numWorkers any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) NewSubstateIterator(start, numWorkers any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSubstateIterator", reflect.TypeOf((*MockISubstateDB)(nil).NewSubstateIterator), start, numWorkers)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSubstateIterator", reflect.TypeOf((*MockSubstateDB)(nil).NewSubstateIterator), start, numWorkers)
 }
 
 // NewSubstateTaskPool mocks base method.
-func (m *MockISubstateDB) NewSubstateTaskPool(name string, taskFunc SubstateTaskFunc, first, last uint64, ctx *cli.Context) *SubstateTaskPool {
+func (m *MockSubstateDB) NewSubstateTaskPool(name string, taskFunc SubstateTaskFunc, first, last uint64, ctx *cli.Context) *SubstateTaskPool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewSubstateTaskPool", name, taskFunc, first, last, ctx)
 	ret0, _ := ret[0].(*SubstateTaskPool)
@@ -313,13 +313,13 @@ func (m *MockISubstateDB) NewSubstateTaskPool(name string, taskFunc SubstateTask
 }
 
 // NewSubstateTaskPool indicates an expected call of NewSubstateTaskPool.
-func (mr *MockISubstateDBMockRecorder) NewSubstateTaskPool(name, taskFunc, first, last, ctx any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) NewSubstateTaskPool(name, taskFunc, first, last, ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSubstateTaskPool", reflect.TypeOf((*MockISubstateDB)(nil).NewSubstateTaskPool), name, taskFunc, first, last, ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSubstateTaskPool", reflect.TypeOf((*MockSubstateDB)(nil).NewSubstateTaskPool), name, taskFunc, first, last, ctx)
 }
 
 // Put mocks base method.
-func (m *MockISubstateDB) Put(key, value []byte) error {
+func (m *MockSubstateDB) Put(key, value []byte) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Put", key, value)
 	ret0, _ := ret[0].(error)
@@ -327,13 +327,13 @@ func (m *MockISubstateDB) Put(key, value []byte) error {
 }
 
 // Put indicates an expected call of Put.
-func (mr *MockISubstateDBMockRecorder) Put(key, value any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) Put(key, value any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Put", reflect.TypeOf((*MockISubstateDB)(nil).Put), key, value)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Put", reflect.TypeOf((*MockSubstateDB)(nil).Put), key, value)
 }
 
 // PutCode mocks base method.
-func (m *MockISubstateDB) PutCode(arg0 []byte) error {
+func (m *MockSubstateDB) PutCode(arg0 []byte) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PutCode", arg0)
 	ret0, _ := ret[0].(error)
@@ -341,13 +341,13 @@ func (m *MockISubstateDB) PutCode(arg0 []byte) error {
 }
 
 // PutCode indicates an expected call of PutCode.
-func (mr *MockISubstateDBMockRecorder) PutCode(arg0 any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) PutCode(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutCode", reflect.TypeOf((*MockISubstateDB)(nil).PutCode), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutCode", reflect.TypeOf((*MockSubstateDB)(nil).PutCode), arg0)
 }
 
 // PutSubstate mocks base method.
-func (m *MockISubstateDB) PutSubstate(substate *substate.Substate) error {
+func (m *MockSubstateDB) PutSubstate(substate *substate.Substate) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PutSubstate", substate)
 	ret0, _ := ret[0].(error)
@@ -355,13 +355,13 @@ func (m *MockISubstateDB) PutSubstate(substate *substate.Substate) error {
 }
 
 // PutSubstate indicates an expected call of PutSubstate.
-func (mr *MockISubstateDBMockRecorder) PutSubstate(substate any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) PutSubstate(substate any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutSubstate", reflect.TypeOf((*MockISubstateDB)(nil).PutSubstate), substate)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutSubstate", reflect.TypeOf((*MockSubstateDB)(nil).PutSubstate), substate)
 }
 
 // SetSubstateEncoding mocks base method.
-func (m *MockISubstateDB) SetSubstateEncoding(encoding string) (*substateDB, error) {
+func (m *MockSubstateDB) SetSubstateEncoding(encoding string) (*substateDB, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetSubstateEncoding", encoding)
 	ret0, _ := ret[0].(*substateDB)
@@ -370,13 +370,13 @@ func (m *MockISubstateDB) SetSubstateEncoding(encoding string) (*substateDB, err
 }
 
 // SetSubstateEncoding indicates an expected call of SetSubstateEncoding.
-func (mr *MockISubstateDBMockRecorder) SetSubstateEncoding(encoding any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) SetSubstateEncoding(encoding any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSubstateEncoding", reflect.TypeOf((*MockISubstateDB)(nil).SetSubstateEncoding), encoding)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSubstateEncoding", reflect.TypeOf((*MockSubstateDB)(nil).SetSubstateEncoding), encoding)
 }
 
 // Stat mocks base method.
-func (m *MockISubstateDB) Stat(property string) (string, error) {
+func (m *MockSubstateDB) Stat(property string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Stat", property)
 	ret0, _ := ret[0].(string)
@@ -385,13 +385,13 @@ func (m *MockISubstateDB) Stat(property string) (string, error) {
 }
 
 // Stat indicates an expected call of Stat.
-func (mr *MockISubstateDBMockRecorder) Stat(property any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) Stat(property any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stat", reflect.TypeOf((*MockISubstateDB)(nil).Stat), property)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stat", reflect.TypeOf((*MockSubstateDB)(nil).Stat), property)
 }
 
 // getBackend mocks base method.
-func (m *MockISubstateDB) getBackend() *leveldb.DB {
+func (m *MockSubstateDB) getBackend() *leveldb.DB {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "getBackend")
 	ret0, _ := ret[0].(*leveldb.DB)
@@ -399,7 +399,7 @@ func (m *MockISubstateDB) getBackend() *leveldb.DB {
 }
 
 // getBackend indicates an expected call of getBackend.
-func (mr *MockISubstateDBMockRecorder) getBackend() *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) getBackend() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getBackend", reflect.TypeOf((*MockISubstateDB)(nil).getBackend))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getBackend", reflect.TypeOf((*MockSubstateDB)(nil).getBackend))
 }
