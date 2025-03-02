@@ -361,12 +361,11 @@ func (mr *MockSubstateDBMockRecorder) PutSubstate(substate any) *gomock.Call {
 }
 
 // SetSubstateEncoding mocks base method.
-func (m *MockSubstateDB) SetSubstateEncoding(encoding string) (*substateDB, error) {
+func (m *MockSubstateDB) SetSubstateEncoding(encoding string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetSubstateEncoding", encoding)
-	ret0, _ := ret[0].(*substateDB)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // SetSubstateEncoding indicates an expected call of SetSubstateEncoding.

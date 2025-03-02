@@ -45,7 +45,7 @@ type SubstateDB interface {
 	GetLastSubstate() (*substate.Substate, error)
 
 	// SetSubstateEncoding sets the decoder func to the provided encoding
-	SetSubstateEncoding(encoding string) (*substateDB, error)
+	SetSubstateEncoding(encoding string) error
 
 	// GetSubstateEncoding returns the currently configured encoding
 	GetSubstateEncoding() string
@@ -64,13 +64,13 @@ func NewSubstateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.Re
 
 func MakeDefaultSubstateDB(db *leveldb.DB) SubstateDB {
 	sdb := &substateDB{&codeDB{&baseDB{backend: db}}, nil}
-	sdb, _ = sdb.SetSubstateEncoding("default")
+	sdb.SetSubstateEncoding("default")
 	return sdb
 }
 
 func MakeDefaultSubstateDBFromBaseDB(db BaseDB) SubstateDB {
 	sdb := &substateDB{&codeDB{&baseDB{backend: db.getBackend()}}, nil}
-	sdb, _ = sdb.SetSubstateEncoding("default")
+	sdb.SetSubstateEncoding("default")
 	return sdb
 }
 
@@ -81,7 +81,7 @@ func NewReadOnlySubstateDB(path string) (SubstateDB, error) {
 
 func MakeSubstateDB(db *leveldb.DB, wo *opt.WriteOptions, ro *opt.ReadOptions) SubstateDB {
 	sdb := &substateDB{&codeDB{&baseDB{backend: db, wo: wo, ro: ro}}, nil}
-	sdb, _ = sdb.SetSubstateEncoding("default")
+	sdb.SetSubstateEncoding("default")
 	return sdb
 }
 
@@ -92,7 +92,7 @@ func newSubstateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.Re
 	}
 
 	sdb := &substateDB{base, nil}
-	sdb, _ = sdb.SetSubstateEncoding("default")
+	sdb.SetSubstateEncoding("default")
 	return sdb, nil
 }
 
