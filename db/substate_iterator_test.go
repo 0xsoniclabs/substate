@@ -149,7 +149,7 @@ func TestSubstateIterator_DecodeSuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDb := NewMockISubstateDB(ctrl)
+	mockDb := NewMockSubstateDB(ctrl)
 	start := 10
 	blockTx := make([]byte, 8)
 	binary.BigEndian.PutUint64(blockTx, uint64(start))
@@ -177,7 +177,7 @@ func TestSubstateIterator_DecodeFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDb := NewMockISubstateDB(ctrl)
+	mockDb := NewMockSubstateDB(ctrl)
 	start := 10
 	blockTx := make([]byte, 8)
 	binary.BigEndian.PutUint64(blockTx, uint64(start))
@@ -203,7 +203,7 @@ func TestSubstateIterator_StartFailReading(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDb := NewMockISubstateDB(ctrl)
+	mockDb := NewMockSubstateDB(ctrl)
 	start := 10
 	blockTx := make([]byte, 8)
 	binary.BigEndian.PutUint64(blockTx, uint64(start))
@@ -238,7 +238,7 @@ func TestSubstateIterator_StartFailDecoding(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDb := NewMockISubstateDB(ctrl)
+	mockDb := NewMockSubstateDB(ctrl)
 	start := 10
 	blockTx := make([]byte, 8)
 	binary.BigEndian.PutUint64(blockTx, uint64(start))
@@ -279,7 +279,7 @@ func TestSubstateIterator_StartReaderStopFirstSuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDb := NewMockISubstateDB(ctrl)
+	mockDb := NewMockSubstateDB(ctrl)
 	start := 10
 	blockTx := make([]byte, 8)
 	binary.BigEndian.PutUint64(blockTx, uint64(start))
@@ -317,7 +317,7 @@ func TestSubstateIterator_StartDecoderStopFirstSuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDb := NewMockISubstateDB(ctrl)
+	mockDb := NewMockSubstateDB(ctrl)
 	start := 10
 	blockTx := make([]byte, 8)
 	binary.BigEndian.PutUint64(blockTx, uint64(start))
@@ -359,7 +359,7 @@ func TestSubstateIterator_StartParallelSuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDb := NewMockISubstateDB(ctrl)
+	mockDb := NewMockSubstateDB(ctrl)
 	start := 10
 	blockTx := make([]byte, 8)
 	binary.BigEndian.PutUint64(blockTx, uint64(start))
@@ -398,7 +398,7 @@ func TestSubstateIterator_StartParallelFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDb := NewMockISubstateDB(ctrl)
+	mockDb := NewMockSubstateDB(ctrl)
 	start := 10
 	blockTx := make([]byte, 8)
 	binary.BigEndian.PutUint64(blockTx, uint64(start))
@@ -442,7 +442,7 @@ func TestSubstateIterator_StartParallelReaderStopFirstFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDb := NewMockISubstateDB(ctrl)
+	mockDb := NewMockSubstateDB(ctrl)
 	start := 10
 	blockTx := make([]byte, 8)
 	binary.BigEndian.PutUint64(blockTx, uint64(start))
@@ -489,7 +489,7 @@ func TestSubstateIterator_StartParallelDecoderStopFirstFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDb := NewMockISubstateDB(ctrl)
+	mockDb := NewMockSubstateDB(ctrl)
 	start := 10
 	blockTx := make([]byte, 8)
 	binary.BigEndian.PutUint64(blockTx, uint64(start))

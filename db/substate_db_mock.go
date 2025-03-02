@@ -391,7 +391,7 @@ func (mr *MockSubstateDBMockRecorder) Stat(property any) *gomock.Call {
 }
 
 // decodeToSubstate mocks base method.
-func (m *MockISubstateDB) decodeToSubstate(bytes []byte, block uint64, tx int) (*substate.Substate, error) {
+func (m *MockSubstateDB) decodeToSubstate(bytes []byte, block uint64, tx int) (*substate.Substate, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "decodeToSubstate", bytes, block, tx)
 	ret0, _ := ret[0].(*substate.Substate)
@@ -400,9 +400,9 @@ func (m *MockISubstateDB) decodeToSubstate(bytes []byte, block uint64, tx int) (
 }
 
 // decodeToSubstate indicates an expected call of decodeToSubstate.
-func (mr *MockISubstateDBMockRecorder) decodeToSubstate(bytes, block, tx any) *gomock.Call {
+func (mr *MockSubstateDBMockRecorder) decodeToSubstate(bytes, block, tx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "decodeToSubstate", reflect.TypeOf((*MockISubstateDB)(nil).decodeToSubstate), bytes, block, tx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "decodeToSubstate", reflect.TypeOf((*MockSubstateDB)(nil).decodeToSubstate), bytes, block, tx)
 }
 
 // getBackend mocks base method.
