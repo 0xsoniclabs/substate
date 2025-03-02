@@ -4,13 +4,14 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/stretchr/testify/assert"
 	"github.com/syndtr/goleveldb/leveldb/iterator"
 	"github.com/syndtr/goleveldb/leveldb/testutil"
 	"go.uber.org/mock/gomock"
-	"testing"
-	"time"
 )
 
 func TestSubstateIterator_Next(t *testing.T) {
