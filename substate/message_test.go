@@ -4,6 +4,8 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/0xsoniclabs/substate/types"
 	"github.com/0xsoniclabs/substate/types/hash"
 )
@@ -126,6 +128,13 @@ func TestMessage_EqualAccessList(t *testing.T) {
 		t.Fatal("messages access list have different AccessList but equal returned true")
 	}
 
+	comparedMsg = &Message{AccessList: []types.AccessTuple{{Address: types.Address{0},
+		StorageKeys: []types.Hash{types.BytesToHash([]byte{1}), types.BytesToHash([]byte{0})},
+	}}}
+	if msg.Equal(comparedMsg) {
+		t.Fatal("messages access list have different AccessList but equal returned true")
+	}
+
 	comparedMsg.AccessList = msg.AccessList
 	if !msg.Equal(comparedMsg) {
 		t.Fatal("messages Value are same but equal returned false")
@@ -213,4 +222,76 @@ func TestMessage_DataHashGeneratesNewHashIfNil(t *testing.T) {
 		t.Fatalf("hashes are different\nwant: %v\ngot: %v", want, got)
 	}
 
+}
+
+func TestMessage_NewMessage(t *testing.T) {
+	want := &Message{
+		Nonce:          1,
+		CheckNonce:     true,
+		GasPrice:       new(big.Int).SetUint64(1),
+		Gas:            1,
+		From:           types.Address{1},
+		To:             &types.Address{1},
+		Value:          new(big.Int).SetUint64(1),
+		Data:           []byte{1},
+		dataHash:       &types.Hash{},
+		ProtobufTxType: new(int32),
+		AccessList:     []types.AccessTuple{{Address: types.Address{1}, StorageKeys: []types.Hash{types.BytesToHash([]byte{1})}}},
+		GasFeeCap:      new(big.Int).SetUint64(1),
+		GasTipCap:      new(big.Int).SetUint64(1),
+		BlobGasFeeCap:  new(big.Int).SetUint64(1),
+		BlobHashes:     []types.Hash{types.BytesToHash([]byte{1})},
+	}
+
+	got := NewMessage(
+		1,
+		true,
+		new(big.Int).SetUint64(1),
+		1,
+		types.Address{1},
+		&types.Address{1},
+		new(big.Int).SetUint64(1),
+		[]byte{1},
+		&types.Hash{},
+		new(int32),
+		[]types.AccessTuple{{Address: types.Address{1}, StorageKeys: []types.Hash{types.BytesToHash([]byte{1})}}},
+		new(big.Int).SetUint64(1),
+		new(big.Int).SetUint64(1),
+		new(big.Int).SetUint64(1),
+		[]types.Hash{types.BytesToHash([]byte{1})},
+	)
+
+	assert.Equal(t, want, got)
+}
+
+func TestMessage_EqualSelf(t *testing.T) {
+	msg := &Message{Nonce: 1}
+	assert.Equal(t, true, msg.Equal(msg))
+}
+
+func TestMessage_EqualNil(t *testing.T) {
+	msg := &Message{Nonce: 1}
+	assert.Equal(t, false, msg.Equal(nil))
+}
+func TestMessage_String(t *testing.T) {
+	msg := &Message{
+		Nonce:          1,
+		CheckNonce:     true,
+		GasPrice:       new(big.Int).SetUint64(1),
+		Gas:            1,
+		From:           types.Address{1},
+		To:             &types.Address{1},
+		Value:          new(big.Int).SetUint64(1),
+		Data:           []byte{1},
+		dataHash:       &types.Hash{},
+		ProtobufTxType: new(int32),
+		AccessList:     []types.AccessTuple{{Address: types.Address{1}, StorageKeys: []types.Hash{types.BytesToHash([]byte{1})}}},
+		GasFeeCap:      new(big.Int).SetUint64(1),
+		GasTipCap:      new(big.Int).SetUint64(1),
+		BlobGasFeeCap:  new(big.Int).SetUint64(1),
+		BlobHashes:     []types.Hash{types.BytesToHash([]byte{1})},
+	}
+
+	expected := "Nonce: 1\nCheckNonce: true\nFrom: 0x0100000000000000000000000000000000000000\nTo: 0x0100000000000000000000000000000000000000\nValue: 1\nData: \x01\nData Hash: 0x0000000000000000000000000000000000000000000000000000000000000000\nGas Fee Cap: 1\nGas Tip Cap: 1\nAddress: 0x0100000000000000000000000000000000000000Storage Key 0: 0x0000000000000000000000000000000000000000000000000000000000000001"
+	assert.Equal(t, expected, msg.String())
 }
