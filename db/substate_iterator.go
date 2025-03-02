@@ -5,7 +5,10 @@ import (
 	"github.com/0xsoniclabs/substate/substate"
 )
 
-func newSubstateIterator(db ISubstateDB, start []byte) *substateIterator {
+func newSubstateIterator(db *substateDB, start []byte) *substateIterator {
+	r := util.BytesPrefix([]byte(SubstateDBPrefix))
+	r.Start = append(r.Start, start...)
+
 	return &substateIterator{
 		genericIterator: newIterator[*substate.Substate](db.NewIterator([]byte(SubstateDBPrefix), start)),
 		db:              db,
@@ -14,7 +17,7 @@ func newSubstateIterator(db ISubstateDB, start []byte) *substateIterator {
 
 type substateIterator struct {
 	genericIterator[*substate.Substate]
-	db ISubstateDB
+	db *substateDB
 }
 
 func (i *substateIterator) decode(data rawEntry) (*substate.Substate, error) {
