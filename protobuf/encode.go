@@ -69,7 +69,7 @@ func toProtobufBlockEnv(se *substate.Env) *Substate_BlockEnv {
 
 	return &Substate_BlockEnv{
 		Coinbase:    se.Coinbase.Bytes(),
-		Difficulty:  se.Difficulty.Bytes(),
+		Difficulty:  BigIntToBytes(se.Difficulty),
 		GasLimit:    &se.GasLimit,
 		Number:      &se.Number,
 		Timestamp:   &se.Timestamp,
@@ -106,11 +106,11 @@ func toProtobufTxMessage(sm *substate.Message) *Substate_TxMessage {
 
 	return &Substate_TxMessage{
 		Nonce:         &sm.Nonce,
-		GasPrice:      sm.GasPrice.Bytes(),
+		GasPrice:      BigIntToBytes(sm.GasPrice),
 		Gas:           &sm.Gas,
 		From:          sm.From.Bytes(),
 		To:            AddressToWrapperspbBytes(sm.To),
-		Value:         sm.Value.Bytes(),
+		Value:         BigIntToBytes(sm.Value),
 		Input:         txInput,
 		TxType:        &txType,
 		AccessList:    accessList,
