@@ -4,6 +4,9 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/0xsoniclabs/substate/types/hash"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/0xsoniclabs/substate/types"
 )
 
@@ -98,4 +101,30 @@ func TestAccount_Copy(t *testing.T) {
 	if !acc.Equal(cpy) {
 		t.Fatalf("accounts values must be equal\ngot: %v\nwant: %v", cpy, acc)
 	}
+}
+
+func TestAccount_CodeHash(t *testing.T) {
+	acc := NewAccount(1, new(big.Int).SetUint64(1), []byte{1})
+	expectedHash := hash.Keccak256Hash(acc.Code)
+	assert.Equal(t, expectedHash, acc.CodeHash())
+}
+
+func TestAccount_String(t *testing.T) {
+	hashOne := types.BigToHash(new(big.Int).SetUint64(1))
+	hashTwo := types.BigToHash(new(big.Int).SetUint64(2))
+	acc := NewAccount(1, new(big.Int).SetUint64(1), []byte{1})
+	acc.Storage = make(map[types.Hash]types.Hash)
+	acc.Storage[hashOne] = hashTwo
+	expectedString := "Nonce: 1\nBalance: 1\nCode: \x01\nStorage:0x0000000000000000000000000000000000000000000000000000000000000001: 0x0000000000000000000000000000000000000000000000000000000000000002\n"
+	assert.Equal(t, expectedString, acc.String())
+}
+
+func TestAccount_EqualSelf(t *testing.T) {
+	acc := NewAccount(1, new(big.Int).SetUint64(1), []byte{1})
+	assert.Equal(t, true, acc.Equal(acc))
+}
+
+func TestAccount_EqualNil(t *testing.T) {
+	acc := NewAccount(1, new(big.Int).SetUint64(1), []byte{1})
+	assert.Equal(t, false, acc.Equal(nil))
 }
