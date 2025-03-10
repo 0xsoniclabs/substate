@@ -15,16 +15,16 @@ import (
 // intended usage:
 //
 //	db := &substateDB{..} // default to rlp
-//	     db, err := db.SetSubstateEncoding(<schema>) // set encoding
+//	     err := db.SetSubstateEncoding(<schema>) // set encoding
 //	     db.GetSubstateDecoder() // returns configured encoding
-func (db *substateDB) SetSubstateEncoding(schema string) (*substateDB, error) {
+func (db *substateDB) SetSubstateEncoding(schema string) error {
 	encoding, err := newSubstateEncoding(schema, db.GetCode)
 	if err != nil {
-		return nil, fmt.Errorf("failed to set decoder; %w", err)
+		return fmt.Errorf("failed to set decoder; %w", err)
 	}
 
 	db.encoding = encoding
-	return db, nil
+	return nil
 }
 
 // GetDecoder returns the encoding in use
