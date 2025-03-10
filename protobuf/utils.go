@@ -57,3 +57,10 @@ func BytesToBigInt(b []byte) *big.Int {
 	}
 	return new(big.Int).SetBytes(b)
 }
+
+func BigIntToBytes(i *big.Int) []byte {
+	if i == nil {
+		return nil
+	}
+	return i.Bytes()
+}
