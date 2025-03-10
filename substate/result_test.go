@@ -3,6 +3,8 @@ package substate
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/0xsoniclabs/substate/types"
 )
 
@@ -74,4 +76,54 @@ func TestAccount_EqualGasUsed(t *testing.T) {
 	if !res.Equal(comparedRes) {
 		t.Fatal("results GasUsed are same but equal returned false")
 	}
+}
+
+func TestResult_NewResult(t *testing.T) {
+	status := uint64(0)
+	bloom := types.Bloom{0}
+	logs := []*types.Log{{Address: types.Address{0}}}
+	contractAddress := types.Address{0}
+	gasUsed := uint64(0)
+
+	res := NewResult(status, bloom, logs, contractAddress, gasUsed)
+
+	assert.Equal(t, res.Status, status)
+	assert.Equal(t, res.Bloom, bloom)
+	assert.Equal(t, res.Logs, logs)
+	assert.Equal(t, res.ContractAddress, contractAddress)
+	assert.Equal(t, res.GasUsed, gasUsed)
+}
+
+func TestResult_EqualTopic(t *testing.T) {
+	res := &Result{Logs: []*types.Log{{Topics: []types.Hash{{0}}}}}
+	comparedRes := &Result{Logs: []*types.Log{{Topics: []types.Hash{{1}}}}}
+
+	assert.Equal(t, false, res.Equal(comparedRes))
+
+	comparedRes.Logs = res.Logs
+	assert.Equal(t, true, res.Equal(comparedRes))
+}
+
+func TestResult_EqualSelf(t *testing.T) {
+	res := &Result{Logs: []*types.Log{{Topics: []types.Hash{{0}}}}}
+
+	assert.Equal(t, true, res.Equal(res))
+}
+
+func TestResult_EqualNil(t *testing.T) {
+	res := &Result{Logs: []*types.Log{{Topics: []types.Hash{{0}}}}}
+
+	assert.Equal(t, false, res.Equal(nil))
+}
+
+func TestResult_String(t *testing.T) {
+	res := &Result{
+		Status:          0,
+		Bloom:           types.Bloom{0},
+		Logs:            []*types.Log{{Address: types.Address{0}}},
+		ContractAddress: types.Address{0},
+		GasUsed:         0,
+	}
+	expectedString := "Status: 0Bloom: \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Contract Address: 0x0000000000000000000000000000000000000000Gas Used: 0{0x0000000000000000000000000000000000000000 [] [] 0 0x0000000000000000000000000000000000000000000000000000000000000000 0 0x0000000000000000000000000000000000000000000000000000000000000000 0 false}"
+	assert.Equal(t, expectedString, res.String())
 }
