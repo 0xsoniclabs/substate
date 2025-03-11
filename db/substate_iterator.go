@@ -7,19 +7,19 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
-func newSubstateIterator(db *substateDB, start []byte) *substateIterator {
+func newSubstateIterator(db SubstateDB, start []byte) *substateIterator {
 	r := util.BytesPrefix([]byte(SubstateDBPrefix))
 	r.Start = append(r.Start, start...)
 
 	return &substateIterator{
-		genericIterator: newIterator[*substate.Substate](db.backend.NewIterator(r, db.ro)),
+		genericIterator: newIterator[*substate.Substate](db.NewIterator([]byte(SubstateDBPrefix), start)),
 		db:              db,
 	}
 }
 
 type substateIterator struct {
 	genericIterator[*substate.Substate]
-	db *substateDB
+	db SubstateDB
 }
 
 func (i *substateIterator) decode(data rawEntry) (*substate.Substate, error) {
@@ -66,8 +66,7 @@ func (i *substateIterator) start(numWorkers int) {
 			select {
 			case <-i.stopCh:
 				return
-			case e := <-errCh:
-				i.err = e
+			case <-errCh:
 				return
 			case rawDataChs[step] <- res: // fall-through
 			}
@@ -95,6 +94,7 @@ func (i *substateIterator) start(numWorkers int) {
 					}
 					transaction, err := i.decode(raw)
 					if err != nil {
+						i.err = err
 						errCh <- err
 						return
 					}
