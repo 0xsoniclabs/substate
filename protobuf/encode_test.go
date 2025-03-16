@@ -1,31 +1,104 @@
 package protobuf
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"math/big"
 	"testing"
+
+	"google.golang.org/protobuf/proto"
 
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
 	"github.com/stretchr/testify/assert"
 )
 
+// bytesToMD5 computes the MD5 hash of the given byte slice `data` and returns it as a hexadecimal string.
+//
+// Parameters:
+// - data: The input byte slice to be hashed.
+//
+// Returns:
+// - A string containing the hexadecimal representation of the MD5 hash of the input data.
+func bytesToMD5(data []byte) string {
+	hash := md5.Sum(data)
+	hashString := hex.EncodeToString(hash[:])
+	return hashString
+}
+
 func TestEncode_EncodeSuccess(t *testing.T) {
-	ss := &substate.Substate{
-		InputSubstate:  make(substate.WorldState),
-		OutputSubstate: make(substate.WorldState),
+	// given
+	input := &substate.Substate{
+		InputSubstate: substate.WorldState{
+			types.Address{0x01}: &substate.Account{
+				Nonce:   1,
+				Balance: big.NewInt(1000),
+				Storage: map[types.Hash]types.Hash{
+					{0x01}: {0x02},
+				},
+				Code: []byte{0x03},
+			},
+		},
+		OutputSubstate: substate.WorldState{
+			types.Address{0x04}: &substate.Account{
+				Nonce:   1,
+				Balance: big.NewInt(2000),
+				Storage: map[types.Hash]types.Hash{
+					{0xCD}: {0xAB},
+				},
+				Code: []byte{0x07},
+			},
+		},
 		Env: &substate.Env{
-			Difficulty: big.NewInt(2),
+			Coinbase:    types.Address{0x01},
+			GasLimit:    1000000,
+			Number:      1,
+			Timestamp:   1633024800,
+			BlockHashes: map[uint64]types.Hash{1: {0x02}},
+			BaseFee:     big.NewInt(1000),
+			BlobBaseFee: big.NewInt(2000),
+			Difficulty:  big.NewInt(3000),
+			Random:      &types.Hash{0x03},
 		},
 		Message: &substate.Message{
-			GasPrice: big.NewInt(2),
-			Value:    big.NewInt(2),
+			Nonce:          1,
+			CheckNonce:     true,
+			GasPrice:       big.NewInt(100),
+			Gas:            21000,
+			From:           types.Address{0x04},
+			To:             &types.Address{0x05},
+			Value:          big.NewInt(500),
+			Data:           []byte{0x06},
+			ProtobufTxType: proto.Int32(0),
+			AccessList: []types.AccessTuple{
+				{
+					Address: types.Address{0x07},
+					StorageKeys: []types.Hash{
+						{0x08},
+					},
+				},
+			},
+			GasFeeCap:     big.NewInt(1000),
+			GasTipCap:     big.NewInt(2000),
+			BlobGasFeeCap: big.NewInt(3000),
+			BlobHashes:    []types.Hash{{0x09}},
 		},
-		Result: &substate.Result{},
+		Result: &substate.Result{
+			Status: 1,
+			Bloom:  types.Bloom{0x0A},
+			Logs:   []*types.Log{{Address: types.Address{0x0B}, Topics: []types.Hash{{0x0C}}, Data: []byte{0x0D}}},
+		},
+		Block:       1,
+		Transaction: 1,
 	}
 
-	encoded, err := Encode(ss, 1, 0)
+	// when
+	data, err := Encode(input, 0, 0)
+
+	// then
 	assert.Nil(t, err)
-	assert.NotNil(t, encoded)
+	assert.NotNil(t, data)
+	assert.Equal(t, "5efc7953a42150436187e9db964d96b8", bytesToMD5(data))
 }
 
 func TestEncode_EncodeWithError(t *testing.T) {
