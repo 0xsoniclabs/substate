@@ -44,7 +44,7 @@ func (r *replayer) Delete(key []byte) {
 	r.failure = r.writer.Delete(key)
 }
 
-func newBatch(db *leveldb.DB) Batch {
+func newBatch(db dbAdapter) Batch {
 	return &batch{
 		db: db,
 		b:  new(leveldb.Batch),
@@ -52,7 +52,7 @@ func newBatch(db *leveldb.DB) Batch {
 }
 
 type batch struct {
-	db   *leveldb.DB
+	db   dbAdapter
 	b    *leveldb.Batch
 	size int
 }

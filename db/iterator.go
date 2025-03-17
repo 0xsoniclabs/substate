@@ -91,8 +91,3 @@ func (i *genericIterator[T]) Release() {
 	i.wg.Wait()
 	i.iter.Release()
 }
-
-func isNil[T comparable](arg T) bool {
-	var t T
-	return arg == t
-}

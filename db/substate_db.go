@@ -100,7 +100,7 @@ func newSubstateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.Re
 }
 
 type substateDB struct {
-	*codeDB
+	CodeDB
 	encoding *substateEncoding
 }
 
@@ -138,7 +138,7 @@ func (db *substateDB) GetBlockSubstates(block uint64) (map[int]*substate.Substat
 
 	prefix := SubstateDBBlockPrefix(block)
 
-	iter := db.backend.NewIterator(util.BytesPrefix(prefix), nil)
+	iter := db.newIterator(util.BytesPrefix(prefix))
 	for iter.Next() {
 		key := iter.Key()
 		value := iter.Value()

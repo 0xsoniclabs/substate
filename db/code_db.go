@@ -13,6 +13,8 @@ import (
 const CodeDBPrefix = "1c" // CodeDBPrefix + codeHash (256-bit) -> code
 
 // CodeDB is a wrappe around BaseDB. It extends it with Has/Get/PutCode functions.
+//
+//go:generate mockgen -source=code_db.go -destination=./code_db_mock.go -package=db
 type CodeDB interface {
 	BaseDB
 
@@ -58,7 +60,7 @@ func newCodeDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.ReadOp
 }
 
 type codeDB struct {
-	*baseDB
+	BaseDB
 }
 
 var ErrorEmptyHash = errors.New("give hash is empty")
