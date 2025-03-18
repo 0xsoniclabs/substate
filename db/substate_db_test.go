@@ -71,7 +71,7 @@ func TestSubstateDB_PutSubstate(t *testing.T) {
 	}
 
 	s := new(leveldb.DBStats)
-	err = db.backend.Stats(s)
+	err = db.stats(s)
 	if err != nil {
 		t.Fatalf("cannot get db stats; %v", err)
 	}
