@@ -12,17 +12,45 @@ import (
 	ldbiterator "github.com/syndtr/goleveldb/leveldb/iterator"
 )
 
+// dbAdapter defines the interface for a database adapter that provides
+// basic database operations such as Put, Get, Delete, and iteration.
+//
 //go:generate mockgen -source=base_db.go -destination=./base_db_mock.go -package=db
 type dbAdapter interface {
+	// Delete removes the key-value pair associated with the given key.
+	// wo specifies the write options.
 	Delete(key []byte, wo *opt.WriteOptions) error
+
+	// Put inserts the given key-value pair into the database.
+	// wo specifies the write options.
 	Put(key []byte, value []byte, wo *opt.WriteOptions) error
+
+	// Close closes the database, releasing any resources held.
 	Close() error
+
+	// Has checks if the database contains the given key.
+	// ro specifies the read options.
 	Has(key []byte, ro *opt.ReadOptions) (bool, error)
+
+	// CompactRange compacts the database over the given key range.
 	CompactRange(u util.Range) error
+
+	// Get retrieves the value associated with the given key.
+	// ro specifies the read options.
 	Get(key []byte, ro *opt.ReadOptions) ([]byte, error)
+
+	// GetProperty retrieves the value of a database property.
 	GetProperty(property string) (string, error)
+
+	// NewIterator creates a new iterator over the given key range.
+	// ro specifies the read options.
 	NewIterator(r *util.Range, ro *opt.ReadOptions) ldbiterator.Iterator
+
+	// Write writes a batch of operations to the database.
+	// wo specifies the write options.
 	Write(batch *leveldb.Batch, wo *opt.WriteOptions) error
+
+	// Stats retrieves the database statistics.
 	Stats(s *leveldb.DBStats) error
 }
 
