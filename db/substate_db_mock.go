@@ -16,6 +16,7 @@ import (
 	types "github.com/0xsoniclabs/substate/types"
 	leveldb "github.com/syndtr/goleveldb/leveldb"
 	iterator "github.com/syndtr/goleveldb/leveldb/iterator"
+	util "github.com/syndtr/goleveldb/leveldb/util"
 	cli "github.com/urfave/cli/v2"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -389,6 +390,21 @@ func (mr *MockSubstateDBMockRecorder) Stat(property any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stat", reflect.TypeOf((*MockSubstateDB)(nil).Stat), property)
 }
 
+// binarySearchForLastPrefixKey mocks base method.
+func (m *MockSubstateDB) binarySearchForLastPrefixKey(lastKeyPrefix []byte) (byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "binarySearchForLastPrefixKey", lastKeyPrefix)
+	ret0, _ := ret[0].(byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// binarySearchForLastPrefixKey indicates an expected call of binarySearchForLastPrefixKey.
+func (mr *MockSubstateDBMockRecorder) binarySearchForLastPrefixKey(lastKeyPrefix any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "binarySearchForLastPrefixKey", reflect.TypeOf((*MockSubstateDB)(nil).binarySearchForLastPrefixKey), lastKeyPrefix)
+}
+
 // decodeToSubstate mocks base method.
 func (m *MockSubstateDB) decodeToSubstate(bytes []byte, block uint64, tx int) (*substate.Substate, error) {
 	m.ctrl.T.Helper()
@@ -405,10 +421,10 @@ func (mr *MockSubstateDBMockRecorder) decodeToSubstate(bytes, block, tx any) *go
 }
 
 // getBackend mocks base method.
-func (m *MockSubstateDB) getBackend() *leveldb.DB {
+func (m *MockSubstateDB) getBackend() dbAdapter {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "getBackend")
-	ret0, _ := ret[0].(*leveldb.DB)
+	ret0, _ := ret[0].(dbAdapter)
 	return ret0
 }
 
@@ -416,4 +432,46 @@ func (m *MockSubstateDB) getBackend() *leveldb.DB {
 func (mr *MockSubstateDBMockRecorder) getBackend() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getBackend", reflect.TypeOf((*MockSubstateDB)(nil).getBackend))
+}
+
+// hasKeyValuesFor mocks base method.
+func (m *MockSubstateDB) hasKeyValuesFor(prefix, start []byte) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "hasKeyValuesFor", prefix, start)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// hasKeyValuesFor indicates an expected call of hasKeyValuesFor.
+func (mr *MockSubstateDBMockRecorder) hasKeyValuesFor(prefix, start any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "hasKeyValuesFor", reflect.TypeOf((*MockSubstateDB)(nil).hasKeyValuesFor), prefix, start)
+}
+
+// newIterator mocks base method.
+func (m *MockSubstateDB) newIterator(r *util.Range) iterator.Iterator {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "newIterator", r)
+	ret0, _ := ret[0].(iterator.Iterator)
+	return ret0
+}
+
+// newIterator indicates an expected call of newIterator.
+func (mr *MockSubstateDBMockRecorder) newIterator(r any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "newIterator", reflect.TypeOf((*MockSubstateDB)(nil).newIterator), r)
+}
+
+// stats mocks base method.
+func (m *MockSubstateDB) stats(stats *leveldb.DBStats) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "stats", stats)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// stats indicates an expected call of stats.
+func (mr *MockSubstateDBMockRecorder) stats(stats any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "stats", reflect.TypeOf((*MockSubstateDB)(nil).stats), stats)
 }

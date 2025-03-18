@@ -12,6 +12,48 @@ import (
 	ldbiterator "github.com/syndtr/goleveldb/leveldb/iterator"
 )
 
+// dbAdapter defines the interface for a database adapter that provides
+// basic database operations such as Put, Get, Delete, and iteration.
+//
+//go:generate mockgen -source=base_db.go -destination=./base_db_mock.go -package=db
+type dbAdapter interface {
+	// Delete removes the key-value pair associated with the given key.
+	// wo specifies the write options.
+	Delete(key []byte, wo *opt.WriteOptions) error
+
+	// Put inserts the given key-value pair into the database.
+	// wo specifies the write options.
+	Put(key []byte, value []byte, wo *opt.WriteOptions) error
+
+	// Close closes the database, releasing any resources held.
+	Close() error
+
+	// Has checks if the database contains the given key.
+	// ro specifies the read options.
+	Has(key []byte, ro *opt.ReadOptions) (bool, error)
+
+	// CompactRange compacts the database over the given key range.
+	CompactRange(u util.Range) error
+
+	// Get retrieves the value associated with the given key.
+	// ro specifies the read options.
+	Get(key []byte, ro *opt.ReadOptions) ([]byte, error)
+
+	// GetProperty retrieves the value of a database property.
+	GetProperty(property string) (string, error)
+
+	// NewIterator creates a new iterator over the given key range.
+	// ro specifies the read options.
+	NewIterator(r *util.Range, ro *opt.ReadOptions) ldbiterator.Iterator
+
+	// Write writes a batch of operations to the database.
+	// wo specifies the write options.
+	Write(batch *leveldb.Batch, wo *opt.WriteOptions) error
+
+	// Stats retrieves the database statistics.
+	Stats(s *leveldb.DBStats) error
+}
+
 // KeyValueWriter wraps the Put method of a backing data store.
 type KeyValueWriter interface {
 	// Put inserts the given value into the key-value data store.
@@ -66,7 +108,15 @@ type BaseDB interface {
 	Close() error
 
 	// getBackend returns the database backend.
-	getBackend() *leveldb.DB
+	getBackend() dbAdapter
+
+	hasKeyValuesFor(prefix []byte, start []byte) bool
+
+	binarySearchForLastPrefixKey(lastKeyPrefix []byte) (byte, error)
+
+	newIterator(r *util.Range) ldbiterator.Iterator
+
+	stats(stats *leveldb.DBStats) error
 }
 
 // NewDefaultBaseDB creates new instance of BaseDB with default options.
@@ -113,12 +163,16 @@ func newBaseDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.ReadOp
 
 // baseDB implements method needed by all three types of DBs.
 type baseDB struct {
-	backend *leveldb.DB
+	backend dbAdapter
 	wo      *opt.WriteOptions
 	ro      *opt.ReadOptions
 }
 
-func (db *baseDB) getBackend() *leveldb.DB {
+func (db *baseDB) stats(stats *leveldb.DBStats) error {
+	return db.backend.Stats(stats)
+}
+
+func (db *baseDB) getBackend() dbAdapter {
 	return db.backend
 }
 
@@ -151,6 +205,10 @@ func (db *baseDB) NewBatch() Batch {
 func (db *baseDB) NewIterator(prefix []byte, start []byte) ldbiterator.Iterator {
 	r := util.BytesPrefix(prefix)
 	r.Start = append(r.Start, start...)
+	return db.backend.NewIterator(r, db.ro)
+}
+
+func (db *baseDB) newIterator(r *util.Range) ldbiterator.Iterator {
 	return db.backend.NewIterator(r, db.ro)
 }
 

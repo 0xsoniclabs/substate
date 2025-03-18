@@ -17,14 +17,14 @@ func (db *updateDB) PutMetadata(interval, size uint64) error {
 	byteInterval := make([]byte, 8)
 	binary.BigEndian.PutUint64(byteInterval, interval)
 
-	if err := db.backend.Put([]byte(UpdatesetIntervalKey), byteInterval, db.wo); err != nil {
+	if err := db.Put([]byte(UpdatesetIntervalKey), byteInterval); err != nil {
 		return err
 	}
 
 	sizeInterval := make([]byte, 8)
 	binary.BigEndian.PutUint64(sizeInterval, size)
 
-	if err := db.backend.Put([]byte(UpdatesetSizeKey), sizeInterval, db.wo); err != nil {
+	if err := db.Put([]byte(UpdatesetSizeKey), sizeInterval); err != nil {
 		return err
 	}
 
@@ -33,12 +33,12 @@ func (db *updateDB) PutMetadata(interval, size uint64) error {
 
 // GetMetadata from db
 func (db *updateDB) GetMetadata() (uint64, uint64, error) {
-	byteInterval, err := db.backend.Get([]byte(UpdatesetIntervalKey), db.ro)
+	byteInterval, err := db.Get([]byte(UpdatesetIntervalKey))
 	if err != nil {
 		return 0, 0, err
 	}
 
-	byteSize, err := db.backend.Get([]byte(UpdatesetSizeKey), db.ro)
+	byteSize, err := db.Get([]byte(UpdatesetSizeKey))
 	if err != nil {
 		return 0, 0, err
 	}

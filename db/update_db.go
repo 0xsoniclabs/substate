@@ -19,6 +19,8 @@ const (
 )
 
 // UpdateDB represents a CodeDB with in which the UpdateSet is inserted.
+//
+//go:generate mockgen -source=update_db.go -destination=./update_db_mock.go -package=db
 type UpdateDB interface {
 	CodeDB
 
@@ -74,13 +76,13 @@ func newUpdateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.Read
 }
 
 type updateDB struct {
-	*codeDB
+	CodeDB
 }
 
 func (db *updateDB) GetFirstKey() (uint64, error) {
 	r := util.BytesPrefix([]byte(UpdateDBPrefix))
 
-	iter := db.backend.NewIterator(r, db.ro)
+	iter := db.newIterator(r)
 	defer iter.Release()
 
 	for iter.Next() {
@@ -96,7 +98,7 @@ func (db *updateDB) GetFirstKey() (uint64, error) {
 func (db *updateDB) GetLastKey() (uint64, error) {
 	r := util.BytesPrefix([]byte(UpdateDBPrefix))
 
-	iter := db.backend.NewIterator(r, nil)
+	iter := db.newIterator(r)
 	defer iter.Release()
 
 	for iter.Next() {

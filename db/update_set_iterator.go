@@ -18,7 +18,7 @@ func newUpdateSetIterator(db *updateDB, start, end uint64) *updateSetIterator {
 	r.Start = append(r.Start, num...)
 
 	return &updateSetIterator{
-		genericIterator: newIterator[*updateset.UpdateSet](db.backend.NewIterator(r, db.ro)),
+		genericIterator: newIterator[*updateset.UpdateSet](db.newIterator(r)),
 		db:              db,
 		endBlock:        end,
 	}
@@ -26,7 +26,7 @@ func newUpdateSetIterator(db *updateDB, start, end uint64) *updateSetIterator {
 
 type updateSetIterator struct {
 	genericIterator[*updateset.UpdateSet]
-	db       *updateDB
+	db       UpdateDB
 	endBlock uint64
 }
 
