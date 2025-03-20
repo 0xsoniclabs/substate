@@ -6,7 +6,12 @@ import (
 	"math/big"
 	"testing"
 
+	trlp "github.com/0xsoniclabs/substate/types/rlp"
+	"github.com/stretchr/testify/assert"
 	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/syndtr/goleveldb/leveldb/iterator"
+	"github.com/syndtr/goleveldb/leveldb/testutil"
+	"go.uber.org/mock/gomock"
 
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
@@ -162,4 +167,390 @@ func createDbAndPutUpdateSet(dbPath string) (*updateDB, error) {
 	}
 
 	return db, nil
+}
+
+func TestUpdateDB_GetFirstKeySuccess(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := NewMockCodeDB(ctrl)
+	kv := &testutil.KeyValue{}
+	kv.PutU(UpdateDBKey(1), []byte{42})
+	mockIter := iterator.NewArrayIterator(kv)
+
+	mockDB.EXPECT().newIterator(gomock.Any()).Return(mockIter)
+
+	db := &updateDB{mockDB}
+
+	result, err := db.GetFirstKey()
+
+	assert.Nil(t, err)
+	assert.Equal(t, uint64(1), result)
+}
+
+func TestUpdateDB_GetFirstKeyFail(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := NewMockCodeDB(ctrl)
+
+	// case 1 not found
+	kv := &testutil.KeyValue{}
+	mockIter := iterator.NewArrayIterator(kv)
+	db := &updateDB{mockDB}
+
+	mockDB.EXPECT().newIterator(gomock.Any()).Return(mockIter)
+
+	result, err := db.GetFirstKey()
+
+	assert.Equal(t, leveldb.ErrNotFound, err)
+	assert.Equal(t, uint64(0), result)
+
+	// case 2 decode error
+	kv = &testutil.KeyValue{}
+	kv.PutU([]byte{1, 2, 3}, []byte{42})
+	mockIter = iterator.NewArrayIterator(kv)
+
+	mockDB.EXPECT().newIterator(gomock.Any()).Return(mockIter)
+
+	result, err = db.GetFirstKey()
+
+	assert.NotNil(t, err)
+	assert.Equal(t, uint64(0), result)
+
+}
+func TestUpdateDB_GetLastKeySuccess(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := NewMockCodeDB(ctrl)
+	kv := &testutil.KeyValue{}
+	kv.PutU(UpdateDBKey(5), []byte{42})
+	mockIter := iterator.NewArrayIterator(kv)
+
+	mockDB.EXPECT().newIterator(gomock.Any()).Return(mockIter)
+
+	db := &updateDB{mockDB}
+
+	result, err := db.GetLastKey()
+
+	assert.Nil(t, err)
+	assert.Equal(t, uint64(5), result)
+}
+
+func TestUpdateDB_GetLastKeyFail(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := NewMockCodeDB(ctrl)
+
+	// case 1: no updateset found
+	kv := &testutil.KeyValue{}
+	mockIter := iterator.NewArrayIterator(kv)
+	db := &updateDB{mockDB}
+
+	mockDB.EXPECT().newIterator(gomock.Any()).Return(mockIter)
+
+	result, err := db.GetLastKey()
+
+	assert.Error(t, err)
+	assert.Equal(t, "no updateset found", err.Error())
+	assert.Equal(t, uint64(0), result)
+
+	// case 2: decode error
+	kv = &testutil.KeyValue{}
+	kv.PutU([]byte{1, 2, 3}, []byte{42})
+	mockIter = iterator.NewArrayIterator(kv)
+
+	mockDB.EXPECT().newIterator(gomock.Any()).Return(mockIter)
+
+	result, err = db.GetLastKey()
+
+	assert.NotNil(t, err)
+	assert.Equal(t, uint64(0), result)
+}
+
+func TestUpdateDB_HasUpdateSetSuccess(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := NewMockCodeDB(ctrl)
+	blockNum := uint64(10)
+	key := UpdateDBKey(blockNum)
+
+	mockDB.EXPECT().Has(key).Return(true, nil)
+
+	db := &updateDB{mockDB}
+	result, err := db.HasUpdateSet(blockNum)
+
+	assert.Nil(t, err)
+	assert.True(t, result)
+}
+
+func TestUpdateDB_HasUpdateSetFail(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := NewMockCodeDB(ctrl)
+	blockNum := uint64(10)
+	key := UpdateDBKey(blockNum)
+	expectedErr := errors.New("database error")
+
+	mockDB.EXPECT().Has(key).Return(false, expectedErr)
+
+	db := &updateDB{mockDB}
+	result, err := db.HasUpdateSet(blockNum)
+
+	assert.Equal(t, expectedErr, err)
+	assert.False(t, result)
+}
+
+func TestUpdateDB_GetUpdateSetSuccess(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := NewMockCodeDB(ctrl)
+	blockNum := uint64(10)
+	key := UpdateDBKey(blockNum)
+
+	encodedData, _ := trlp.EncodeToBytes(updateset.UpdateSetRLP{
+		WorldState: updateset.UpdateSet{
+			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+			Block:           0,
+			DeletedAccounts: []types.Address{},
+		}.ToWorldStateRLP(),
+		DeletedAccounts: []types.Address{},
+	})
+
+	db := &updateDB{mockDB}
+
+	// case 1: Get success
+	mockDB.EXPECT().Get(key).Return(encodedData, nil)
+	mockDB.EXPECT().GetCode(gomock.Any()).Return(nil, nil).AnyTimes()
+
+	result, err := db.GetUpdateSet(blockNum)
+
+	assert.Nil(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, blockNum, result.Block)
+
+	// case 2: Get success nil
+	mockDB.EXPECT().Get(key).Return(nil, nil)
+
+	result, err = db.GetUpdateSet(blockNum)
+	assert.Nil(t, err)
+	assert.Nil(t, result)
+}
+
+func TestUpdateDB_GetUpdateSetFail(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := NewMockCodeDB(ctrl)
+	blockNum := uint64(10)
+	key := UpdateDBKey(blockNum)
+
+	// Case 1: Get error
+	expectedErr := errors.New("database error")
+	mockDB.EXPECT().Get(key).Return(nil, expectedErr)
+
+	db := &updateDB{mockDB}
+	result, err := db.GetUpdateSet(blockNum)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), expectedErr.Error())
+
+	// Case 2: Decode error
+	mockDB.EXPECT().Get(key).Return([]byte{1, 2, 3}, nil) // Invalid RLP data
+
+	result, err = db.GetUpdateSet(blockNum)
+
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "cannot decode update-set rlp")
+}
+func TestUpdateDB_PutUpdateSetSuccess(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := NewMockCodeDB(ctrl)
+
+	updateSet := &updateset.UpdateSet{
+		WorldState: substate.WorldState{
+			types.Address{1}: &substate.Account{
+				Nonce:   1,
+				Balance: new(big.Int).SetUint64(1),
+				Code:    []byte{0x01, 0x02},
+			},
+		},
+		Block: 10,
+	}
+
+	deletedAccounts := []types.Address{{2}}
+	key := UpdateDBKey(updateSet.Block)
+
+	// Expectations
+	mockDB.EXPECT().PutCode(gomock.Any()).Return(nil)
+	mockDB.EXPECT().Put(key, gomock.Any()).Return(nil)
+
+	db := &updateDB{mockDB}
+	err := db.PutUpdateSet(updateSet, deletedAccounts)
+
+	assert.Nil(t, err)
+}
+
+func TestUpdateDB_PutUpdateSetFail(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := NewMockCodeDB(ctrl)
+
+	updateSet := &updateset.UpdateSet{
+		WorldState: substate.WorldState{
+			types.Address{1}: &substate.Account{
+				Nonce:   1,
+				Balance: new(big.Int).SetUint64(1),
+				Code:    []byte{0x01, 0x02},
+			},
+		},
+		Block: 10,
+	}
+
+	deletedAccounts := []types.Address{{2}}
+	expectedErr := errors.New("code storage error")
+
+	// Case 1: PutCode error
+	mockDB.EXPECT().PutCode(gomock.Any()).Return(expectedErr)
+
+	db := &updateDB{mockDB}
+	err := db.PutUpdateSet(updateSet, deletedAccounts)
+
+	assert.Equal(t, expectedErr, err)
+
+	// Case 2: Put error
+	mockDB.EXPECT().PutCode(gomock.Any()).Return(nil)
+	mockDB.EXPECT().Put(gomock.Any(), gomock.Any()).Return(expectedErr)
+
+	err = db.PutUpdateSet(updateSet, deletedAccounts)
+
+	assert.Equal(t, expectedErr, err)
+}
+func TestUpdateDB_DeleteUpdateSetSuccess(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := NewMockCodeDB(ctrl)
+	blockNum := uint64(10)
+	key := UpdateDBKey(blockNum)
+
+	mockDB.EXPECT().Delete(key).Return(nil)
+
+	db := &updateDB{mockDB}
+	err := db.DeleteUpdateSet(blockNum)
+
+	assert.Nil(t, err)
+}
+
+func TestUpdateDB_DeleteUpdateSetFail(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := NewMockCodeDB(ctrl)
+	blockNum := uint64(10)
+	key := UpdateDBKey(blockNum)
+	expectedErr := errors.New("delete error")
+
+	mockDB.EXPECT().Delete(key).Return(expectedErr)
+
+	db := &updateDB{mockDB}
+	err := db.DeleteUpdateSet(blockNum)
+
+	assert.Equal(t, expectedErr, err)
+}
+
+func TestUpdateDB_NewUpdateSetIterator(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := NewMockCodeDB(ctrl)
+	db := &updateDB{mockDB}
+
+	start := uint64(1)
+	end := uint64(4)
+
+	// Create a mock iterator that would be returned internally
+	kv := &testutil.KeyValue{}
+	rlpData, _ := trlp.EncodeToBytes(updateset.UpdateSetRLP{
+		WorldState: updateset.UpdateSet{
+			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+			Block:           0,
+			DeletedAccounts: []types.Address{},
+		}.ToWorldStateRLP(),
+		DeletedAccounts: []types.Address{},
+	})
+	kv.PutU(UpdateDBKey(1), rlpData)
+	kv.PutU(UpdateDBKey(2), rlpData)
+	kv.PutU(UpdateDBKey(3), rlpData)
+	kv.PutU(UpdateDBKey(4), rlpData)
+	mockIter := iterator.NewArrayIterator(kv)
+
+	// Set up expectations for the newUpdateSetIterator behavior
+	// This is testing that the method correctly initializes the iterator with the right parameters
+	mockDB.EXPECT().newIterator(gomock.Any()).Return(mockIter)
+	mockDB.EXPECT().GetCode(gomock.Any()).Return([]byte("code"), nil).AnyTimes()
+
+	// Test the iterator
+	iter := db.NewUpdateSetIterator(start, end)
+
+	// Verify iterator behavior
+	results := make([]*updateset.UpdateSet, 0)
+	for iter.Next() {
+		results = append(results, iter.Value())
+	}
+	iter.Release()
+	assert.Nil(t, iter.Error())
+	assert.Len(t, results, 4)
+}
+
+func TestDecodeUpdateSetKey_Success(t *testing.T) {
+	blockNum := uint64(12345)
+	key := UpdateDBKey(blockNum)
+
+	result, err := DecodeUpdateSetKey(key)
+
+	assert.Nil(t, err)
+	assert.Equal(t, blockNum, result)
+}
+
+func TestDecodeUpdateSetKey_Fail(t *testing.T) {
+	// Case 1: invalid key length
+	key := []byte(UpdateDBPrefix + "short")
+	result, err := DecodeUpdateSetKey(key)
+
+	assert.Error(t, err)
+	assert.Equal(t, uint64(0), result)
+	assert.Contains(t, err.Error(), "invalid length")
+
+	// Case 2: invalid prefix
+	key = []byte("XX" + string(make([]byte, 8)))
+	result, err = DecodeUpdateSetKey(key)
+
+	assert.Error(t, err)
+	assert.Equal(t, uint64(0), result)
+	assert.Contains(t, err.Error(), "invalid prefix")
+}
+
+func TestUpdateDBKey(t *testing.T) {
+	blockNum := uint64(12345)
+	result := UpdateDBKey(blockNum)
+
+	// Key should be prefix + 8 bytes for block number
+	assert.Equal(t, len(UpdateDBPrefix)+8, len(result))
+	assert.Equal(t, []byte(UpdateDBPrefix), result[:len(UpdateDBPrefix)])
+
+	// Decode to verify
+	decoded, err := DecodeUpdateSetKey(result)
+	assert.Nil(t, err)
+	assert.Equal(t, blockNum, decoded)
 }
