@@ -10,7 +10,6 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/util"
 
 	"github.com/0xsoniclabs/substate/types"
-	trlp "github.com/0xsoniclabs/substate/types/rlp"
 	"github.com/0xsoniclabs/substate/updateset"
 )
 
@@ -130,8 +129,8 @@ func (db *updateDB) GetUpdateSet(block uint64) (*updateset.UpdateSet, error) {
 	}
 
 	// decode value
-	var updateSetRLP updateset.UpdateSetRLP
-	if err = trlp.DecodeBytes(value, &updateSetRLP); err != nil {
+	updateSetRLP, err := updateset.DecodeUpdateSetPB(value)
+	if err != nil {
 		return nil, fmt.Errorf("cannot decode update-set rlp block: %v, key %v; %w", block, key, err)
 	}
 
@@ -150,7 +149,7 @@ func (db *updateDB) PutUpdateSet(updateSet *updateset.UpdateSet, deletedAccounts
 	key := UpdateDBKey(updateSet.Block)
 	updateSetRLP := updateset.NewUpdateSetRLP(updateSet, deletedAccounts)
 
-	value, err := trlp.EncodeToBytes(updateSetRLP)
+	value, err := updateset.EncodeUpdateSetPB(&updateSetRLP)
 	if err != nil {
 		return fmt.Errorf("cannot encode update-set; %v", err)
 	}

@@ -23,16 +23,16 @@ func Encode(ss *substate.Substate, block uint64, tx int) ([]byte, error) {
 
 func toProtobufSubstate(ss *substate.Substate) *Substate {
 	return &Substate{
-		InputAlloc:  toProtobufAlloc(ss.InputSubstate),
-		OutputAlloc: toProtobufAlloc(ss.OutputSubstate),
+		InputAlloc:  ToProtobufAlloc(ss.InputSubstate),
+		OutputAlloc: ToProtobufAlloc(ss.OutputSubstate),
 		BlockEnv:    toProtobufBlockEnv(ss.Env),
 		TxMessage:   toProtobufTxMessage(ss.Message),
 		Result:      toProtobufResult(ss.Result),
 	}
 }
 
-// toProtobufAlloc converts substate.WorldState into protobuf-encoded Substate_Alloc
-func toProtobufAlloc(sw substate.WorldState) *Substate_Alloc {
+// ToProtobufAlloc converts substate.WorldState into protobuf-encoded Substate_Alloc
+func ToProtobufAlloc(sw substate.WorldState) *Substate_Alloc {
 	world := make([]*Substate_AllocEntry, 0, len(sw))
 	for addr, acct := range sw {
 		storage := make([]*Substate_Account_StorageEntry, 0, len(acct.Storage))

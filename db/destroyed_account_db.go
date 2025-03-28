@@ -4,10 +4,12 @@ import (
 	"encoding/binary"
 	"fmt"
 
+	"github.com/0xsoniclabs/substate/protobuf"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/syndtr/goleveldb/leveldb/opt"
 
 	"github.com/0xsoniclabs/substate/types"
-	"github.com/0xsoniclabs/substate/types/rlp"
 )
 
 type DestroyedAccountDB struct {
@@ -43,9 +45,36 @@ type SuicidedAccountLists struct {
 	ResurrectedAccounts []types.Address
 }
 
+func encodeSuicidedAccountLists(list SuicidedAccountLists) ([]byte, error) {
+	pbAccountList := &protobuf.SuicidedAccountLists{}
+	for _, addr := range list.DestroyedAccounts {
+		pbAccountList.DestroyedAccounts = append(pbAccountList.DestroyedAccounts, addr.Bytes())
+	}
+	for _, addr := range list.ResurrectedAccounts {
+		pbAccountList.ResurrectedAccounts = append(pbAccountList.ResurrectedAccounts, addr.Bytes())
+	}
+	return proto.Marshal(pbAccountList)
+}
+
+func decodeSuicidedAccountLists(data []byte) (SuicidedAccountLists, error) {
+	pbAccountList := &protobuf.SuicidedAccountLists{}
+	err := proto.Unmarshal(data, pbAccountList)
+	if err != nil {
+		return SuicidedAccountLists{}, err
+	}
+	list := SuicidedAccountLists{}
+	for _, addr := range pbAccountList.DestroyedAccounts {
+		list.DestroyedAccounts = append(list.DestroyedAccounts, types.BytesToAddress(addr))
+	}
+	for _, addr := range pbAccountList.ResurrectedAccounts {
+		list.ResurrectedAccounts = append(list.ResurrectedAccounts, types.BytesToAddress(addr))
+	}
+	return list, nil
+}
+
 func (db *DestroyedAccountDB) SetDestroyedAccounts(block uint64, tx int, des []types.Address, res []types.Address) error {
 	accountList := SuicidedAccountLists{DestroyedAccounts: des, ResurrectedAccounts: res}
-	value, err := rlp.EncodeToBytes(accountList)
+	value, err := encodeSuicidedAccountLists(accountList)
 	if err != nil {
 		return err
 	}
@@ -127,9 +156,7 @@ func DecodeDestroyedAccountKey(data []byte) (uint64, int, error) {
 }
 
 func DecodeAddressList(data []byte) (SuicidedAccountLists, error) {
-	list := SuicidedAccountLists{}
-	err := rlp.DecodeBytes(data, &list)
-	return list, err
+	return decodeSuicidedAccountLists(data)
 }
 
 // GetFirstKey returns the first block number in the database.
