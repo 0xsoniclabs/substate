@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/0xsoniclabs/substate/types"
-	"github.com/0xsoniclabs/substate/types/rlp"
 	"github.com/stretchr/testify/assert"
 	"github.com/syndtr/goleveldb/leveldb/iterator"
 	"github.com/syndtr/goleveldb/leveldb/testutil"
@@ -94,7 +93,7 @@ func TestDestroyedAccountDB_GetDestroyedAccountsSuccess(t *testing.T) {
 	expectedResurrected := []types.Address{{3}}
 
 	list := SuicidedAccountLists{DestroyedAccounts: expectedDestroyed, ResurrectedAccounts: expectedResurrected}
-	value, _ := rlp.EncodeToBytes(list)
+	value, _ := encodeSuicidedAccountLists(list)
 
 	baseDb.EXPECT().Get(encodeDestroyedAccountKey(block, tx)).Return(value, nil)
 	destroyed, resurrected, err := db.GetDestroyedAccounts(block, tx)
@@ -141,7 +140,7 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeSuccess(t *testing.T) {
 		DestroyedAccounts:   []types.Address{{1}, {2}},
 		ResurrectedAccounts: []types.Address{},
 	}
-	value1, _ := rlp.EncodeToBytes(list1)
+	value1, _ := encodeSuicidedAccountLists(list1)
 
 	// Second key
 	key2 := encodeDestroyedAccountKey(7, 0)
@@ -149,7 +148,7 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeSuccess(t *testing.T) {
 		DestroyedAccounts:   []types.Address{{3}},
 		ResurrectedAccounts: []types.Address{{1}},
 	}
-	value2, _ := rlp.EncodeToBytes(list2)
+	value2, _ := encodeSuicidedAccountLists(list2)
 
 	// Third key
 	key3 := encodeDestroyedAccountKey(99, 0)
@@ -157,7 +156,7 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeSuccess(t *testing.T) {
 		DestroyedAccounts:   []types.Address{{3}},
 		ResurrectedAccounts: []types.Address{{1}},
 	}
-	value3, _ := rlp.EncodeToBytes(list3)
+	value3, _ := encodeSuicidedAccountLists(list3)
 
 	kv.PutU(key1, value1)
 	kv.PutU(key2, value2)
@@ -376,7 +375,7 @@ func TestDestroyedAccountDB_DecodeAddressListSuccess(t *testing.T) {
 		DestroyedAccounts:   expectedDestroyed,
 		ResurrectedAccounts: expectedResurrected,
 	}
-	encoded, _ := rlp.EncodeToBytes(list)
+	encoded, _ := encodeSuicidedAccountLists(list)
 
 	decoded, err := DecodeAddressList(encoded)
 	assert.Nil(t, err)
