@@ -4,6 +4,8 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/holiman/uint256"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/0xsoniclabs/substate/types"
@@ -14,11 +16,11 @@ func TestWorldState_Add(t *testing.T) {
 	addr2 := types.Address{2}
 	acc := &Account{
 		Nonce:   2,
-		Balance: new(big.Int).SetUint64(2),
+		Balance: new(uint256.Int).SetUint64(2),
 		Code:    []byte{2},
 	}
 
-	worldState := make(WorldState).Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1})
+	worldState := make(WorldState).Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1})
 	worldState.Add(addr2, acc.Nonce, acc.Balance, acc.Code)
 
 	if len(worldState) != 2 {
@@ -33,14 +35,14 @@ func TestWorldState_Add(t *testing.T) {
 func TestWorldState_MergeOneAccount(t *testing.T) {
 	addr := types.Address{1}
 
-	worldState := make(WorldState).Add(addr, 1, new(big.Int).SetUint64(1), []byte{1})
-	worldStateToMerge := make(WorldState).Add(addr, 2, new(big.Int).SetUint64(2), []byte{2})
+	worldState := make(WorldState).Add(addr, 1, new(uint256.Int).SetUint64(1), []byte{1})
+	worldStateToMerge := make(WorldState).Add(addr, 2, new(uint256.Int).SetUint64(2), []byte{2})
 
 	worldState.Merge(worldStateToMerge)
 
 	acc := &Account{
 		Nonce:   2,
-		Balance: new(big.Int).SetUint64(2),
+		Balance: new(uint256.Int).SetUint64(2),
 		Code:    []byte{2},
 	}
 
@@ -54,14 +56,14 @@ func TestWorldState_MergeTwoAccounts(t *testing.T) {
 	addr1 := types.Address{1}
 	addr2 := types.Address{2}
 
-	worldState := make(WorldState).Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1})
-	worldStateToMerge := make(WorldState).Add(addr2, 2, new(big.Int).SetUint64(2), []byte{2})
+	worldState := make(WorldState).Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1})
+	worldStateToMerge := make(WorldState).Add(addr2, 2, new(uint256.Int).SetUint64(2), []byte{2})
 
 	worldState.Merge(worldStateToMerge)
 
 	want1 := &Account{
 		Nonce:   1,
-		Balance: new(big.Int).SetUint64(1),
+		Balance: new(uint256.Int).SetUint64(1),
 		Code:    []byte{1},
 	}
 
@@ -75,7 +77,7 @@ func TestWorldState_MergeTwoAccounts(t *testing.T) {
 
 	want2 := &Account{
 		Nonce:   2,
-		Balance: new(big.Int).SetUint64(2),
+		Balance: new(uint256.Int).SetUint64(2),
 		Code:    []byte{2},
 	}
 
@@ -89,8 +91,8 @@ func TestWorldState_EstimateIncrementalSize_NewWorldState(t *testing.T) {
 	addr1 := types.Address{1}
 	addr2 := types.Address{2}
 
-	worldState := make(WorldState).Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1})
-	worldStateToEstimate := make(WorldState).Add(addr2, 2, new(big.Int).SetUint64(2), []byte{2})
+	worldState := make(WorldState).Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1})
+	worldStateToEstimate := make(WorldState).Add(addr2, 2, new(uint256.Int).SetUint64(2), []byte{2})
 
 	want := sizeOfAddress + sizeOfNonce + uint64(len(worldStateToEstimate[addr2].Balance.Bytes())) + sizeOfHash
 
@@ -103,8 +105,8 @@ func TestWorldState_EstimateIncrementalSize_NewWorldState(t *testing.T) {
 func TestWorldState_EstimateIncrementalSize_SameWorldState(t *testing.T) {
 	addr1 := types.Address{1}
 
-	worldState := make(WorldState).Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1})
-	worldStateToEstimate := make(WorldState).Add(addr1, 2, new(big.Int).SetUint64(2), []byte{2})
+	worldState := make(WorldState).Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1})
+	worldStateToEstimate := make(WorldState).Add(addr1, 2, new(uint256.Int).SetUint64(2), []byte{2})
 
 	// since we don't add anything, size should not be increased
 	if got := worldState.EstimateIncrementalSize(worldStateToEstimate); got != 0 {
@@ -115,8 +117,8 @@ func TestWorldState_EstimateIncrementalSize_SameWorldState(t *testing.T) {
 func TestWorldState_EstimateIncrementalSize_AddingStorageHash(t *testing.T) {
 	addr1 := types.Address{1}
 
-	worldState := make(WorldState).Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1})
-	worldStateToEstimate := make(WorldState).Add(addr1, 2, new(big.Int).SetUint64(2), []byte{2})
+	worldState := make(WorldState).Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1})
+	worldStateToEstimate := make(WorldState).Add(addr1, 2, new(uint256.Int).SetUint64(2), []byte{2})
 	worldStateToEstimate[addr1].Storage[types.Hash{1}] = types.Hash{1}
 
 	// we add one key to already existing account, this size is increased by the sizeOfHash
@@ -128,8 +130,8 @@ func TestWorldState_EstimateIncrementalSize_AddingStorageHash(t *testing.T) {
 // todo diff tests
 
 func TestWorldState_Equal(t *testing.T) {
-	worldState := make(WorldState).Add(types.Address{1}, 1, new(big.Int).SetUint64(1), []byte{1})
-	comparedWorldStateEqual := make(WorldState).Add(types.Address{1}, 1, new(big.Int).SetUint64(1), []byte{1})
+	worldState := make(WorldState).Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), []byte{1})
+	comparedWorldStateEqual := make(WorldState).Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), []byte{1})
 
 	if !worldState.Equal(comparedWorldStateEqual) {
 		t.Fatal("world states are same but equal returned false")
@@ -137,8 +139,8 @@ func TestWorldState_Equal(t *testing.T) {
 }
 
 func TestWorldState_NotEqual(t *testing.T) {
-	worldState := make(WorldState).Add(types.Address{1}, 1, new(big.Int).SetUint64(1), []byte{1})
-	comparedWorldStateEqual := make(WorldState).Add(types.Address{2}, 1, new(big.Int).SetUint64(1), []byte{1})
+	worldState := make(WorldState).Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), []byte{1})
+	comparedWorldStateEqual := make(WorldState).Add(types.Address{2}, 1, new(uint256.Int).SetUint64(1), []byte{1})
 
 	if worldState.Equal(comparedWorldStateEqual) {
 		t.Fatal("world states are different but equal returned false")
@@ -146,11 +148,11 @@ func TestWorldState_NotEqual(t *testing.T) {
 }
 
 func TestWorldState_NotEqual_DifferentLen(t *testing.T) {
-	worldState := make(WorldState).Add(types.Address{1}, 1, new(big.Int).SetUint64(1), []byte{1})
-	comparedWorldStateEqual := make(WorldState).Add(types.Address{2}, 1, new(big.Int).SetUint64(1), []byte{1})
+	worldState := make(WorldState).Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), []byte{1})
+	comparedWorldStateEqual := make(WorldState).Add(types.Address{2}, 1, new(uint256.Int).SetUint64(1), []byte{1})
 
 	// add one more acc to world state
-	worldState.Add(types.Address{2}, 1, new(big.Int).SetUint64(1), []byte{1})
+	worldState.Add(types.Address{2}, 1, new(uint256.Int).SetUint64(1), []byte{1})
 
 	if worldState.Equal(comparedWorldStateEqual) {
 		t.Fatal("world states are different but equal returned false")
@@ -160,7 +162,7 @@ func TestWorldState_NotEqual_DifferentLen(t *testing.T) {
 func TestWorld_Copy(t *testing.T) {
 	hashOne := types.BigToHash(new(big.Int).SetUint64(1))
 	hashTwo := types.BigToHash(new(big.Int).SetUint64(2))
-	acc := NewAccount(1, new(big.Int).SetUint64(1), []byte{1})
+	acc := NewAccount(1, new(uint256.Int).SetUint64(1), []byte{1})
 	acc.Storage = make(map[types.Hash]types.Hash)
 	acc.Storage[hashOne] = hashTwo
 
@@ -188,36 +190,36 @@ func TestWorldState_Diff(t *testing.T) {
 		},
 		{
 			name:     "account only in first state",
-			ws1:      make(WorldState).Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1}),
+			ws1:      make(WorldState).Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1}),
 			ws2:      make(WorldState),
-			expected: make(WorldState).Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1}),
+			expected: make(WorldState).Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1}),
 		},
 		{
 			name:     "same account different values",
-			ws1:      make(WorldState).Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1}),
-			ws2:      make(WorldState).Add(addr1, 2, new(big.Int).SetUint64(2), []byte{2}),
-			expected: make(WorldState).Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1}),
+			ws1:      make(WorldState).Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1}),
+			ws2:      make(WorldState).Add(addr1, 2, new(uint256.Int).SetUint64(2), []byte{2}),
+			expected: make(WorldState).Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1}),
 		},
 		{
 			name:     "same account same values",
-			ws1:      make(WorldState).Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1}),
-			ws2:      make(WorldState).Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1}),
+			ws1:      make(WorldState).Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1}),
+			ws2:      make(WorldState).Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1}),
 			expected: make(WorldState),
 		},
 		{
 			name: "different storage values",
 			ws1: func() WorldState {
-				ws := make(WorldState).Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1})
+				ws := make(WorldState).Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1})
 				ws[addr1].Storage[types.Hash{1}] = types.Hash{2}
 				return ws
 			}(),
 			ws2: func() WorldState {
-				ws := make(WorldState).Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1})
+				ws := make(WorldState).Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1})
 				ws[addr1].Storage[types.Hash{1}] = types.Hash{3}
 				return ws
 			}(),
 			expected: func() WorldState {
-				ws := make(WorldState).Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1})
+				ws := make(WorldState).Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1})
 				ws[addr1].Storage[types.Hash{1}] = types.Hash{2}
 				return ws
 			}(),
@@ -225,13 +227,13 @@ func TestWorldState_Diff(t *testing.T) {
 		{
 			name: "storage value exists only in first state",
 			ws1: func() WorldState {
-				ws := make(WorldState).Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1})
+				ws := make(WorldState).Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1})
 				ws[addr1].Storage[types.Hash{1}] = types.Hash{2}
 				return ws
 			}(),
-			ws2: make(WorldState).Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1}),
+			ws2: make(WorldState).Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1}),
 			expected: func() WorldState {
-				ws := make(WorldState).Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1})
+				ws := make(WorldState).Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1})
 				ws[addr1].Storage[types.Hash{1}] = types.Hash{2}
 				return ws
 			}(),
@@ -240,23 +242,23 @@ func TestWorldState_Diff(t *testing.T) {
 			name: "multiple accounts with different storages",
 			ws1: func() WorldState {
 				ws := make(WorldState)
-				ws.Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1})
-				ws.Add(addr2, 2, new(big.Int).SetUint64(2), []byte{2})
+				ws.Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1})
+				ws.Add(addr2, 2, new(uint256.Int).SetUint64(2), []byte{2})
 				ws[addr1].Storage[types.Hash{1}] = types.Hash{2}
 				ws[addr2].Storage[types.Hash{3}] = types.Hash{4}
 				return ws
 			}(),
 			ws2: func() WorldState {
 				ws := make(WorldState)
-				ws.Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1})
-				ws.Add(addr2, 2, new(big.Int).SetUint64(2), []byte{2})
+				ws.Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1})
+				ws.Add(addr2, 2, new(uint256.Int).SetUint64(2), []byte{2})
 				ws[addr1].Storage[types.Hash{1}] = types.Hash{3}
 				return ws
 			}(),
 			expected: func() WorldState {
 				ws := make(WorldState)
-				ws.Add(addr1, 1, new(big.Int).SetUint64(1), []byte{1})
-				ws.Add(addr2, 2, new(big.Int).SetUint64(2), []byte{2})
+				ws.Add(addr1, 1, new(uint256.Int).SetUint64(1), []byte{1})
+				ws.Add(addr2, 2, new(uint256.Int).SetUint64(2), []byte{2})
 				ws[addr1].Storage[types.Hash{1}] = types.Hash{2}
 				ws[addr2].Storage[types.Hash{3}] = types.Hash{4}
 				return ws
@@ -290,7 +292,7 @@ func TestWorldState_EstimateIncrementalSize(t *testing.T) {
 			ws:   make(WorldState),
 			y: func() WorldState {
 				ws := make(WorldState)
-				ws.Add(types.Address{1}, 1, new(big.Int).SetUint64(1), []byte{1})
+				ws.Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), []byte{1})
 				return ws
 			}(),
 			// address + nonce + balance (1 byte) + codehash
@@ -301,7 +303,7 @@ func TestWorldState_EstimateIncrementalSize(t *testing.T) {
 			ws:   make(WorldState),
 			y: func() WorldState {
 				ws := make(WorldState)
-				acc := ws.Add(types.Address{1}, 1, new(big.Int).SetUint64(1), []byte{1})
+				acc := ws.Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), []byte{1})
 				acc[types.Address{1}].Storage[types.Hash{1}] = types.Hash{2}
 				acc[types.Address{1}].Storage[types.Hash{2}] = types.Hash{3}
 				return ws
@@ -312,10 +314,10 @@ func TestWorldState_EstimateIncrementalSize(t *testing.T) {
 		{
 			name: "existing account with same values",
 			ws: func() WorldState {
-				return make(WorldState).Add(types.Address{1}, 1, new(big.Int).SetUint64(1), []byte{1})
+				return make(WorldState).Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), []byte{1})
 			}(),
 			y: func() WorldState {
-				return make(WorldState).Add(types.Address{1}, 1, new(big.Int).SetUint64(1), []byte{1})
+				return make(WorldState).Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), []byte{1})
 			}(),
 			expected: 0,
 		},
@@ -323,13 +325,13 @@ func TestWorldState_EstimateIncrementalSize(t *testing.T) {
 			name: "existing account with new storage keys",
 			ws: func() WorldState {
 				ws := make(WorldState)
-				acc := ws.Add(types.Address{1}, 1, new(big.Int).SetUint64(1), []byte{1})
+				acc := ws.Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), []byte{1})
 				acc[types.Address{1}].Storage[types.Hash{1}] = types.Hash{2}
 				return ws
 			}(),
 			y: func() WorldState {
 				ws := make(WorldState)
-				acc := ws.Add(types.Address{1}, 1, new(big.Int).SetUint64(1), []byte{1})
+				acc := ws.Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), []byte{1})
 				acc[types.Address{1}].Storage[types.Hash{1}] = types.Hash{2}
 				acc[types.Address{1}].Storage[types.Hash{2}] = types.Hash{3}
 				return ws
@@ -341,18 +343,18 @@ func TestWorldState_EstimateIncrementalSize(t *testing.T) {
 			name: "multiple accounts with mixed scenarios",
 			ws: func() WorldState {
 				ws := make(WorldState)
-				acc1 := ws.Add(types.Address{1}, 1, new(big.Int).SetUint64(1), []byte{1})
+				acc1 := ws.Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), []byte{1})
 				acc1[types.Address{1}].Storage[types.Hash{1}] = types.Hash{2}
 				return ws
 			}(),
 			y: func() WorldState {
 				ws := make(WorldState)
 				// existing account with new storage
-				acc1 := ws.Add(types.Address{1}, 1, new(big.Int).SetUint64(1), []byte{1})
+				acc1 := ws.Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), []byte{1})
 				acc1[types.Address{1}].Storage[types.Hash{1}] = types.Hash{2}
 				acc1[types.Address{1}].Storage[types.Hash{2}] = types.Hash{3}
 				// completely new account with storage
-				acc2 := ws.Add(types.Address{2}, 2, new(big.Int).SetUint64(2), []byte{2})
+				acc2 := ws.Add(types.Address{2}, 2, new(uint256.Int).SetUint64(2), []byte{2})
 				acc2[types.Address{2}].Storage[types.Hash{3}] = types.Hash{4}
 				return ws
 			}(),
@@ -387,13 +389,13 @@ func TestWorldState_Merge(t *testing.T) {
 			ws:   make(WorldState),
 			y: func() WorldState {
 				ws := make(WorldState)
-				acc := ws.Add(types.Address{1}, 1, new(big.Int).SetUint64(100), []byte{1})
+				acc := ws.Add(types.Address{1}, 1, new(uint256.Int).SetUint64(100), []byte{1})
 				acc[types.Address{1}].Storage[types.Hash{1}] = types.Hash{2}
 				return ws
 			}(),
 			expected: func() WorldState {
 				ws := make(WorldState)
-				acc := ws.Add(types.Address{1}, 1, new(big.Int).SetUint64(100), []byte{1})
+				acc := ws.Add(types.Address{1}, 1, new(uint256.Int).SetUint64(100), []byte{1})
 				acc[types.Address{1}].Storage[types.Hash{1}] = types.Hash{2}
 				return ws
 			}(),
@@ -401,42 +403,42 @@ func TestWorldState_Merge(t *testing.T) {
 		{
 			name: "merge existing account with same values",
 			ws: func() WorldState {
-				return make(WorldState).Add(types.Address{1}, 1, new(big.Int).SetUint64(100), []byte{1})
+				return make(WorldState).Add(types.Address{1}, 1, new(uint256.Int).SetUint64(100), []byte{1})
 			}(),
 			y: func() WorldState {
-				return make(WorldState).Add(types.Address{1}, 1, new(big.Int).SetUint64(100), []byte{1})
+				return make(WorldState).Add(types.Address{1}, 1, new(uint256.Int).SetUint64(100), []byte{1})
 			}(),
 			expected: func() WorldState {
-				return make(WorldState).Add(types.Address{1}, 1, new(big.Int).SetUint64(100), []byte{1})
+				return make(WorldState).Add(types.Address{1}, 1, new(uint256.Int).SetUint64(100), []byte{1})
 			}(),
 		},
 		{
 			name: "merge existing account with different values",
 			ws: func() WorldState {
-				return make(WorldState).Add(types.Address{1}, 1, new(big.Int).SetUint64(100), []byte{1})
+				return make(WorldState).Add(types.Address{1}, 1, new(uint256.Int).SetUint64(100), []byte{1})
 			}(),
 			y: func() WorldState {
-				return make(WorldState).Add(types.Address{1}, 2, new(big.Int).SetUint64(200), []byte{2})
+				return make(WorldState).Add(types.Address{1}, 2, new(uint256.Int).SetUint64(200), []byte{2})
 			}(),
 			expected: func() WorldState {
-				return make(WorldState).Add(types.Address{1}, 2, new(big.Int).SetUint64(200), []byte{2})
+				return make(WorldState).Add(types.Address{1}, 2, new(uint256.Int).SetUint64(200), []byte{2})
 			}(),
 		},
 		{
 			name: "merge account with storage",
 			ws: func() WorldState {
-				ws := make(WorldState).Add(types.Address{1}, 1, new(big.Int).SetUint64(100), []byte{1})
+				ws := make(WorldState).Add(types.Address{1}, 1, new(uint256.Int).SetUint64(100), []byte{1})
 				ws[types.Address{1}].Storage[types.Hash{1}] = types.Hash{1}
 				return ws
 			}(),
 			y: func() WorldState {
-				ws := make(WorldState).Add(types.Address{1}, 1, new(big.Int).SetUint64(100), []byte{1})
+				ws := make(WorldState).Add(types.Address{1}, 1, new(uint256.Int).SetUint64(100), []byte{1})
 				ws[types.Address{1}].Storage[types.Hash{1}] = types.Hash{2}
 				ws[types.Address{1}].Storage[types.Hash{2}] = types.Hash{3}
 				return ws
 			}(),
 			expected: func() WorldState {
-				ws := make(WorldState).Add(types.Address{1}, 1, new(big.Int).SetUint64(100), []byte{1})
+				ws := make(WorldState).Add(types.Address{1}, 1, new(uint256.Int).SetUint64(100), []byte{1})
 				ws[types.Address{1}].Storage[types.Hash{1}] = types.Hash{2}
 				ws[types.Address{1}].Storage[types.Hash{2}] = types.Hash{3}
 				return ws
@@ -446,23 +448,23 @@ func TestWorldState_Merge(t *testing.T) {
 			name: "merge multiple accounts with storage",
 			ws: func() WorldState {
 				ws := make(WorldState)
-				acc1 := ws.Add(types.Address{1}, 1, new(big.Int).SetUint64(100), []byte{1})
+				acc1 := ws.Add(types.Address{1}, 1, new(uint256.Int).SetUint64(100), []byte{1})
 				acc1[types.Address{1}].Storage[types.Hash{1}] = types.Hash{1}
 				return ws
 			}(),
 			y: func() WorldState {
 				ws := make(WorldState)
-				acc1 := ws.Add(types.Address{1}, 2, new(big.Int).SetUint64(200), []byte{2})
+				acc1 := ws.Add(types.Address{1}, 2, new(uint256.Int).SetUint64(200), []byte{2})
 				acc1[types.Address{1}].Storage[types.Hash{1}] = types.Hash{2}
-				acc2 := ws.Add(types.Address{2}, 3, new(big.Int).SetUint64(300), []byte{3})
+				acc2 := ws.Add(types.Address{2}, 3, new(uint256.Int).SetUint64(300), []byte{3})
 				acc2[types.Address{2}].Storage[types.Hash{3}] = types.Hash{4}
 				return ws
 			}(),
 			expected: func() WorldState {
 				ws := make(WorldState)
-				acc1 := ws.Add(types.Address{1}, 2, new(big.Int).SetUint64(200), []byte{2})
+				acc1 := ws.Add(types.Address{1}, 2, new(uint256.Int).SetUint64(200), []byte{2})
 				acc1[types.Address{1}].Storage[types.Hash{1}] = types.Hash{2}
-				acc2 := ws.Add(types.Address{2}, 3, new(big.Int).SetUint64(300), []byte{3})
+				acc2 := ws.Add(types.Address{2}, 3, new(uint256.Int).SetUint64(300), []byte{3})
 				acc2[types.Address{2}].Storage[types.Hash{3}] = types.Hash{4}
 				return ws
 			}(),

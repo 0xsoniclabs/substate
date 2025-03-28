@@ -1,8 +1,9 @@
 package rlp
 
 import (
-	"math/big"
 	"sort"
+
+	"github.com/holiman/uint256"
 
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
@@ -11,7 +12,7 @@ import (
 func NewRLPAccount(acc *substate.Account) *SubstateAccountRLP {
 	a := &SubstateAccountRLP{
 		Nonce:    acc.Nonce,
-		Balance:  new(big.Int).Set(acc.Balance),
+		Balance:  new(uint256.Int).Set(acc.Balance),
 		CodeHash: acc.CodeHash(),
 		Storage:  [][2]types.Hash{},
 	}
@@ -35,7 +36,7 @@ func NewRLPAccount(acc *substate.Account) *SubstateAccountRLP {
 
 type SubstateAccountRLP struct {
 	Nonce    uint64
-	Balance  *big.Int
+	Balance  *uint256.Int
 	CodeHash types.Hash
 	Storage  [][2]types.Hash
 }

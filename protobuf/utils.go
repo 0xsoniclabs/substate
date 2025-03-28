@@ -7,6 +7,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/0xsoniclabs/substate/types"
+	"github.com/holiman/uint256"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 )
 
@@ -59,6 +60,13 @@ func BytesToBigInt(b []byte) *big.Int {
 		return nil
 	}
 	return new(big.Int).SetBytes(b)
+}
+
+func BytesToUint256(b []byte) *uint256.Int {
+	if b == nil {
+		return nil
+	}
+	return new(uint256.Int).SetBytes(b)
 }
 
 func BigIntToBytes(i *big.Int) []byte {

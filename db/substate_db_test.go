@@ -6,6 +6,8 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/holiman/uint256"
+
 	"github.com/0xsoniclabs/substate/protobuf"
 	"github.com/stretchr/testify/assert"
 	"github.com/syndtr/goleveldb/leveldb"
@@ -21,8 +23,8 @@ import (
 func getTestSubstate(encoding string) *substate.Substate {
 	txType := int32(substate.AccessListTxType)
 	ss := &substate.Substate{
-		InputSubstate:  substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
-		OutputSubstate: substate.NewWorldState().Add(types.Address{2}, 2, new(big.Int).SetUint64(2), nil),
+		InputSubstate:  substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
+		OutputSubstate: substate.NewWorldState().Add(types.Address{2}, 2, new(uint256.Int).SetUint64(2), nil),
 		Env: &substate.Env{
 			Coinbase:   types.Address{1},
 			Difficulty: new(big.Int).SetUint64(1),

@@ -3,9 +3,12 @@ package rlp
 import (
 	"fmt"
 	"io"
+	"log"
 	"math/big"
 	"reflect"
 	"sync"
+
+	"github.com/holiman/uint256"
 )
 
 // Encoder is implemented by types that require custom
@@ -335,8 +338,12 @@ func makeWriter(typ reflect.Type, ts tags) (writer, error) {
 		return writeRawValue, nil
 	case typ.AssignableTo(reflect.PtrTo(bigInt)):
 		return writeBigIntPtr, nil
+	case typ.AssignableTo(reflect.PtrTo(uint256Int)):
+		return writeUint256Ptr, nil
 	case typ.AssignableTo(bigInt):
 		return writeBigIntNoPtr, nil
+	case typ.AssignableTo(uint256Int):
+		return writeUint256NoPtr, nil
 	case kind == reflect.Ptr:
 		return makePtrWriter(typ, ts)
 	case reflect.PtrTo(typ).Implements(encoderInterface):
@@ -358,6 +365,7 @@ func makeWriter(typ reflect.Type, ts tags) (writer, error) {
 	case kind == reflect.Interface:
 		return writeInterface, nil
 	default:
+		log.Printf("rlp: unsupported type %v", typ)
 		return nil, fmt.Errorf("rlp: type %v is not RLP-serializable", typ)
 	}
 }
@@ -390,9 +398,23 @@ func writeBigIntPtr(val reflect.Value, w *encbuf) error {
 	return writeBigInt(ptr, w)
 }
 
+func writeUint256Ptr(val reflect.Value, w *encbuf) error {
+	ptr := val.Interface().(*uint256.Int)
+	if ptr == nil {
+		w.str = append(w.str, 0x80)
+		return nil
+	}
+	return writeUint256(ptr, w)
+}
+
 func writeBigIntNoPtr(val reflect.Value, w *encbuf) error {
 	i := val.Interface().(big.Int)
 	return writeBigInt(&i, w)
+}
+
+func writeUint256NoPtr(val reflect.Value, w *encbuf) error {
+	i := val.Interface().(uint256.Int)
+	return writeUint256(&i, w)
 }
 
 // wordBytes is the number of bytes in a big.Word
@@ -422,6 +444,11 @@ func writeBigInt(i *big.Int, w *encbuf) error {
 			d >>= 8
 		}
 	}
+	return nil
+}
+
+func writeUint256(i *uint256.Int, w *encbuf) error {
+	w.encodeString(i.Bytes())
 	return nil
 }
 

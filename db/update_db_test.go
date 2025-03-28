@@ -3,8 +3,9 @@ package db
 import (
 	"errors"
 	"fmt"
-	"math/big"
 	"testing"
+
+	"github.com/holiman/uint256"
 
 	trlp "github.com/0xsoniclabs/substate/types/rlp"
 	"github.com/stretchr/testify/assert"
@@ -22,11 +23,11 @@ var testUpdateSet = &updateset.UpdateSet{
 	WorldState: substate.WorldState{
 		types.Address{1}: &substate.Account{
 			Nonce:   1,
-			Balance: new(big.Int).SetUint64(1),
+			Balance: new(uint256.Int).SetUint64(1),
 		},
 		types.Address{2}: &substate.Account{
 			Nonce:   2,
-			Balance: new(big.Int).SetUint64(2),
+			Balance: new(uint256.Int).SetUint64(2),
 		},
 	},
 	Block: 1,
@@ -315,7 +316,7 @@ func TestUpdateDB_GetUpdateSetSuccess(t *testing.T) {
 
 	encodedData, _ := trlp.EncodeToBytes(updateset.UpdateSetRLP{
 		WorldState: updateset.UpdateSet{
-			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
 			Block:           0,
 			DeletedAccounts: []types.Address{},
 		}.ToWorldStateRLP(),
@@ -380,7 +381,7 @@ func TestUpdateDB_PutUpdateSetSuccess(t *testing.T) {
 		WorldState: substate.WorldState{
 			types.Address{1}: &substate.Account{
 				Nonce:   1,
-				Balance: new(big.Int).SetUint64(1),
+				Balance: new(uint256.Int).SetUint64(1),
 				Code:    []byte{0x01, 0x02},
 			},
 		},
@@ -410,7 +411,7 @@ func TestUpdateDB_PutUpdateSetFail(t *testing.T) {
 		WorldState: substate.WorldState{
 			types.Address{1}: &substate.Account{
 				Nonce:   1,
-				Balance: new(big.Int).SetUint64(1),
+				Balance: new(uint256.Int).SetUint64(1),
 				Code:    []byte{0x01, 0x02},
 			},
 		},
@@ -483,7 +484,7 @@ func TestUpdateDB_NewUpdateSetIterator(t *testing.T) {
 	kv := &testutil.KeyValue{}
 	rlpData, _ := trlp.EncodeToBytes(updateset.UpdateSetRLP{
 		WorldState: updateset.UpdateSet{
-			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
 			Block:           0,
 			DeletedAccounts: []types.Address{},
 		}.ToWorldStateRLP(),
