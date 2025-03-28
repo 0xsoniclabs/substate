@@ -100,9 +100,17 @@ func decodeRlp(bytes []byte, lookup codeLookupFunc, block uint64, tx int) (*subs
 
 // encodeRlp encodes substate into rlp-encoded bytes
 func encodeRlp(ss *substate.Substate, block uint64, tx int) ([]byte, error) {
-	bytes, err := trlp.EncodeToBytes(rlp.NewRLP(ss))
+	t := rlp.NewRLP(ss)
+	bytes, err := trlp.EncodeToBytes(t)
 	if err != nil {
 		return nil, fmt.Errorf("cannot encode substate into rlp block: %v, tx %v; %w", block, tx, err)
+	}
+
+	// test decode
+	o := &rlp.RLP{}
+	err = trlp.DecodeBytes(bytes, o)
+	if err != nil {
+		return nil, fmt.Errorf("cannot decode substate into rlp block: %v, tx %v; %w", block, tx, err)
 	}
 
 	return bytes, nil

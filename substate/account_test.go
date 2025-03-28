@@ -4,6 +4,8 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/holiman/uint256"
+
 	"github.com/0xsoniclabs/substate/types/hash"
 	"github.com/stretchr/testify/assert"
 
@@ -11,8 +13,8 @@ import (
 )
 
 func TestAccount_EqualNonce(t *testing.T) {
-	acc := NewAccount(1, new(big.Int).SetUint64(1), []byte{1})
-	comparedNonceAcc := NewAccount(2, new(big.Int).SetUint64(1), []byte{1})
+	acc := NewAccount(1, new(uint256.Int).SetUint64(1), []byte{1})
+	comparedNonceAcc := NewAccount(2, new(uint256.Int).SetUint64(1), []byte{1})
 
 	if acc.Equal(comparedNonceAcc) {
 		t.Fatal("accounts nonce are different but equal returned true")
@@ -25,8 +27,8 @@ func TestAccount_EqualNonce(t *testing.T) {
 }
 
 func TestAccount_EqualBalance(t *testing.T) {
-	acc := NewAccount(1, new(big.Int).SetUint64(1), []byte{1})
-	comparedBalanceAcc := NewAccount(1, new(big.Int).SetUint64(2), []byte{1})
+	acc := NewAccount(1, new(uint256.Int).SetUint64(1), []byte{1})
+	comparedBalanceAcc := NewAccount(1, new(uint256.Int).SetUint64(2), []byte{1})
 
 	if acc.Equal(comparedBalanceAcc) {
 		t.Fatal("accounts balances are different but equal returned true")
@@ -43,12 +45,12 @@ func TestAccount_EqualStorage(t *testing.T) {
 	hashTwo := types.BigToHash(new(big.Int).SetUint64(2))
 	hashThree := types.BigToHash(new(big.Int).SetUint64(3))
 
-	acc := NewAccount(1, new(big.Int).SetUint64(1), []byte{1})
+	acc := NewAccount(1, new(uint256.Int).SetUint64(1), []byte{1})
 	acc.Storage = make(map[types.Hash]types.Hash)
 	acc.Storage[hashOne] = hashTwo
 
 	// first compare with no storage
-	comparedStorageAcc := NewAccount(1, new(big.Int).SetUint64(1), []byte{1})
+	comparedStorageAcc := NewAccount(1, new(uint256.Int).SetUint64(1), []byte{1})
 	if acc.Equal(comparedStorageAcc) {
 		t.Fatal("accounts storages are different but equal returned true")
 	}
@@ -77,8 +79,8 @@ func TestAccount_EqualStorage(t *testing.T) {
 }
 
 func TestAccount_EqualCode(t *testing.T) {
-	acc := NewAccount(1, new(big.Int).SetUint64(1), []byte{1})
-	comparedCodeAcc := NewAccount(1, new(big.Int).SetUint64(1), []byte{2})
+	acc := NewAccount(1, new(uint256.Int).SetUint64(1), []byte{1})
+	comparedCodeAcc := NewAccount(1, new(uint256.Int).SetUint64(1), []byte{2})
 	if acc.Equal(comparedCodeAcc) {
 		t.Fatal("accounts codes are different but equal returned true")
 	}
@@ -93,7 +95,7 @@ func TestAccount_EqualCode(t *testing.T) {
 func TestAccount_Copy(t *testing.T) {
 	hashOne := types.BigToHash(new(big.Int).SetUint64(1))
 	hashTwo := types.BigToHash(new(big.Int).SetUint64(2))
-	acc := NewAccount(1, new(big.Int).SetUint64(1), []byte{1})
+	acc := NewAccount(1, new(uint256.Int).SetUint64(1), []byte{1})
 	acc.Storage = make(map[types.Hash]types.Hash)
 	acc.Storage[hashOne] = hashTwo
 
@@ -104,7 +106,7 @@ func TestAccount_Copy(t *testing.T) {
 }
 
 func TestAccount_CodeHash(t *testing.T) {
-	acc := NewAccount(1, new(big.Int).SetUint64(1), []byte{1})
+	acc := NewAccount(1, new(uint256.Int).SetUint64(1), []byte{1})
 	expectedHash := hash.Keccak256Hash(acc.Code)
 	assert.Equal(t, expectedHash, acc.CodeHash())
 }
@@ -112,7 +114,7 @@ func TestAccount_CodeHash(t *testing.T) {
 func TestAccount_String(t *testing.T) {
 	hashOne := types.BigToHash(new(big.Int).SetUint64(1))
 	hashTwo := types.BigToHash(new(big.Int).SetUint64(2))
-	acc := NewAccount(1, new(big.Int).SetUint64(1), []byte{1})
+	acc := NewAccount(1, new(uint256.Int).SetUint64(1), []byte{1})
 	acc.Storage = make(map[types.Hash]types.Hash)
 	acc.Storage[hashOne] = hashTwo
 	expectedString := "Nonce: 1\nBalance: 1\nCode: \x01\nStorage:0x0000000000000000000000000000000000000000000000000000000000000001: 0x0000000000000000000000000000000000000000000000000000000000000002\n"
@@ -120,11 +122,11 @@ func TestAccount_String(t *testing.T) {
 }
 
 func TestAccount_EqualSelf(t *testing.T) {
-	acc := NewAccount(1, new(big.Int).SetUint64(1), []byte{1})
+	acc := NewAccount(1, new(uint256.Int).SetUint64(1), []byte{1})
 	assert.Equal(t, true, acc.Equal(acc))
 }
 
 func TestAccount_EqualNil(t *testing.T) {
-	acc := NewAccount(1, new(big.Int).SetUint64(1), []byte{1})
+	acc := NewAccount(1, new(uint256.Int).SetUint64(1), []byte{1})
 	assert.Equal(t, false, acc.Equal(nil))
 }

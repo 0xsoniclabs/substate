@@ -5,6 +5,8 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/holiman/uint256"
+
 	"github.com/0xsoniclabs/substate/types"
 	"github.com/0xsoniclabs/substate/types/rlp"
 )
@@ -101,7 +103,7 @@ func Test_ToSubstateLooksAccountsCodeHashInDatabase(t *testing.T) {
 		OutputSubstate: WorldState{
 			Addresses: []types.Address{addr1},
 			Accounts: []*SubstateAccountRLP{{
-				Balance:  big.NewInt(10),
+				Balance:  uint256.NewInt(10),
 				CodeHash: baseHash,
 			}},
 		},

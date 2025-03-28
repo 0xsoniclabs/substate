@@ -2,9 +2,10 @@ package db
 
 import (
 	"errors"
-	"math/big"
 	"testing"
 	"time"
+
+	"github.com/holiman/uint256"
 
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
@@ -101,7 +102,7 @@ func TestUpdateSetIterator_DecodeSuccess(t *testing.T) {
 
 	// Create sample RLP data
 	mockWorldState := updateset.UpdateSet{
-		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
 		Block:           0,
 		DeletedAccounts: []types.Address{},
 	}
@@ -165,7 +166,7 @@ func TestUpdateSetIterator_DecodeFail(t *testing.T) {
 	// Create sample update set
 	// Create sample RLP data
 	mockWorldState := updateset.UpdateSet{
-		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
 		Block:           0,
 		DeletedAccounts: []types.Address{},
 	}
@@ -199,7 +200,7 @@ func TestUpdateSetIterator_StartSuccess(t *testing.T) {
 
 	rlpData, _ := rlp.EncodeToBytes(updateset.UpdateSetRLP{
 		WorldState: updateset.UpdateSet{
-			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
 			Block:           0,
 			DeletedAccounts: []types.Address{},
 		}.ToWorldStateRLP(),
@@ -233,7 +234,7 @@ func TestUpdateSetIterator_StartDecodeKeyFail(t *testing.T) {
 
 	rlpData, _ := rlp.EncodeToBytes(updateset.UpdateSetRLP{
 		WorldState: updateset.UpdateSet{
-			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
 			Block:           0,
 			DeletedAccounts: []types.Address{},
 		}.ToWorldStateRLP(),
@@ -264,7 +265,7 @@ func TestUpdateSetIterator_StartDecodeValueFail(t *testing.T) {
 
 	rlpData, _ := rlp.EncodeToBytes(updateset.UpdateSetRLP{
 		WorldState: updateset.UpdateSet{
-			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
 			Block:           0,
 			DeletedAccounts: []types.Address{},
 		}.ToWorldStateRLP(),

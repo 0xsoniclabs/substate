@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/holiman/uint256"
+
 	"github.com/0xsoniclabs/substate/protobuf"
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
@@ -161,7 +163,7 @@ func getSubstate() *substate.Substate {
 		InputSubstate: substate.WorldState{
 			types.Address{0x01}: &substate.Account{
 				Nonce:   1,
-				Balance: big.NewInt(1000),
+				Balance: uint256.NewInt(1000),
 				Storage: map[types.Hash]types.Hash{
 					{0x01}: {0x02},
 				},
@@ -170,7 +172,7 @@ func getSubstate() *substate.Substate {
 		OutputSubstate: substate.WorldState{
 			types.Address{0x04}: &substate.Account{
 				Nonce:   1,
-				Balance: big.NewInt(2000),
+				Balance: uint256.NewInt(2000),
 				Storage: map[types.Hash]types.Hash{
 					{0xCD}: {0xAB},
 				},

@@ -1,8 +1,9 @@
 package substate
 
 import (
-	"math/big"
 	"testing"
+
+	"github.com/holiman/uint256"
 
 	"github.com/0xsoniclabs/substate/types"
 	"github.com/stretchr/testify/assert"
@@ -47,7 +48,7 @@ func TestSubstate_Equal(t *testing.T) {
 
 	// preState test
 	candidate := NewSubstate(
-		NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+		NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
 		postState, env, message, result, block, transaction,
 	)
 	assert.NotNil(t, substate.Equal(candidate))
@@ -55,7 +56,7 @@ func TestSubstate_Equal(t *testing.T) {
 	// postState test
 	candidate = NewSubstate(
 		preState,
-		NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+		NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
 		env, message, result, block, transaction,
 	)
 	assert.NotNil(t, substate.Equal(candidate))

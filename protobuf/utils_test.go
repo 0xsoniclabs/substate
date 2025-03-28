@@ -2,8 +2,12 @@ package protobuf
 
 import (
 	"bytes"
+	"log"
 	"math/big"
 	"testing"
+
+	"github.com/0xsoniclabs/substate/types/rlp"
+	"github.com/holiman/uint256"
 
 	"github.com/0xsoniclabs/substate/types/hash"
 
@@ -210,6 +214,21 @@ func TestBytesToBigInt(t *testing.T) {
 
 	bigInt = BytesToBigInt(nil)
 	assert.Nil(t, bigInt)
+}
+
+func TestBytesToUint256(t *testing.T) {
+	//b := []byte{0x01, 0x02, 0x03, 0x04}
+	//
+	//actual := BytesToUint256(b)
+	//expected := new(uint256.Int).SetBytes(b)
+	//assert.Equal(t, expected, actual)
+	input := new(big.Int).SetUint64(1)
+	output := new(uint256.Int).SetUint64(1)
+	log.Printf("input: %d", input)
+	log.Printf("input: %d", output)
+	x, _ := rlp.EncodeToBytes(input)
+	y, _ := rlp.EncodeToBytes(output)
+	assert.Equal(t, x, y)
 }
 
 func TestCodeHash(t *testing.T) {

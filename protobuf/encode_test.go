@@ -6,6 +6,8 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/holiman/uint256"
+
 	"google.golang.org/protobuf/proto"
 
 	"github.com/0xsoniclabs/substate/substate"
@@ -32,7 +34,7 @@ func TestEncode_EncodeSuccess(t *testing.T) {
 		InputSubstate: substate.WorldState{
 			types.Address{0x01}: &substate.Account{
 				Nonce:   1,
-				Balance: big.NewInt(1000),
+				Balance: uint256.NewInt(1000),
 				Storage: map[types.Hash]types.Hash{
 					{0x01}: {0x02},
 				},
@@ -42,7 +44,7 @@ func TestEncode_EncodeSuccess(t *testing.T) {
 		OutputSubstate: substate.WorldState{
 			types.Address{0x04}: &substate.Account{
 				Nonce:   1,
-				Balance: big.NewInt(2000),
+				Balance: uint256.NewInt(2000),
 				Storage: map[types.Hash]types.Hash{
 					{0xCD}: {0xAB},
 				},
@@ -122,7 +124,7 @@ func TestEncode_WorldState(t *testing.T) {
 	ws := substate.WorldState{
 		types.Address{1}: {
 			Nonce:   1,
-			Balance: big.NewInt(100),
+			Balance: uint256.NewInt(100),
 			Storage: map[types.Hash]types.Hash{
 				{1}: {2},
 			},
