@@ -43,31 +43,6 @@ func (s *UpdateSet) Equal(y *UpdateSet) bool {
 
 func (s *UpdateSet) ToWorldStatePB() *pb.Substate_Alloc {
 	return pb.ToProtobufAlloc(s.WorldState)
-	//sw := s.WorldState
-	//world := make([]*UpdateSetRLP_AllocEntry, 0, len(sw))
-	//for addr, acct := range sw {
-	//	storage := make([]*UpdateSetRLP_Account_StorageEntry, 0, len(acct.Storage))
-	//	for key, value := range acct.Storage {
-	//		storage = append(storage, &UpdateSetRLP_Account_StorageEntry{
-	//			Key:   key.Bytes(),
-	//			Value: value.Bytes(),
-	//		})
-	//	}
-	//
-	//	world = append(world, &UpdateSetRLP_AllocEntry{
-	//		Address: addr.Bytes(),
-	//		Account: &UpdateSetRLP_Account{
-	//			Nonce:   &acct.Nonce,
-	//			Balance: acct.Balance.Bytes(),
-	//			Storage: storage,
-	//			Contract: &UpdateSetRLP_Account_CodeHash{
-	//				CodeHash: hash.Keccak256Hash(acct.Code).Bytes(),
-	//			},
-	//		},
-	//	})
-	//}
-	//
-	//return &UpdateSetRLP_Alloc{Alloc: world}
 }
 
 func NewUpdateSetRLP(updateSet *UpdateSet, deletedAccounts []types.Address) UpdateSetPB {
