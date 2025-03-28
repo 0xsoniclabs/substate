@@ -26,6 +26,8 @@ import (
 	"runtime"
 	"sync"
 	"testing"
+
+	"github.com/holiman/uint256"
 )
 
 type testEncoder struct {
@@ -146,6 +148,21 @@ var encTests = []encTest{
 
 	// negative ints are not supported
 	{val: big.NewInt(-1), error: "rlp: cannot encode negative *big.Int"},
+
+	// uint256
+	{val: uint256.NewInt(0), output: "80"},
+	{val: uint256.NewInt(0xFFFFFF), output: "83FFFFFF"},
+	{
+		val:    uint256.NewInt(0).SetBytes(unhex("102030405060708090A0B0C0D0E0F2")),
+		output: "8F102030405060708090A0B0C0D0E0F2",
+	},
+
+	// non-pointer uint256
+	{val: *uint256.NewInt(0), output: "80"},
+	{val: *uint256.NewInt(0xFFFFFF), output: "83FFFFFF"},
+
+	// struct
+	{val: simpleUint256{}, output: "C28080"},
 
 	// byte arrays
 	{val: [0]byte{}, output: "80"},

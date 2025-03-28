@@ -3,8 +3,9 @@ package substate
 import (
 	"bytes"
 	"fmt"
-	"math/big"
 	"strings"
+
+	"github.com/holiman/uint256"
 
 	"github.com/0xsoniclabs/substate/types"
 )
@@ -22,7 +23,7 @@ func NewWorldState() WorldState {
 type WorldState map[types.Address]*Account
 
 // Add assigns new Account to an Address
-func (ws WorldState) Add(addr types.Address, nonce uint64, balance *big.Int, code []byte) WorldState {
+func (ws WorldState) Add(addr types.Address, nonce uint64, balance *uint256.Int, code []byte) WorldState {
 	ws[addr] = NewAccount(nonce, balance, code)
 	return ws
 }
@@ -37,7 +38,7 @@ func (ws WorldState) Merge(y WorldState) {
 
 			// overwrite yAcc details in ws by y
 			ws[yAddr].Nonce = yAcc.Nonce
-			ws[yAddr].Balance = new(big.Int).Set(yAcc.Balance)
+			ws[yAddr].Balance = new(uint256.Int).Set(yAcc.Balance)
 			ws[yAddr].Code = make([]byte, len(yAcc.Code))
 			copy(ws[yAddr].Code, yAcc.Code)
 		} else {

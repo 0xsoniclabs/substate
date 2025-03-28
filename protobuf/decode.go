@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/holiman/uint256"
+
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
 	"github.com/0xsoniclabs/substate/types/hash"
@@ -75,9 +77,9 @@ func (entry *Substate_AllocEntry) decode() ([]byte, *Substate_Account) {
 	return entry.GetAddress(), entry.GetAccount()
 }
 
-func (acct *Substate_Account) decode() (uint64, *big.Int, []byte, types.Hash) {
+func (acct *Substate_Account) decode() (uint64, *uint256.Int, []byte, types.Hash) {
 	return acct.GetNonce(),
-		BytesToBigInt(acct.GetBalance()),
+		BytesToUint256(acct.GetBalance()),
 		acct.GetCode(),
 		types.BytesToHash(acct.GetCodeHash())
 }

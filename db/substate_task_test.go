@@ -2,8 +2,9 @@ package db
 
 import (
 	"errors"
-	"math/big"
 	"testing"
+
+	"github.com/holiman/uint256"
 
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/stretchr/testify/assert"
@@ -260,7 +261,7 @@ func TestSubstateTaskPool_ExecuteBlockSkipSuccess(t *testing.T) {
 	value1 := getTestSubstate("default")
 	value2 := getTestSubstate("default")
 	value2.InputSubstate[*input.Message.To] = substate.NewAccount(
-		0, big.NewInt(0), []byte("code"),
+		0, uint256.NewInt(0), []byte("code"),
 	)
 	value3 := getTestSubstate("default")
 	value3.Message.To = nil

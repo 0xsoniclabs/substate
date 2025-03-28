@@ -5,6 +5,8 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/holiman/uint256"
+
 	"github.com/0xsoniclabs/substate/types/hash"
 
 	"github.com/0xsoniclabs/substate/types"
@@ -210,6 +212,14 @@ func TestBytesToBigInt(t *testing.T) {
 
 	bigInt = BytesToBigInt(nil)
 	assert.Nil(t, bigInt)
+}
+
+func TestBytesToUint256(t *testing.T) {
+	b := []byte{0x01, 0x02, 0x03, 0x04}
+
+	actual := BytesToUint256(b)
+	expected := new(uint256.Int).SetBytes(b)
+	assert.Equal(t, expected, actual)
 }
 
 func TestCodeHash(t *testing.T) {
