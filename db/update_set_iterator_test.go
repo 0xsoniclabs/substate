@@ -8,7 +8,6 @@ import (
 
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
-	"github.com/0xsoniclabs/substate/types/rlp"
 	"github.com/0xsoniclabs/substate/updateset"
 	"github.com/stretchr/testify/assert"
 	"github.com/syndtr/goleveldb/leveldb/iterator"
@@ -100,20 +99,12 @@ func TestUpdateSetIterator_DecodeSuccess(t *testing.T) {
 	blockKey := UpdateDBKey(42)
 
 	// Create sample RLP data
-	mockWorldState := updateset.UpdateSet{
+	updateSet := updateset.NewUpdateSetRLP(&updateset.UpdateSet{
 		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
 		Block:           0,
 		DeletedAccounts: []types.Address{},
-	}
-
-	updateSetRLP := updateset.UpdateSetRLP{
-		WorldState:      mockWorldState.ToWorldStateRLP(),
-		DeletedAccounts: []types.Address{},
-	}
-
-	// Encode the data
-	rlpData, err := rlp.EncodeToBytes(updateSetRLP)
-	assert.Nil(t, err)
+	}, []types.Address{})
+	rlpData, _ := updateset.EncodeUpdateSetPB(&updateSet)
 
 	// Setup mock for GetCode
 	mockDB.EXPECT().GetCode(gomock.Any()).Return([]byte("code"), nil).AnyTimes()
@@ -159,25 +150,16 @@ func TestUpdateSetIterator_DecodeFail(t *testing.T) {
 	})
 	assert.Error(t, err)
 	assert.Nil(t, result)
-	assert.Contains(t, err.Error(), "rlp")
+	assert.Contains(t, err.Error(), "cannot parse invalid wire-format data")
 
 	// Test case 3: Valid key and RLP but ToWorldState fails
-	// Create sample update set
 	// Create sample RLP data
-	mockWorldState := updateset.UpdateSet{
+	updateSet := updateset.NewUpdateSetRLP(&updateset.UpdateSet{
 		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
 		Block:           0,
 		DeletedAccounts: []types.Address{},
-	}
-
-	updateSetRLP := updateset.UpdateSetRLP{
-		WorldState:      mockWorldState.ToWorldStateRLP(),
-		DeletedAccounts: []types.Address{},
-	}
-
-	// Encode the data
-	rlpData, err := rlp.EncodeToBytes(updateSetRLP)
-	assert.Nil(t, err)
+	}, []types.Address{})
+	rlpData, _ := updateset.EncodeUpdateSetPB(&updateSet)
 
 	// Setup mock for GetCode to return an error
 	expectedErr := errors.New("code retrieval failed")
@@ -197,14 +179,12 @@ func TestUpdateSetIterator_StartSuccess(t *testing.T) {
 
 	mockDB := NewMockUpdateDB(ctrl)
 
-	rlpData, _ := rlp.EncodeToBytes(updateset.UpdateSetRLP{
-		WorldState: updateset.UpdateSet{
-			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
-			Block:           0,
-			DeletedAccounts: []types.Address{},
-		}.ToWorldStateRLP(),
+	updateSet := updateset.NewUpdateSetRLP(&updateset.UpdateSet{
+		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+		Block:           0,
 		DeletedAccounts: []types.Address{},
-	})
+	}, []types.Address{})
+	rlpData, _ := updateset.EncodeUpdateSetPB(&updateSet)
 
 	kv := &testutil.KeyValue{}
 	kv.PutU(UpdateDBKey(0), rlpData)
@@ -231,14 +211,12 @@ func TestUpdateSetIterator_StartDecodeKeyFail(t *testing.T) {
 
 	mockDB := NewMockUpdateDB(ctrl)
 
-	rlpData, _ := rlp.EncodeToBytes(updateset.UpdateSetRLP{
-		WorldState: updateset.UpdateSet{
-			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
-			Block:           0,
-			DeletedAccounts: []types.Address{},
-		}.ToWorldStateRLP(),
+	updateSet := updateset.NewUpdateSetRLP(&updateset.UpdateSet{
+		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+		Block:           0,
 		DeletedAccounts: []types.Address{},
-	})
+	}, []types.Address{})
+	rlpData, _ := updateset.EncodeUpdateSetPB(&updateSet)
 
 	kv := &testutil.KeyValue{}
 	kv.PutU([]byte{1, 2, 3}, rlpData)
@@ -262,14 +240,12 @@ func TestUpdateSetIterator_StartDecodeValueFail(t *testing.T) {
 
 	mockDB := NewMockUpdateDB(ctrl)
 
-	rlpData, _ := rlp.EncodeToBytes(updateset.UpdateSetRLP{
-		WorldState: updateset.UpdateSet{
-			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
-			Block:           0,
-			DeletedAccounts: []types.Address{},
-		}.ToWorldStateRLP(),
+	updateSet := updateset.NewUpdateSetRLP(&updateset.UpdateSet{
+		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+		Block:           0,
 		DeletedAccounts: []types.Address{},
-	})
+	}, []types.Address{})
+	rlpData, _ := updateset.EncodeUpdateSetPB(&updateSet)
 
 	kv := &testutil.KeyValue{}
 	kv.PutU(UpdateDBKey(0), rlpData)
