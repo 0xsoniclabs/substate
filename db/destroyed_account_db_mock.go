@@ -175,6 +175,20 @@ func (mr *MockDestroyedAccountDBMockRecorder) GetLastKey() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastKey", reflect.TypeOf((*MockDestroyedAccountDB)(nil).GetLastKey))
 }
 
+// GetSubstateEncoding mocks base method.
+func (m *MockDestroyedAccountDB) GetSubstateEncoding() SubstateEncodingSchema {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSubstateEncoding")
+	ret0, _ := ret[0].(SubstateEncodingSchema)
+	return ret0
+}
+
+// GetSubstateEncoding indicates an expected call of GetSubstateEncoding.
+func (mr *MockDestroyedAccountDBMockRecorder) GetSubstateEncoding() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubstateEncoding", reflect.TypeOf((*MockDestroyedAccountDB)(nil).GetSubstateEncoding))
+}
+
 // Has mocks base method.
 func (m *MockDestroyedAccountDB) Has(arg0 []byte) (bool, error) {
 	m.ctrl.T.Helper()
@@ -244,6 +258,20 @@ func (m *MockDestroyedAccountDB) SetDestroyedAccounts(block uint64, tx int, dest
 func (mr *MockDestroyedAccountDBMockRecorder) SetDestroyedAccounts(block, tx, destroyed, resurrected any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetDestroyedAccounts", reflect.TypeOf((*MockDestroyedAccountDB)(nil).SetDestroyedAccounts), block, tx, destroyed, resurrected)
+}
+
+// SetSubstateEncoding mocks base method.
+func (m *MockDestroyedAccountDB) SetSubstateEncoding(schema SubstateEncodingSchema) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetSubstateEncoding", schema)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetSubstateEncoding indicates an expected call of SetSubstateEncoding.
+func (mr *MockDestroyedAccountDBMockRecorder) SetSubstateEncoding(schema any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSubstateEncoding", reflect.TypeOf((*MockDestroyedAccountDB)(nil).SetSubstateEncoding), schema)
 }
 
 // Stat mocks base method.

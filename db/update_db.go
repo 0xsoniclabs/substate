@@ -4,13 +4,11 @@ import (
 	"encoding/binary"
 	"fmt"
 
+	"github.com/0xsoniclabs/substate/types"
+	"github.com/0xsoniclabs/substate/updateset"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/util"
-
-	"github.com/0xsoniclabs/substate/types"
-	trlp "github.com/0xsoniclabs/substate/types/rlp"
-	"github.com/0xsoniclabs/substate/updateset"
 )
 
 const (
@@ -22,6 +20,12 @@ const (
 //go:generate mockgen -source=update_db.go -destination=./update_db_mock.go -package=db
 type UpdateDB interface {
 	CodeDB
+
+	// SetSubstateEncoding sets the runtime encoding/decoding
+	SetSubstateEncoding(schema SubstateEncodingSchema) error
+
+	// GetSubstateEncoding returns the encoding schema in use.
+	GetSubstateEncoding() SubstateEncodingSchema
 
 	// GetFirstKey returns block number of first UpdateSet. It returns an error if no UpdateSet is found.
 	GetFirstKey() (uint64, error)
@@ -58,7 +62,15 @@ func NewUpdateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.Read
 }
 
 func MakeDefaultUpdateDBFromBaseDB(db BaseDB) UpdateDB {
-	return &updateDB{&codeDB{&baseDB{backend: db.GetBackend()}}}
+	encoding, err := newUpdateSetEncoding(DefaultEncodingSchema)
+	if err != nil {
+		// This should not happen
+		panic(fmt.Sprintf("failed to create default update-db encoding: %v", err))
+	}
+	return &updateDB{
+		&codeDB{&baseDB{backend: db.GetBackend()}},
+		*encoding,
+	}
 }
 
 // NewReadOnlyUpdateDB creates a new instance of read-only UpdateDB.
@@ -71,11 +83,19 @@ func newUpdateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.Read
 	if err != nil {
 		return nil, err
 	}
-	return &updateDB{base}, nil
+	encoding, err := newUpdateSetEncoding(DefaultEncodingSchema)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create default update-db encoding: %v", err)
+	}
+	return &updateDB{
+		base,
+		*encoding,
+	}, nil
 }
 
 type updateDB struct {
 	CodeDB
+	encoding updateSetEncoding
 }
 
 func (db *updateDB) GetFirstKey() (uint64, error) {
@@ -129,12 +149,11 @@ func (db *updateDB) GetUpdateSet(block uint64) (*updateset.UpdateSet, error) {
 	}
 
 	// decode value
-	var updateSetRLP updateset.UpdateSetRLP
-	if err = trlp.DecodeBytes(value, &updateSetRLP); err != nil {
-		return nil, fmt.Errorf("cannot decode update-set rlp block: %v, key %v; %w", block, key, err)
+	data, err := db.encoding.decode(block, db.GetCode, value)
+	if err != nil {
+		return nil, fmt.Errorf("cannot decode update-set block: %v, key %v; %w", block, key, err)
 	}
-
-	return updateSetRLP.ToWorldState(db.GetCode, block)
+	return data, nil
 }
 
 func (db *updateDB) PutUpdateSet(updateSet *updateset.UpdateSet, deletedAccounts []types.Address) error {
@@ -147,9 +166,7 @@ func (db *updateDB) PutUpdateSet(updateSet *updateset.UpdateSet, deletedAccounts
 	}
 
 	key := UpdateDBKey(updateSet.Block)
-	updateSetRLP := updateset.NewUpdateSetRLP(updateSet, deletedAccounts)
-
-	value, err := trlp.EncodeToBytes(updateSetRLP)
+	value, err := db.encoding.encode(*updateSet, deletedAccounts)
 	if err != nil {
 		return fmt.Errorf("cannot encode update-set; %v", err)
 	}
@@ -163,7 +180,7 @@ func (db *updateDB) DeleteUpdateSet(block uint64) error {
 }
 
 func (db *updateDB) NewUpdateSetIterator(start, end uint64) IIterator[*updateset.UpdateSet] {
-	iter := newUpdateSetIterator(db, start, end)
+	iter := newUpdateSetIterator(db, start, end, db.encoding.decode)
 
 	iter.start(0)
 

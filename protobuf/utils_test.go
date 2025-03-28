@@ -5,11 +5,9 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/holiman/uint256"
-
-	"github.com/0xsoniclabs/substate/types/hash"
-
 	"github.com/0xsoniclabs/substate/types"
+	"github.com/0xsoniclabs/substate/types/hash"
+	"github.com/holiman/uint256"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )

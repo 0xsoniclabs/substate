@@ -8,13 +8,12 @@ import (
 	"github.com/holiman/uint256"
 
 	"github.com/0xsoniclabs/substate/protobuf"
+	"github.com/0xsoniclabs/substate/rlp"
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/proto"
-
-	"github.com/0xsoniclabs/substate/rlp"
 
 	trlp "github.com/0xsoniclabs/substate/types/rlp"
 )

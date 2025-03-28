@@ -36,3 +36,10 @@ help: Makefile
 	@echo
 	@sed -n 's/^##//p' $< | column -t -s ':' |  sed -e 's/^/ /'
 	@echo
+
+format:
+	@goimports -w ./
+	@gofmt -s -d -w ./
+
+check:
+	@golangci-lint run -c .golangci.yml ./...

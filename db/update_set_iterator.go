@@ -4,13 +4,11 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/syndtr/goleveldb/leveldb/util"
-
-	"github.com/0xsoniclabs/substate/types/rlp"
 	"github.com/0xsoniclabs/substate/updateset"
+	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
-func newUpdateSetIterator(db *updateDB, start, end uint64) *updateSetIterator {
+func newUpdateSetIterator(db *updateDB, start, end uint64, decoder UpdateSetDecoderFunc) *updateSetIterator {
 	num := make([]byte, 4)
 	binary.BigEndian.PutUint32(num, uint32(start))
 
@@ -21,13 +19,15 @@ func newUpdateSetIterator(db *updateDB, start, end uint64) *updateSetIterator {
 		genericIterator: newIterator[*updateset.UpdateSet](db.newIterator(r)),
 		db:              db,
 		endBlock:        end,
+		decodeFunc:      decoder,
 	}
 }
 
 type updateSetIterator struct {
 	genericIterator[*updateset.UpdateSet]
-	db       UpdateDB
-	endBlock uint64
+	db         UpdateDB
+	endBlock   uint64
+	decodeFunc UpdateSetDecoderFunc
 }
 
 func (i *updateSetIterator) decode(data rawEntry) (*updateset.UpdateSet, error) {
@@ -39,22 +39,14 @@ func (i *updateSetIterator) decode(data rawEntry) (*updateset.UpdateSet, error) 
 		return nil, fmt.Errorf("substate: invalid update-set key found: %v - issue: %w", key, err)
 	}
 
-	var updateSetRLP updateset.UpdateSetRLP
-	err = rlp.DecodeBytes(value, &updateSetRLP)
+	updateSet, err := i.decodeFunc(block, i.db.GetCode, value)
 	if err != nil {
 		return nil, err
 	}
-
-	updateSet, err := updateSetRLP.ToWorldState(i.db.GetCode, block)
-	if err != nil {
-		return nil, err
-
-	}
-
 	return &updateset.UpdateSet{
 		Block:           block,
 		WorldState:      updateSet.WorldState,
-		DeletedAccounts: updateSetRLP.DeletedAccounts,
+		DeletedAccounts: updateSet.DeletedAccounts,
 	}, nil
 }
 

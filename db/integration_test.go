@@ -119,7 +119,8 @@ func TestUpdateDB_MakeDefaultUpdateDBFromBaseDB(t *testing.T) {
 
 	db2 := MakeDefaultUpdateDBFromBaseDB(db)
 	assert.NotNil(t, db2)
-	assert.Equal(t, db, db2)
+	assert.Equal(t, db.GetSubstateEncoding(), db2.GetSubstateEncoding())
+	assert.Equal(t, db2.GetBackend(), db.GetBackend())
 }
 
 func TestCodeDB_ConstructorSuccess(t *testing.T) {
@@ -215,7 +216,8 @@ func TestSubstateDB_MakeDefaultDestroyedAccountDBFromBaseDB(t *testing.T) {
 
 	db2 := MakeDefaultDestroyedAccountDBFromBaseDB(db)
 	assert.NotNil(t, db2)
-	assert.Equal(t, db, db2)
+	assert.Equal(t, db2.GetSubstateEncoding(), db.GetSubstateEncoding())
+	assert.Equal(t, db2.GetBackend(), db.GetBackend())
 }
 
 func TestSubstateDB_ConstructorSuccess(t *testing.T) {
