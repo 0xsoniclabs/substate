@@ -2,6 +2,7 @@ package substate
 
 import (
 	"fmt"
+	"maps"
 	"math/big"
 	"strings"
 
@@ -102,4 +103,18 @@ func (e *Env) String() string {
 
 	return builder.String()
 
+}
+
+func (e *Env) Clone() *Env {
+	return &Env{
+		Coinbase:    e.Coinbase,
+		Difficulty:  e.Difficulty,
+		GasLimit:    e.GasLimit,
+		Number:      e.Number,
+		Timestamp:   e.Timestamp,
+		BlockHashes: maps.Clone(e.BlockHashes),
+		BaseFee:     e.BaseFee,
+		BlobBaseFee: e.BlobBaseFee,
+		Random:      e.Random,
+	}
 }

@@ -34,8 +34,8 @@ func Compare(ctx *cli.Context, src db.SubstateDB, target db.SubstateDB, workers 
 	var counter uint64
 
 	// start taskpools to retrieve substates
-	go startTaskPool(compareCtx, src, srcSubstateChan, first, last, workers, errChan, ctx, &counter, wg)
-	go startTaskPool(compareCtx, target, targetSubstateChan, first, last, workers, errChan, ctx, nil, wg)
+	go startCompareTaskPool(compareCtx, src, srcSubstateChan, first, last, workers, errChan, ctx, &counter, wg)
+	go startCompareTaskPool(compareCtx, target, targetSubstateChan, first, last, workers, errChan, ctx, nil, wg)
 
 	go func() {
 		wg.Wait()
@@ -54,7 +54,7 @@ func Compare(ctx *cli.Context, src db.SubstateDB, target db.SubstateDB, workers 
 	return nil
 }
 
-func startTaskPool(compareCtx context.Context, dbInstance db.SubstateDB, substateChan chan *substate.Substate, first uint64, last uint64, workers int, errChan chan error, ctx *cli.Context, counter *uint64, wg *sync.WaitGroup) {
+func startCompareTaskPool(compareCtx context.Context, dbInstance db.SubstateDB, substateChan chan *substate.Substate, first uint64, last uint64, workers int, errChan chan error, ctx *cli.Context, counter *uint64, wg *sync.WaitGroup) {
 	defer wg.Done()
 	defer close(substateChan)
 
@@ -70,14 +70,21 @@ func startTaskPool(compareCtx context.Context, dbInstance db.SubstateDB, substat
 		return nil
 	}
 
+	var name string
+	if counter != nil {
+		name += "compare-source"
+	} else {
+		name += "compare-target"
+	}
 	taskPool := &db.SubstateTaskPool{
-		Name:     "compare",
+		Name:     name,
 		TaskFunc: feeder,
 
 		First: first,
 		Last:  last,
 
-		Workers: workers,
+		// has to be 1 to keep substates order
+		Workers: 1,
 		Ctx:     ctx,
 		DB:      dbInstance,
 	}
@@ -111,6 +118,7 @@ func comparator(ctx context.Context, srcChan chan *substate.Substate, targetChan
 					err := p.srcSubstate.Equal(p.targetSubstate)
 					if err != nil {
 						errChan <- err
+						return
 					}
 				}
 			}
@@ -140,7 +148,7 @@ func comparator(ctx context.Context, srcChan chan *substate.Substate, targetChan
 		}
 
 		// pairing substates together
-		toCompareChan <- comparePair{srcSubstate: srcSubstate, targetSubstate: targetSubstate}
+		toCompareChan <- comparePair{srcSubstate: srcSubstate.Clone(), targetSubstate: targetSubstate.Clone()}
 	}
 
 	// wait for all workers to finish
