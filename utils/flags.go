@@ -1,4 +1,4 @@
-package main
+package utils
 
 import "github.com/urfave/cli/v2"
 
@@ -17,6 +17,11 @@ var (
 	DstDbFlag = cli.PathFlag{
 		Name:     "dst",
 		Usage:    "Destination Aida DB",
+		Required: true,
+	}
+	TargetDbFlag = cli.PathFlag{
+		Name:     "target",
+		Usage:    "Target Aida DB",
 		Required: true,
 	}
 	SkipTransferTxsFlag = cli.BoolFlag{
