@@ -1,4 +1,6 @@
-# Substate 
+[![codecov](https://codecov.io/gh/0xsoniclabs/substate/graph/badge.svg?token=I28J4HB5NG)](https://codecov.io/gh/0xsoniclabs/substate)
+
+# Substate
 Substate database is used as the Off-The-Chain testing module in the applications for recording or replaying transactions. The Replayer can execute any transaction in complete isolation by loading the substate of the transaction and executing the transaction.
 
 Database contains a minimal subset of the World-State Trie to faithfully replay transactions in isolation. The subset contains all the entries represented as a flat key-value store (and is not stored as a slow Merkle Patricia Trie) for executing a transaction.
