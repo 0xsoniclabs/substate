@@ -98,7 +98,7 @@ func TestDecode_SuccessfulDecode(t *testing.T) {
 
 func TestDecode_InputAllocDecodeFails(t *testing.T) {
 	lookup := func(hash types.Hash) ([]byte, error) {
-		return nil, errors.New("input Decode error")
+		return nil, errors.New("input decode error")
 	}
 
 	s := &Substate{
@@ -123,7 +123,7 @@ func TestDecode_InputAllocDecodeFails(t *testing.T) {
 
 func TestDecode_OutputAllocDecodeFails(t *testing.T) {
 	lookup := func(hash types.Hash) ([]byte, error) {
-		return nil, errors.New("input Decode error")
+		return nil, errors.New("input decode error")
 	}
 
 	s := &Substate{
