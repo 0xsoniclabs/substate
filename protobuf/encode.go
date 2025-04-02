@@ -106,20 +106,32 @@ func toProtobufTxMessage(sm *substate.Message) *Substate_TxMessage {
 		txInput = &Substate_TxMessage_Data{Data: sm.Data}
 	}
 
+	setCodeAuthorizationsList := make([]*Substate_TxMessage_SetCodeAuthorization, len(sm.SetCodeAuthorizations))
+	for i, entry := range sm.SetCodeAuthorizations {
+		setCodeAuthorizationsList[i] = &Substate_TxMessage_SetCodeAuthorization{
+			ChainId: entry.ChainID.Bytes(),
+			Address: entry.Address.Bytes(),
+			Nonce:   &entry.Nonce,
+			V:       []byte{entry.V},
+			R:       entry.R.Bytes(),
+			S:       entry.S.Bytes(),
+		}
+	}
 	return &Substate_TxMessage{
-		Nonce:         &sm.Nonce,
-		GasPrice:      BigIntToBytes(sm.GasPrice),
-		Gas:           &sm.Gas,
-		From:          sm.From.Bytes(),
-		To:            AddressToWrapperspbBytes(sm.To),
-		Value:         BigIntToBytes(sm.Value),
-		Input:         txInput,
-		TxType:        &txType,
-		AccessList:    accessList,
-		GasFeeCap:     BigIntToWrapperspbBytes(sm.GasFeeCap),
-		GasTipCap:     BigIntToWrapperspbBytes(sm.GasTipCap),
-		BlobGasFeeCap: BigIntToWrapperspbBytes(sm.BlobGasFeeCap),
-		BlobHashes:    blobHashes,
+		Nonce:                 &sm.Nonce,
+		GasPrice:              BigIntToBytes(sm.GasPrice),
+		Gas:                   &sm.Gas,
+		From:                  sm.From.Bytes(),
+		To:                    AddressToWrapperspbBytes(sm.To),
+		Value:                 BigIntToBytes(sm.Value),
+		Input:                 txInput,
+		TxType:                &txType,
+		AccessList:            accessList,
+		GasFeeCap:             BigIntToWrapperspbBytes(sm.GasFeeCap),
+		GasTipCap:             BigIntToWrapperspbBytes(sm.GasTipCap),
+		BlobGasFeeCap:         BigIntToWrapperspbBytes(sm.BlobGasFeeCap),
+		BlobHashes:            blobHashes,
+		SetCodeAuthorizations: setCodeAuthorizationsList,
 	}
 }
 
