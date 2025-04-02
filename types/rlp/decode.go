@@ -11,6 +11,8 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+
+	"github.com/holiman/uint256"
 )
 
 const (
@@ -31,13 +33,14 @@ type Decoder interface {
 var EOL = errors.New("rlp: end of list")
 
 var (
-	ErrExpectedString   = errors.New("rlp: expected String or Byte")
-	ErrExpectedList     = errors.New("rlp: expected List")
-	ErrCanonInt         = errors.New("rlp: non-canonical integer format")
-	ErrCanonSize        = errors.New("rlp: non-canonical size information")
-	ErrElemTooLarge     = errors.New("rlp: element is larger than containing list")
-	ErrValueTooLarge    = errors.New("rlp: value size exceeds available input length")
-	ErrMoreThanOneValue = errors.New("rlp: input contains more than one value")
+	ErrExpectedString         = errors.New("rlp: expected String or Byte")
+	ErrExpectedList           = errors.New("rlp: expected List")
+	ErrExpectedUint256Pointer = errors.New("rlp: expected *Uint256")
+	ErrCanonInt               = errors.New("rlp: non-canonical integer format")
+	ErrCanonSize              = errors.New("rlp: non-canonical size information")
+	ErrElemTooLarge           = errors.New("rlp: element is larger than containing list")
+	ErrValueTooLarge          = errors.New("rlp: value size exceeds available input length")
+	ErrMoreThanOneValue       = errors.New("rlp: input contains more than one value")
 
 	// internal errors
 	errNotInList     = errors.New("rlp: call of ListEnd outside of any list")
@@ -51,6 +54,7 @@ var (
 	}
 
 	bigInt           = reflect.TypeOf(big.Int{})
+	uint256Int       = reflect.TypeOf(uint256.Int{})
 	decoderInterface = reflect.TypeOf(new(Decoder)).Elem()
 )
 
@@ -572,8 +576,12 @@ func makeDecoder(typ reflect.Type, tags tags) (dec decoder, err error) {
 		return decodeRawValue, nil
 	case typ.AssignableTo(reflect.PtrTo(bigInt)):
 		return decodeBigInt, nil
+	case typ.AssignableTo(reflect.PtrTo(uint256Int)):
+		return decodeUint256, nil
 	case typ.AssignableTo(bigInt):
 		return decodeBigIntNoPtr, nil
+	case typ.AssignableTo(uint256Int):
+		return decodeUint256NoPtr, nil
 	case kind == reflect.Ptr:
 		return makePtrDecoder(typ, tags)
 	case reflect.PtrTo(typ).Implements(decoderInterface):
@@ -636,6 +644,10 @@ func decodeBigIntNoPtr(s *Stream, val reflect.Value) error {
 	return decodeBigInt(s, val.Addr())
 }
 
+func decodeUint256NoPtr(s *Stream, val reflect.Value) error {
+	return decodeUint256(s, val.Addr())
+}
+
 func decodeBigInt(s *Stream, val reflect.Value) error {
 	var buffer []byte
 	kind, size, err := s.Kind()
@@ -682,6 +694,24 @@ func decodeBigInt(s *Stream, val reflect.Value) error {
 		val.Set(reflect.ValueOf(i))
 	}
 	i.SetBytes(buffer)
+	return nil
+}
+
+func decodeUint256(s *Stream, val reflect.Value) error {
+	// Set the integer bytes.
+	i, ok := val.Interface().(*uint256.Int)
+	if !ok {
+		return wrapStreamError(ErrExpectedUint256Pointer, val.Type())
+	}
+	if i == nil {
+		i = new(uint256.Int)
+		val.Set(reflect.ValueOf(i))
+	}
+	b, err := s.Bytes()
+	if err != nil {
+		return wrapStreamError(err, val.Type())
+	}
+	i.SetBytes(b)
 	return nil
 }
 

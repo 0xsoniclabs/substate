@@ -26,6 +26,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/holiman/uint256"
 )
 
 func TestStreamKind(t *testing.T) {
@@ -303,6 +305,10 @@ type simplestruct struct {
 	A uint
 	B string
 }
+type simpleUint256 struct {
+	A *uint256.Int
+	B uint256.Int
+}
 
 type recstruct struct {
 	I     uint
@@ -474,6 +480,11 @@ var decodeTests = []decodeTest{
 	{input: "00", ptr: new(*big.Int), error: "rlp: non-canonical integer (leading zero bytes) for *big.Int"},
 	{input: "820001", ptr: new(*big.Int), error: "rlp: non-canonical integer (leading zero bytes) for *big.Int"},
 	{input: "8105", ptr: new(*big.Int), error: "rlp: non-canonical size information for *big.Int"},
+
+	// uint256
+	{input: "80", ptr: new(*uint256.Int), value: uint256.NewInt(0)},
+	{input: "01", ptr: new(*uint256.Int), value: uint256.NewInt(1)},
+	{input: "10", ptr: new(uint256.Int), value: *uint256.NewInt(16)},
 
 	// structs
 	{

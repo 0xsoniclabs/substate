@@ -6,6 +6,7 @@ toolchain go1.22.11
 
 require (
 	github.com/golang/protobuf v1.5.4
+	github.com/holiman/uint256 v1.3.2
 	github.com/stretchr/testify v1.9.0
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 	github.com/urfave/cli/v2 v2.25.7
