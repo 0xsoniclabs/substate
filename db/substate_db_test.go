@@ -9,6 +9,7 @@ import (
 	"github.com/holiman/uint256"
 
 	"github.com/0xsoniclabs/substate/protobuf"
+	"github.com/holiman/uint256"
 	"github.com/stretchr/testify/assert"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/iterator"
@@ -43,7 +44,7 @@ func getTestSubstate(encoding string) *substate.Substate {
 			new(types.Address), new(big.Int).SetUint64(1), []byte{1}, nil, &txType,
 			types.AccessList{{types.Address{1}, []types.Hash{{1}, {2}}}}, new(big.Int).SetUint64(1),
 			new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), make([]types.Hash, 0),
-			[]types.SetCodeAuthorization{{*big.NewInt(1), types.Address{1}, 1, 1, *big.NewInt(1), *big.NewInt(1)}}),
+			[]types.SetCodeAuthorization{{uint256.NewInt(1), types.Address{1}, 1, 1, uint256.NewInt(1), uint256.NewInt(1)}}),
 		Result: substate.NewResult(1, types.Bloom{1}, []*types.Log{
 			{
 				Address: types.Address{1},
@@ -68,6 +69,7 @@ func getTestSubstate(encoding string) *substate.Substate {
 	if encoding != "protobuf" {
 		ss.Env.Random = nil
 		ss.Message.AccessList = types.AccessList{}
+		ss.Message.SetCodeAuthorizations = nil
 	}
 	return ss
 }

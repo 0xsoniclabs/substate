@@ -4,6 +4,7 @@ import (
 	"math/big"
 
 	"github.com/0xsoniclabs/substate/types/hash"
+	"github.com/holiman/uint256"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/0xsoniclabs/substate/types"
@@ -74,6 +75,20 @@ func BigIntToBytes(i *big.Int) []byte {
 		return nil
 	}
 	return i.Bytes()
+}
+
+func Uint256ToBytes(x *uint256.Int) []byte {
+	if x == nil {
+		return nil
+	}
+	return x.ToBig().Bytes()
+}
+
+func BytesToUint256(b []byte) *uint256.Int {
+	if b == nil {
+		return nil
+	}
+	return uint256.MustFromBig(BytesToBigInt(b))
 }
 
 // CodeHash computes the Keccak256 hash of the given byte slice `code`.
