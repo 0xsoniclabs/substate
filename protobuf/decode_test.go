@@ -345,7 +345,7 @@ func TestDecode_TxMessageLookupError(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, result)
-	assert.Contains(t, err.Error(), "failed to decode tx message")
+	assert.Contains(t, err.Error(), "failed to Decode tx message")
 }
 
 func TestDecode_TxMessageLookupNotFound(t *testing.T) {

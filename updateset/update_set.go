@@ -1,12 +1,10 @@
 package updateset
 
 import (
-	"errors"
-
-	"github.com/0xsoniclabs/substate/rlp"
+	pb "github.com/0xsoniclabs/substate/protobuf"
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
-	"github.com/syndtr/goleveldb/leveldb"
+	"google.golang.org/protobuf/proto"
 )
 
 func NewUpdateSet(alloc substate.WorldState, block uint64) *UpdateSet {
@@ -23,76 +21,76 @@ type UpdateSet struct {
 	DeletedAccounts []types.Address
 }
 
-func (s UpdateSet) ToWorldStateRLP() rlp.WorldState {
-	a := rlp.WorldState{
-		Addresses: []types.Address{},
-		Accounts:  []*rlp.SubstateAccountRLP{},
-	}
-
-	for addr, acc := range s.WorldState {
-		a.Addresses = append(a.Addresses, addr)
-		a.Accounts = append(a.Accounts, rlp.NewRLPAccount(acc))
-	}
-
-	return a
-}
-
-func NewUpdateSetRLP(updateSet *UpdateSet, deletedAccounts []types.Address) UpdateSetRLP {
-	return UpdateSetRLP{
-		WorldState:      updateSet.ToWorldStateRLP(),
-		DeletedAccounts: deletedAccounts,
-	}
-}
-
-// UpdateSetRLP represents the DB structure of UpdateSet.
-type UpdateSetRLP struct {
-	WorldState      rlp.WorldState
-	DeletedAccounts []types.Address
-}
-
-func (up UpdateSetRLP) ToWorldState(getCodeFunc func(codeHash types.Hash) ([]byte, error), block uint64) (*UpdateSet, error) {
-	worldState := make(substate.WorldState)
-
-	for i, addr := range up.WorldState.Addresses {
-		worldStateAcc := up.WorldState.Accounts[i]
-
-		code, err := getCodeFunc(worldStateAcc.CodeHash)
-		if err != nil && !errors.Is(err, leveldb.ErrNotFound) {
-			return nil, err
-		}
-
-		acc := substate.Account{
-			Nonce:   worldStateAcc.Nonce,
-			Balance: worldStateAcc.Balance,
-			Storage: make(map[types.Hash]types.Hash),
-			Code:    code,
-		}
-
-		for j := range worldStateAcc.Storage {
-			acc.Storage[worldStateAcc.Storage[j][0]] = worldStateAcc.Storage[j][1]
-		}
-		worldState[addr] = &acc
-	}
-
-	return NewUpdateSet(worldState, block), nil
-}
-
-func (x *UpdateSet) Equal(y *UpdateSet) bool {
-	if x == y {
+func (s *UpdateSet) Equal(y *UpdateSet) bool {
+	if s == y {
 		return true
 	}
-	if !x.WorldState.Equal(y.WorldState) {
+	if !s.WorldState.Equal(y.WorldState) {
 		return false
 	}
 
-	if x.Block != y.Block {
+	if s.Block != y.Block {
 		return false
 	}
 
-	for i, val := range x.DeletedAccounts {
+	for i, val := range s.DeletedAccounts {
 		if val != y.DeletedAccounts[i] {
 			return false
 		}
 	}
 	return true
+}
+
+func (s *UpdateSet) ToWorldStatePB() *pb.Substate_Alloc {
+	return pb.ToProtobufAlloc(s.WorldState)
+}
+
+func NewUpdateSetRLP(updateSet *UpdateSet, deletedAccounts []types.Address) UpdateSetPB {
+	w := updateSet.ToWorldStatePB()
+	return UpdateSetPB{
+		WorldState:      w,
+		DeletedAccounts: deletedAccounts,
+	}
+}
+
+// UpdateSetPB represents the DB structure of UpdateSet.
+type UpdateSetPB struct {
+	WorldState      *pb.Substate_Alloc
+	DeletedAccounts []types.Address
+}
+
+func (up *UpdateSetPB) ToWorldState(getCodeFunc func(codeHash types.Hash) ([]byte, error), block uint64) (*UpdateSet, error) {
+	worldState, err := up.WorldState.Decode(getCodeFunc)
+	if err != nil {
+		return nil, err
+	}
+	return NewUpdateSet(*worldState, block), nil
+}
+
+func EncodeUpdateSetPB(s *UpdateSetPB) ([]byte, error) {
+	addrs := make([][]byte, 0, len(s.DeletedAccounts))
+	for _, addr := range s.DeletedAccounts {
+		addrs = append(addrs, addr.Bytes())
+	}
+	obj := &pb.UpdateSetPB{
+		WorldState:      s.WorldState,
+		DeletedAccounts: addrs,
+	}
+	return proto.Marshal(obj)
+}
+
+func DecodeUpdateSetPB(data []byte) (UpdateSetPB, error) {
+	obj := &pb.UpdateSetPB{}
+	err := proto.Unmarshal(data, obj)
+	if err != nil {
+		return UpdateSetPB{}, err
+	}
+	addrs := make([]types.Address, 0, len(obj.DeletedAccounts))
+	for _, addr := range obj.DeletedAccounts {
+		addrs = append(addrs, types.BytesToAddress(addr))
+	}
+	return UpdateSetPB{
+		WorldState:      obj.WorldState,
+		DeletedAccounts: addrs,
+	}, nil
 }

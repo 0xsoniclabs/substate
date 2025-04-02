@@ -1,0 +1,19 @@
+syntax = "proto2";
+package protobuf;
+import "substate.proto";
+
+
+
+option go_package = "../protobuf";
+
+message SuicidedAccountLists {
+  repeated bytes destroyed_accounts = 1;
+  repeated bytes resurrected_accounts = 2;
+}
+
+
+
+message UpdateSetPB {
+  required protobuf.Substate.Alloc world_state = 1;
+  repeated bytes deleted_accounts = 2;
+}
