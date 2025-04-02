@@ -9,7 +9,6 @@ import (
 	"github.com/holiman/uint256"
 
 	"github.com/0xsoniclabs/substate/protobuf"
-	"github.com/holiman/uint256"
 	"github.com/stretchr/testify/assert"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/iterator"

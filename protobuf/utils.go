@@ -8,7 +8,6 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/0xsoniclabs/substate/types"
-	"github.com/holiman/uint256"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 )
 
@@ -82,13 +81,6 @@ func Uint256ToBytes(x *uint256.Int) []byte {
 		return nil
 	}
 	return x.ToBig().Bytes()
-}
-
-func BytesToUint256(b []byte) *uint256.Int {
-	if b == nil {
-		return nil
-	}
-	return uint256.MustFromBig(BytesToBigInt(b))
 }
 
 // CodeHash computes the Keccak256 hash of the given byte slice `code`.
