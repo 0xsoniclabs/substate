@@ -100,6 +100,16 @@ message Substate {
         // nil for tx types prior to TXTYPE_BLOB
         optional google.protobuf.BytesValue blob_gas_fee_cap = 13;
         repeated bytes blob_hashes = 14;
+
+        message SetCodeAuthorization {
+            required bytes chain_id = 1;
+            required bytes address = 2;
+            required uint64 nonce = 3;
+            required bytes v = 4;
+            required bytes r = 5;
+            required bytes s = 6;
+        }
+        repeated SetCodeAuthorization set_code_authorizations = 15;
     }
     required TxMessage tx_message = 4;
 
