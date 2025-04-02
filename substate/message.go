@@ -154,7 +154,7 @@ func (m *Message) Equal(y *Message) bool {
 		}
 
 		// check chainId position
-		if mEntry.ChainID.Cmp(&yEntry.ChainID) != 0 {
+		if mEntry.ChainID.Cmp(yEntry.ChainID) != 0 {
 			return false
 		}
 
@@ -167,11 +167,11 @@ func (m *Message) Equal(y *Message) bool {
 			return false
 		}
 
-		if mEntry.R.Cmp(&yEntry.R) != 0 {
+		if mEntry.R.Cmp(yEntry.R) != 0 {
 			return false
 		}
 
-		if mEntry.S.Cmp(&yEntry.S) != 0 {
+		if mEntry.S.Cmp(yEntry.S) != 0 {
 			return false
 		}
 	}

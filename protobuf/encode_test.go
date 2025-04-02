@@ -173,7 +173,7 @@ func TestEncode_TxMessage(t *testing.T) {
 		GasFeeCap:             big.NewInt(1000),
 		GasTipCap:             big.NewInt(2000),
 		BlobGasFeeCap:         big.NewInt(3000),
-		SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: *big.NewInt(1), Address: types.Address{2}, Nonce: 3, V: 4, R: *big.NewInt(5), S: *big.NewInt(6)}},
+		SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: uint256.NewInt(1), Address: types.Address{2}, Nonce: 3, V: 4, R: uint256.NewInt(5), S: uint256.NewInt(6)}},
 	}
 
 	encoded := toProtobufTxMessage(msg)

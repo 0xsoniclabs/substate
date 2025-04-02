@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/holiman/uint256"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/0xsoniclabs/substate/types"
@@ -223,34 +224,34 @@ func TestMessage_DataHashGeneratesNewHashIfNil(t *testing.T) {
 }
 
 func TestMessage_EqualSetCodeAuthorization(t *testing.T) {
-	msg := &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: *big.NewInt(1), Address: types.Address{0}, Nonce: 1, V: 1, R: *big.NewInt(1), S: *big.NewInt(1)}}}
-	comparedMsg := &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: *big.NewInt(2), Address: types.Address{0}, Nonce: 1, V: 1, R: *big.NewInt(1), S: *big.NewInt(1)}}}
+	msg := &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: uint256.NewInt(1), Address: types.Address{0}, Nonce: 1, V: 1, R: uint256.NewInt(1), S: uint256.NewInt(1)}}}
+	comparedMsg := &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: uint256.NewInt(2), Address: types.Address{0}, Nonce: 1, V: 1, R: uint256.NewInt(1), S: uint256.NewInt(1)}}}
 
 	if msg.Equal(comparedMsg) {
 		t.Fatal("messages setCodeAuthorizations have different chainId but equal returned true")
 	}
 
-	comparedMsg = &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: *big.NewInt(1), Address: types.Address{1}, Nonce: 1, V: 1, R: *big.NewInt(1), S: *big.NewInt(1)}}}
+	comparedMsg = &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: uint256.NewInt(1), Address: types.Address{1}, Nonce: 1, V: 1, R: uint256.NewInt(1), S: uint256.NewInt(1)}}}
 	if msg.Equal(comparedMsg) {
 		t.Fatal("messages setCodeAuthorizations have different address but equal returned true")
 	}
 
-	comparedMsg = &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: *big.NewInt(1), Address: types.Address{0}, Nonce: 2, V: 1, R: *big.NewInt(1), S: *big.NewInt(1)}}}
+	comparedMsg = &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: uint256.NewInt(1), Address: types.Address{0}, Nonce: 2, V: 1, R: uint256.NewInt(1), S: uint256.NewInt(1)}}}
 	if msg.Equal(comparedMsg) {
 		t.Fatal("messages setCodeAuthorizations have different nonce but equal returned true")
 	}
 
-	comparedMsg = &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: *big.NewInt(1), Address: types.Address{0}, Nonce: 1, V: 2, R: *big.NewInt(1), S: *big.NewInt(1)}}}
+	comparedMsg = &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: uint256.NewInt(1), Address: types.Address{0}, Nonce: 1, V: 2, R: uint256.NewInt(1), S: uint256.NewInt(1)}}}
 	if msg.Equal(comparedMsg) {
 		t.Fatal("messages setCodeAuthorizations have different V but equal returned true")
 	}
 
-	comparedMsg = &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: *big.NewInt(1), Address: types.Address{0}, Nonce: 1, V: 1, R: *big.NewInt(2), S: *big.NewInt(1)}}}
+	comparedMsg = &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: uint256.NewInt(1), Address: types.Address{0}, Nonce: 1, V: 1, R: uint256.NewInt(2), S: uint256.NewInt(1)}}}
 	if msg.Equal(comparedMsg) {
 		t.Fatal("messages setCodeAuthorizations have different R but equal returned true")
 	}
 
-	comparedMsg = &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: *big.NewInt(1), Address: types.Address{0}, Nonce: 1, V: 1, R: *big.NewInt(1), S: *big.NewInt(2)}}}
+	comparedMsg = &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: uint256.NewInt(1), Address: types.Address{0}, Nonce: 1, V: 1, R: uint256.NewInt(1), S: uint256.NewInt(2)}}}
 	if msg.Equal(comparedMsg) {
 		t.Fatal("messages setCodeAuthorizations have different S but equal returned true")
 	}
@@ -273,7 +274,7 @@ func TestMessage_NewMessage(t *testing.T) {
 		GasTipCap:             new(big.Int).SetUint64(1),
 		BlobGasFeeCap:         new(big.Int).SetUint64(1),
 		BlobHashes:            []types.Hash{types.BytesToHash([]byte{1})},
-		SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: *big.NewInt(1), Address: types.Address{1}, Nonce: 1, V: 1, R: *big.NewInt(1), S: *big.NewInt(1)}},
+		SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: uint256.NewInt(1), Address: types.Address{1}, Nonce: 1, V: 1, R: uint256.NewInt(1), S: uint256.NewInt(1)}},
 	}
 
 	got := NewMessage(
@@ -292,7 +293,7 @@ func TestMessage_NewMessage(t *testing.T) {
 		new(big.Int).SetUint64(1),
 		new(big.Int).SetUint64(1),
 		[]types.Hash{types.BytesToHash([]byte{1})},
-		[]types.SetCodeAuthorization{{ChainID: *big.NewInt(1), Address: types.Address{1}, Nonce: 1, V: 1, R: *big.NewInt(1), S: *big.NewInt(1)}},
+		[]types.SetCodeAuthorization{{ChainID: uint256.NewInt(1), Address: types.Address{1}, Nonce: 1, V: 1, R: uint256.NewInt(1), S: uint256.NewInt(1)}},
 	)
 
 	assert.Equal(t, want, got)
