@@ -82,3 +82,22 @@ func (r *Result) String() string {
 
 	return builder.String()
 }
+
+func (r *Result) Clone() *Result {
+	return &Result{
+		Status:          r.Status,
+		Bloom:           r.Bloom,
+		Logs:            cloneLogs(r.Logs),
+		ContractAddress: r.ContractAddress,
+		GasUsed:         r.GasUsed,
+	}
+}
+
+func cloneLogs(logs []*types.Log) []*types.Log {
+	clonedLogs := make([]*types.Log, len(logs))
+	for i, log := range logs {
+		clonedLog := *log
+		clonedLogs[i] = &clonedLog
+	}
+	return clonedLogs
+}

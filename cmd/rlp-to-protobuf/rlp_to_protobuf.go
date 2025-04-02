@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/0xsoniclabs/substate/utils"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 
 	"github.com/0xsoniclabs/substate/db"
@@ -17,8 +18,7 @@ type rlpToProtobufCommand struct {
 }
 
 func (c *rlpToProtobufCommand) execute() error {
-
-	segment, err := parseBlockSegment(c.ctx.String(BlockSegmentFlag.Name))
+	segment, err := utils.ParseBlockSegment(c.ctx.String(utils.BlockSegmentFlag.Name))
 	if err != nil {
 		return err
 	}
@@ -30,10 +30,10 @@ func (c *rlpToProtobufCommand) execute() error {
 		First: segment.First,
 		Last:  segment.Last,
 
-		Workers:         c.ctx.Int(WorkersFlag.Name),
-		SkipTransferTxs: c.ctx.Bool(SkipTransferTxsFlag.Name),
-		SkipCallTxs:     c.ctx.Bool(SkipCallTxsFlag.Name),
-		SkipCreateTxs:   c.ctx.Bool(SkipCreateTxsFlag.Name),
+		Workers:         c.ctx.Int(utils.WorkersFlag.Name),
+		SkipTransferTxs: c.ctx.Bool(utils.SkipTransferTxsFlag.Name),
+		SkipCallTxs:     c.ctx.Bool(utils.SkipCallTxsFlag.Name),
+		SkipCreateTxs:   c.ctx.Bool(utils.SkipCreateTxsFlag.Name),
 
 		Ctx: c.ctx,
 
@@ -61,7 +61,7 @@ func (c *rlpToProtobufCommand) performSubstateUpgrade(
 
 func RunRlpToProtobuf(ctx *cli.Context) error {
 	// Open old DB
-	src, err := db.NewSubstateDB(ctx.String(SrcDbFlag.Name), &opt.Options{
+	src, err := db.NewSubstateDB(ctx.String(utils.SrcDbFlag.Name), &opt.Options{
 		OpenFilesCacheCapacity: 1024,
 		BlockCacheCapacity:     50 * opt.MiB,
 		WriteBuffer:            25 * opt.MiB,
@@ -73,7 +73,7 @@ func RunRlpToProtobuf(ctx *cli.Context) error {
 	defer src.Close()
 
 	// Open new DB
-	dst, err := db.NewSubstateDB(ctx.String(DstDbFlag.Name), &opt.Options{
+	dst, err := db.NewSubstateDB(ctx.String(utils.DstDbFlag.Name), &opt.Options{
 		OpenFilesCacheCapacity: 1024,
 		BlockCacheCapacity:     50 * opt.MiB,
 		WriteBuffer:            25 * opt.MiB,

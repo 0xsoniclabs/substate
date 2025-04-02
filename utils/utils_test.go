@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"testing"
@@ -16,7 +16,7 @@ func TestParseBlockSegment(t *testing.T) {
 	}
 
 	for input, expected := range mapInputOutput {
-		value, err := parseBlockSegment(input)
+		value, err := ParseBlockSegment(input)
 		assert.Nil(t, err)
 		assert.Equal(t, expected, value)
 	}
@@ -30,7 +30,7 @@ func TestParseBlockSegment(t *testing.T) {
 		"900000000000000000000-900000000000000000000M": "invalid block segment first: strconv.ParseUint: parsing \"900000000000000000000\": value out of range",
 	}
 	for input, expected := range mapInputOutputError {
-		value, err := parseBlockSegment(input)
+		value, err := ParseBlockSegment(input)
 		assert.Nil(t, value)
 		assert.Equal(t, expected, err.Error())
 	}
