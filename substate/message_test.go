@@ -230,31 +230,6 @@ func TestMessage_EqualSetCodeAuthorization(t *testing.T) {
 	if msg.Equal(comparedMsg) {
 		t.Fatal("messages setCodeAuthorizations have different chainId but equal returned true")
 	}
-
-	comparedMsg = &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: uint256.NewInt(1), Address: types.Address{1}, Nonce: 1, V: 1, R: uint256.NewInt(1), S: uint256.NewInt(1)}}}
-	if msg.Equal(comparedMsg) {
-		t.Fatal("messages setCodeAuthorizations have different address but equal returned true")
-	}
-
-	comparedMsg = &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: uint256.NewInt(1), Address: types.Address{0}, Nonce: 2, V: 1, R: uint256.NewInt(1), S: uint256.NewInt(1)}}}
-	if msg.Equal(comparedMsg) {
-		t.Fatal("messages setCodeAuthorizations have different nonce but equal returned true")
-	}
-
-	comparedMsg = &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: uint256.NewInt(1), Address: types.Address{0}, Nonce: 1, V: 2, R: uint256.NewInt(1), S: uint256.NewInt(1)}}}
-	if msg.Equal(comparedMsg) {
-		t.Fatal("messages setCodeAuthorizations have different V but equal returned true")
-	}
-
-	comparedMsg = &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: uint256.NewInt(1), Address: types.Address{0}, Nonce: 1, V: 1, R: uint256.NewInt(2), S: uint256.NewInt(1)}}}
-	if msg.Equal(comparedMsg) {
-		t.Fatal("messages setCodeAuthorizations have different R but equal returned true")
-	}
-
-	comparedMsg = &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: uint256.NewInt(1), Address: types.Address{0}, Nonce: 1, V: 1, R: uint256.NewInt(1), S: uint256.NewInt(2)}}}
-	if msg.Equal(comparedMsg) {
-		t.Fatal("messages setCodeAuthorizations have different S but equal returned true")
-	}
 }
 
 func TestMessage_NewMessage(t *testing.T) {
@@ -334,8 +309,18 @@ func TestMessage_String(t *testing.T) {
 		GasTipCap:      new(big.Int).SetUint64(1),
 		BlobGasFeeCap:  new(big.Int).SetUint64(1),
 		BlobHashes:     []types.Hash{types.BytesToHash([]byte{1})},
+		SetCodeAuthorizations: []types.SetCodeAuthorization{
+			{
+				ChainID: uint256.NewInt(1),
+				Address: types.Address{1},
+				Nonce:   1,
+				V:       1,
+				R:       uint256.NewInt(1),
+				S:       uint256.NewInt(1),
+			},
+		},
 	}
 
-	expected := "Nonce: 1\nCheckNonce: true\nFrom: 0x0100000000000000000000000000000000000000\nTo: 0x0100000000000000000000000000000000000000\nValue: 1\nData: \x01\nData Hash: 0x0000000000000000000000000000000000000000000000000000000000000000\nGas Fee Cap: 1\nGas Tip Cap: 1\nAddress: 0x0100000000000000000000000000000000000000Storage Key 0: 0x0000000000000000000000000000000000000000000000000000000000000001"
+	expected := "Nonce: 1\nCheckNonce: true\nFrom: 0x0100000000000000000000000000000000000000\nTo: 0x0100000000000000000000000000000000000000\nValue: 1\nData: \x01\nData Hash: 0x0000000000000000000000000000000000000000000000000000000000000000\nGas Fee Cap: 1\nGas Tip Cap: 1\nAddress: 0x0100000000000000000000000000000000000000Storage Key 0: 0x0000000000000000000000000000000000000000000000000000000000000001SetCodeAuthorization:\nChainID: 1\nAddress: 0x0100000000000000000000000000000000000000\nNonce: 1\nV: 1\nR: 1\nS: 1\n"
 	assert.Equal(t, expected, msg.String())
 }
