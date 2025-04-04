@@ -210,18 +210,7 @@ func (msg *Substate_TxMessage) decode(lookup getCodeFunc) (*substate.Message, er
 	var setCodeAuthorizationsList []types.SetCodeAuthorization
 	switch txType {
 	case Substate_TxMessage_TXTYPE_SETCODE:
-		setCodeAuthorizationsList = make([]types.SetCodeAuthorization, len(msg.GetSetCodeAuthorizations()))
-		for i, entry := range msg.GetSetCodeAuthorizations() {
-			chainId, addr, nonce, v, r, s := entry.decode()
-			setCodeAuthorizationsList[i] = types.SetCodeAuthorization{
-				ChainID: BytesToUint256(chainId),
-				Address: types.BytesToAddress(addr),
-				Nonce:   nonce,
-				V:       v[0],
-				R:       BytesToUint256(r),
-				S:       BytesToUint256(s),
-			}
-		}
+		setCodeAuthorizationsList = msg.decodeSetCodeAuthorizations()
 	}
 
 	return &substate.Message{
@@ -241,6 +230,23 @@ func (msg *Substate_TxMessage) decode(lookup getCodeFunc) (*substate.Message, er
 		BlobHashes:            blobHashes,
 		SetCodeAuthorizations: setCodeAuthorizationsList,
 	}, nil
+}
+
+// decodeSetCodeAuthorizations retrieves list of SetCodeAuthorizations
+func (msg *Substate_TxMessage) decodeSetCodeAuthorizations() []types.SetCodeAuthorization {
+	setCodeAuthorizationsList := make([]types.SetCodeAuthorization, len(msg.GetSetCodeAuthorizations()))
+	for i, entry := range msg.GetSetCodeAuthorizations() {
+		chainId, addr, nonce, v, r, s := entry.decode()
+		setCodeAuthorizationsList[i] = types.SetCodeAuthorization{
+			ChainID: BytesToUint256(chainId),
+			Address: types.BytesToAddress(addr),
+			Nonce:   nonce,
+			V:       v[0],
+			R:       BytesToUint256(r),
+			S:       BytesToUint256(s),
+		}
+	}
+	return setCodeAuthorizationsList
 }
 
 func (entry *Substate_TxMessage_AccessListEntry) decode() ([]byte, [][]byte) {

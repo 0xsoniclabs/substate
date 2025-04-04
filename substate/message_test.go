@@ -259,22 +259,31 @@ func TestMessage_EqualSetCodeAuthorization(t *testing.T) {
 
 func TestMessage_NewMessage(t *testing.T) {
 	want := &Message{
-		Nonce:                 1,
-		CheckNonce:            true,
-		GasPrice:              new(big.Int).SetUint64(1),
-		Gas:                   1,
-		From:                  types.Address{1},
-		To:                    &types.Address{1},
-		Value:                 new(big.Int).SetUint64(1),
-		Data:                  []byte{1},
-		dataHash:              &types.Hash{},
-		ProtobufTxType:        new(int32),
-		AccessList:            []types.AccessTuple{{Address: types.Address{1}, StorageKeys: []types.Hash{types.BytesToHash([]byte{1})}}},
-		GasFeeCap:             new(big.Int).SetUint64(1),
-		GasTipCap:             new(big.Int).SetUint64(1),
-		BlobGasFeeCap:         new(big.Int).SetUint64(1),
-		BlobHashes:            []types.Hash{types.BytesToHash([]byte{1})},
-		SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: uint256.NewInt(1), Address: types.Address{1}, Nonce: 1, V: 1, R: uint256.NewInt(1), S: uint256.NewInt(1)}},
+		Nonce:          1,
+		CheckNonce:     true,
+		GasPrice:       new(big.Int).SetUint64(1),
+		Gas:            1,
+		From:           types.Address{1},
+		To:             &types.Address{1},
+		Value:          new(big.Int).SetUint64(1),
+		Data:           []byte{1},
+		dataHash:       &types.Hash{},
+		ProtobufTxType: new(int32),
+		AccessList:     []types.AccessTuple{{Address: types.Address{1}, StorageKeys: []types.Hash{types.BytesToHash([]byte{1})}}},
+		GasFeeCap:      new(big.Int).SetUint64(1),
+		GasTipCap:      new(big.Int).SetUint64(1),
+		BlobGasFeeCap:  new(big.Int).SetUint64(1),
+		BlobHashes:     []types.Hash{types.BytesToHash([]byte{1})},
+		SetCodeAuthorizations: []types.SetCodeAuthorization{
+			{
+				ChainID: uint256.NewInt(1),
+				Address: types.Address{1},
+				Nonce:   1,
+				V:       1,
+				R:       uint256.NewInt(1),
+				S:       uint256.NewInt(1),
+			},
+		},
 	}
 
 	got := NewMessage(
