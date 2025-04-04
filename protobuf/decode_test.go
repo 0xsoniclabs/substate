@@ -270,7 +270,7 @@ func TestDecode_TxMessageBlob(t *testing.T) {
 	assert.Equal(t, expectedBlob2, result.BlobHashes[1])
 }
 
-func TestDecode_TxMessageSetCode(t *testing.T) {
+func TestDecode_TxMessageSetCodeSuccess(t *testing.T) {
 	lookup := func(hash types.Hash) ([]byte, error) {
 		return []byte{1, 2, 3}, nil
 	}

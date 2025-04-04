@@ -106,17 +106,8 @@ func toProtobufTxMessage(sm *substate.Message) *Substate_TxMessage {
 		txInput = &Substate_TxMessage_Data{Data: sm.Data}
 	}
 
-	setCodeAuthorizationsList := make([]*Substate_TxMessage_SetCodeAuthorization, len(sm.SetCodeAuthorizations))
-	for i, entry := range sm.SetCodeAuthorizations {
-		setCodeAuthorizationsList[i] = &Substate_TxMessage_SetCodeAuthorization{
-			ChainId: entry.ChainID.Bytes(),
-			Address: entry.Address.Bytes(),
-			Nonce:   &entry.Nonce,
-			V:       []byte{entry.V},
-			R:       entry.R.Bytes(),
-			S:       entry.S.Bytes(),
-		}
-	}
+	setCodeAuthorizationsList := convertMessageSetCodeAuthorizationToProtobufList(sm)
+
 	return &Substate_TxMessage{
 		Nonce:                 &sm.Nonce,
 		GasPrice:              BigIntToBytes(sm.GasPrice),
@@ -133,6 +124,22 @@ func toProtobufTxMessage(sm *substate.Message) *Substate_TxMessage {
 		BlobHashes:            blobHashes,
 		SetCodeAuthorizations: setCodeAuthorizationsList,
 	}
+}
+
+// convertMessageSetCodeAuthorizationToProtobufList convert substate.Message.SetCodeAuthorization into protobuf-encoded Substate_TxMessage_SetCodeAuthorization
+func convertMessageSetCodeAuthorizationToProtobufList(sm *substate.Message) []*Substate_TxMessage_SetCodeAuthorization {
+	setCodeAuthorizationsList := make([]*Substate_TxMessage_SetCodeAuthorization, len(sm.SetCodeAuthorizations))
+	for i, entry := range sm.SetCodeAuthorizations {
+		setCodeAuthorizationsList[i] = &Substate_TxMessage_SetCodeAuthorization{
+			ChainId: entry.ChainID.Bytes(),
+			Address: entry.Address.Bytes(),
+			Nonce:   &entry.Nonce,
+			V:       []byte{entry.V},
+			R:       entry.R.Bytes(),
+			S:       entry.S.Bytes(),
+		}
+	}
+	return setCodeAuthorizationsList
 }
 
 // toProtobufAccessListEntry converts types.AccessTuple into protobuf-encoded Substate_TxMessage_AccessListEntry

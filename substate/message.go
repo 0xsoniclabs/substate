@@ -148,30 +148,7 @@ func (m *Message) Equal(y *Message) bool {
 	for i, mEntry := range m.SetCodeAuthorizations {
 		yEntry := y.SetCodeAuthorizations[i]
 
-		// check addresses position
-		if mEntry.Address != yEntry.Address {
-			return false
-		}
-
-		// check chainId position
-		if mEntry.ChainID.Cmp(yEntry.ChainID) != 0 {
-			return false
-		}
-
-		// check nonce position
-		if mEntry.Nonce != yEntry.Nonce {
-			return false
-		}
-
-		if mEntry.V != yEntry.V {
-			return false
-		}
-
-		if mEntry.R.Cmp(yEntry.R) != 0 {
-			return false
-		}
-
-		if mEntry.S.Cmp(yEntry.S) != 0 {
+		if !mEntry.Equal(yEntry) {
 			return false
 		}
 	}
