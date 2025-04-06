@@ -8,3 +8,4 @@ coverage:
 ignore:
   - "**/*.pb.go"
   - "**/*_test.go"
+  - "**/*_mock.go"
