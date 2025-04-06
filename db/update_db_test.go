@@ -7,7 +7,6 @@ import (
 
 	"github.com/holiman/uint256"
 
-	trlp "github.com/0xsoniclabs/substate/types/rlp"
 	"github.com/stretchr/testify/assert"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/iterator"
@@ -315,7 +314,7 @@ func TestUpdateDB_GetUpdateSetSuccess(t *testing.T) {
 	key := UpdateDBKey(blockNum)
 
 	updateSet := updateset.NewUpdateSetRLP(&updateset.UpdateSet{
-		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
 		Block:           0,
 		DeletedAccounts: []types.Address{},
 	}, []types.Address{{}})
@@ -481,7 +480,7 @@ func TestUpdateDB_NewUpdateSetIterator(t *testing.T) {
 	// Create a mock iterator that would be returned internally
 	kv := &testutil.KeyValue{}
 	updateSet := updateset.NewUpdateSetRLP(&updateset.UpdateSet{
-		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
 		Block:           0,
 		DeletedAccounts: []types.Address{},
 	}, []types.Address{{}})

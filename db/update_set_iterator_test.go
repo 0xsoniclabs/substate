@@ -101,7 +101,7 @@ func TestUpdateSetIterator_DecodeSuccess(t *testing.T) {
 
 	// Create sample RLP data
 	updateSet := updateset.NewUpdateSetRLP(&updateset.UpdateSet{
-		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
 		Block:           0,
 		DeletedAccounts: []types.Address{},
 	}, []types.Address{})
@@ -156,7 +156,7 @@ func TestUpdateSetIterator_DecodeFail(t *testing.T) {
 	// Test case 3: Valid key and RLP but ToWorldState fails
 	// Create sample RLP data
 	updateSet := updateset.NewUpdateSetRLP(&updateset.UpdateSet{
-		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
 		Block:           0,
 		DeletedAccounts: []types.Address{},
 	}, []types.Address{})
@@ -181,7 +181,7 @@ func TestUpdateSetIterator_StartSuccess(t *testing.T) {
 	mockDB := NewMockUpdateDB(ctrl)
 
 	updateSet := updateset.NewUpdateSetRLP(&updateset.UpdateSet{
-		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
 		Block:           0,
 		DeletedAccounts: []types.Address{},
 	}, []types.Address{})
@@ -213,7 +213,7 @@ func TestUpdateSetIterator_StartDecodeKeyFail(t *testing.T) {
 	mockDB := NewMockUpdateDB(ctrl)
 
 	updateSet := updateset.NewUpdateSetRLP(&updateset.UpdateSet{
-		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
 		Block:           0,
 		DeletedAccounts: []types.Address{},
 	}, []types.Address{})
@@ -242,7 +242,7 @@ func TestUpdateSetIterator_StartDecodeValueFail(t *testing.T) {
 	mockDB := NewMockUpdateDB(ctrl)
 
 	updateSet := updateset.NewUpdateSetRLP(&updateset.UpdateSet{
-		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(big.Int).SetUint64(1), nil),
+		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
 		Block:           0,
 		DeletedAccounts: []types.Address{},
 	}, []types.Address{})
