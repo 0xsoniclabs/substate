@@ -387,6 +387,17 @@ func TestDecode_GetContractAddressWithTo(t *testing.T) {
 	assert.Equal(t, types.Address{}, address)
 }
 
+func TestDecode_GetContractAddress(t *testing.T) {
+	msg := &Substate_TxMessage{
+		From:  []byte{1},
+		Nonce: uint64Ptr(9),
+	}
+
+	address := msg.getContractAddress()
+
+	assert.Equal(t, types.Address{0x94, 0xed, 0xc3, 0x20, 0x46, 0x6d, 0x68, 0xc0, 0xe8, 0xc, 0x3e, 0x6f, 0x45, 0x43, 0x75, 0xfb, 0x95, 0x7e, 0x10, 0x38}, address)
+}
+
 // Helper function to create uint64 pointer
 func uint64Ptr(v uint64) *uint64 {
 	return &v

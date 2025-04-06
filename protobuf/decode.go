@@ -3,8 +3,9 @@ package protobuf
 import (
 	"errors"
 	"fmt"
-	trlp "github.com/0xsoniclabs/substate/types/rlp"
 	"math/big"
+
+	trlp "github.com/0xsoniclabs/substate/types/rlp"
 
 	"github.com/holiman/uint256"
 

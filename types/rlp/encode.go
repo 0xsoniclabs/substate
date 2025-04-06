@@ -4,11 +4,8 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math/big"
 	"reflect"
 	"sync"
-
-	"github.com/holiman/uint256"
 )
 
 // Encoder is implemented by types that require custom
@@ -172,15 +169,6 @@ func (w *encbuf) toWriter(out io.Writer) (err error) {
 	return err
 }
 
-// headsize returns the size of a list or string header
-// for a value of the given size.
-func headsize(size uint64) int {
-	if size < 56 {
-		return 1
-	}
-	return 1 + intsize(size)
-}
-
 // intsize computes the minimum number of bytes required to store i.
 func intsize(i uint64) (size int) {
 	for size = 1; ; size++ {
@@ -334,34 +322,12 @@ var encoderInterface = reflect.TypeOf(new(Encoder)).Elem()
 func makeWriter(typ reflect.Type, ts tags) (writer, error) {
 	kind := typ.Kind()
 	switch {
-	case typ == rawValueType:
-		return writeRawValue, nil
-	case typ.AssignableTo(reflect.PtrTo(bigInt)):
-		return writeBigIntPtr, nil
-	case typ.AssignableTo(reflect.PtrTo(uint256Int)):
-		return writeUint256Ptr, nil
-	case typ.AssignableTo(bigInt):
-		return writeBigIntNoPtr, nil
-	case typ.AssignableTo(uint256Int):
-		return writeUint256NoPtr, nil
-	case kind == reflect.Ptr:
-		return makePtrWriter(typ, ts)
-	case reflect.PtrTo(typ).Implements(encoderInterface):
-		return makeEncoderWriter(typ), nil
 	case isUint(kind):
 		return writeUint, nil
-	case kind == reflect.Bool:
-		return writeBool, nil
-	case kind == reflect.String:
-		return writeString, nil
-	case kind == reflect.Slice && isByte(typ.Elem()):
-		return writeBytes, nil
 	case kind == reflect.Array && isByte(typ.Elem()):
 		return makeByteArrayWriter(typ), nil
 	case kind == reflect.Slice || kind == reflect.Array:
 		return makeSliceWriter(typ, ts)
-	case kind == reflect.Struct:
-		return makeStructWriter(typ)
 	case kind == reflect.Interface:
 		return writeInterface, nil
 	default:
@@ -370,85 +336,8 @@ func makeWriter(typ reflect.Type, ts tags) (writer, error) {
 	}
 }
 
-func writeRawValue(val reflect.Value, w *encbuf) error {
-	w.str = append(w.str, val.Bytes()...)
-	return nil
-}
-
 func writeUint(val reflect.Value, w *encbuf) error {
 	w.encodeUint(val.Uint())
-	return nil
-}
-
-func writeBool(val reflect.Value, w *encbuf) error {
-	if val.Bool() {
-		w.str = append(w.str, 0x01)
-	} else {
-		w.str = append(w.str, 0x80)
-	}
-	return nil
-}
-
-func writeBigIntPtr(val reflect.Value, w *encbuf) error {
-	ptr := val.Interface().(*big.Int)
-	if ptr == nil {
-		w.str = append(w.str, 0x80)
-		return nil
-	}
-	return writeBigInt(ptr, w)
-}
-
-func writeUint256Ptr(val reflect.Value, w *encbuf) error {
-	ptr := val.Interface().(*uint256.Int)
-	if ptr == nil {
-		w.str = append(w.str, 0x80)
-		return nil
-	}
-	return writeUint256(ptr, w)
-}
-
-func writeBigIntNoPtr(val reflect.Value, w *encbuf) error {
-	i := val.Interface().(big.Int)
-	return writeBigInt(&i, w)
-}
-
-func writeUint256NoPtr(val reflect.Value, w *encbuf) error {
-	i := val.Interface().(uint256.Int)
-	return writeUint256(&i, w)
-}
-
-// wordBytes is the number of bytes in a big.Word
-const wordBytes = (32 << (uint64(^big.Word(0)) >> 63)) / 8
-
-func writeBigInt(i *big.Int, w *encbuf) error {
-	if i.Sign() == -1 {
-		return fmt.Errorf("rlp: cannot encode negative *big.Int")
-	}
-	bitlen := i.BitLen()
-	if bitlen <= 64 {
-		w.encodeUint(i.Uint64())
-		return nil
-	}
-	// Integer is larger than 64 bits, encode from i.Bits().
-	// The minimal byte length is bitlen rounded up to the next
-	// multiple of 8, divided by 8.
-	length := ((bitlen + 7) & -8) >> 3
-	w.encodeStringHeader(length)
-	w.str = append(w.str, make([]byte, length)...)
-	index := length
-	buf := w.str[len(w.str)-length:]
-	for _, d := range i.Bits() {
-		for j := 0; j < wordBytes && index > 0; j++ {
-			index--
-			buf[index] = byte(d)
-			d >>= 8
-		}
-	}
-	return nil
-}
-
-func writeUint256(i *uint256.Int, w *encbuf) error {
-	w.encodeString(i.Bytes())
 	return nil
 }
 
@@ -498,18 +387,6 @@ func writeByteArray(val reflect.Value, w *encbuf) error {
 	return nil
 }
 
-func writeString(val reflect.Value, w *encbuf) error {
-	s := val.String()
-	if len(s) == 1 && s[0] <= 0x7f {
-		// fits single byte, no string header
-		w.str = append(w.str, s[0])
-	} else {
-		w.encodeStringHeader(len(s))
-		w.str = append(w.str, s...)
-	}
-	return nil
-}
-
 func writeInterface(val reflect.Value, w *encbuf) error {
 	if val.IsNil() {
 		// Write empty list. This is consistent with the previous RLP
@@ -544,99 +421,6 @@ func makeSliceWriter(typ reflect.Type, ts tags) (writer, error) {
 		return nil
 	}
 	return writer, nil
-}
-
-func makeStructWriter(typ reflect.Type) (writer, error) {
-	fields, err := structFields(typ)
-	if err != nil {
-		return nil, err
-	}
-	for _, f := range fields {
-		if f.info.writerErr != nil {
-			return nil, structFieldError{typ, f.index, f.info.writerErr}
-		}
-	}
-
-	var writerF writer
-	firstOptionalField := firstOptionalField(fields)
-	if firstOptionalField == len(fields) {
-		// This is the writer function for structs without any optional fields.
-		writerF = func(val reflect.Value, w *encbuf) error {
-			lh := w.list()
-			for _, f := range fields {
-				if err := f.info.writer(val.Field(f.index), w); err != nil {
-					return err
-				}
-			}
-			w.listEnd(lh)
-			return nil
-		}
-	} else {
-		// If there are any "optional" fields, the writer needs to perform additional
-		// checks to determine the output list length.
-		writerF = func(val reflect.Value, w *encbuf) error {
-			lastField := len(fields) - 1
-			for ; lastField >= firstOptionalField; lastField-- {
-				if !val.Field(fields[lastField].index).IsZero() {
-					break
-				}
-			}
-			lh := w.list()
-			for i := 0; i <= lastField; i++ {
-				if err := fields[i].info.writer(val.Field(fields[i].index), w); err != nil {
-					return err
-				}
-			}
-			w.listEnd(lh)
-			return nil
-		}
-	}
-	return writerF, nil
-}
-
-func makePtrWriter(typ reflect.Type, ts tags) (writer, error) {
-	etypeinfo := theTC.infoWhileGenerating(typ.Elem(), tags{})
-	if etypeinfo.writerErr != nil {
-		return nil, etypeinfo.writerErr
-	}
-	// Determine how to encode nil pointers.
-	var nilKind Kind
-	if ts.nilOK {
-		nilKind = ts.nilKind // use struct tag if provided
-	} else {
-		nilKind = defaultNilKind(typ.Elem())
-	}
-
-	writerF := func(val reflect.Value, w *encbuf) error {
-		if val.IsNil() {
-			if nilKind == String {
-				w.str = append(w.str, 0x80)
-			} else {
-				w.listEnd(w.list())
-			}
-			return nil
-		}
-		return etypeinfo.writer(val.Elem(), w)
-	}
-	return writerF, nil
-}
-
-func makeEncoderWriter(typ reflect.Type) writer {
-	if typ.Implements(encoderInterface) {
-		return func(val reflect.Value, w *encbuf) error {
-			return val.Interface().(Encoder).EncodeRLP(w)
-		}
-	}
-	w := func(val reflect.Value, w *encbuf) error {
-		if !val.CanAddr() {
-			// package json simply doesn't call MarshalJSON for this case, but encodes the
-			// value as if it didn't implement the interface. We don't want to handle it that
-			// way.
-			return fmt.Errorf("rlp: unadressable value of type %v, EncodeRLP is pointer method", val.Type())
-		}
-		return val.Addr().Interface().(Encoder).EncodeRLP(w)
-	}
-	return w
 }
 
 func (w *encbuf) encodeUint(i uint64) {
