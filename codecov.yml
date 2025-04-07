@@ -4,3 +4,8 @@ coverage:
       default: # status check name
         target: 80% # target coverage of the changes
         threshold: 0% # allow the coverage to drop by <threshold>%
+
+ignore:
+  - "**/*.pb.go"
+  - "**/*_test.go"
+  - "**/*_mock.go"
