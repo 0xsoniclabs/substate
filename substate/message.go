@@ -45,6 +45,9 @@ type Message struct {
 	// Cancun hard fork, EIP-4844
 	BlobGasFeeCap *big.Int
 	BlobHashes    []types.Hash
+
+	// Pectra hard fork, EIP-7702
+	SetCodeAuthorizations []types.SetCodeAuthorization
 }
 
 func NewMessage(
@@ -63,23 +66,25 @@ func NewMessage(
 	gasTipCap *big.Int,
 	blobGasFeeCap *big.Int,
 	blobHashes []types.Hash,
+	setCodeAuthorizations []types.SetCodeAuthorization,
 ) *Message {
 	return &Message{
-		Nonce:          nonce,
-		CheckNonce:     checkNonce,
-		GasPrice:       gasPrice,
-		Gas:            gas,
-		From:           from,
-		To:             to,
-		Value:          value,
-		Data:           data,
-		dataHash:       dataHash,
-		ProtobufTxType: ProtobufTxType,
-		AccessList:     accessList,
-		GasFeeCap:      gasFeeCap,
-		GasTipCap:      gasTipCap,
-		BlobGasFeeCap:  blobGasFeeCap,
-		BlobHashes:     blobHashes,
+		Nonce:                 nonce,
+		CheckNonce:            checkNonce,
+		GasPrice:              gasPrice,
+		Gas:                   gas,
+		From:                  from,
+		To:                    to,
+		Value:                 value,
+		Data:                  data,
+		dataHash:              dataHash,
+		ProtobufTxType:        ProtobufTxType,
+		AccessList:            accessList,
+		GasFeeCap:             gasFeeCap,
+		GasTipCap:             gasTipCap,
+		BlobGasFeeCap:         blobGasFeeCap,
+		BlobHashes:            blobHashes,
+		SetCodeAuthorizations: setCodeAuthorizations,
 	}
 }
 
@@ -106,7 +111,8 @@ func (m *Message) Equal(y *Message) bool {
 		len(m.AccessList) == len(y.AccessList) &&
 		m.GasFeeCap.Cmp(y.GasFeeCap) == 0 &&
 		m.GasTipCap.Cmp(y.GasTipCap) == 0 &&
-		m.BlobGasFeeCap.Cmp(y.BlobGasFeeCap) == 0
+		m.BlobGasFeeCap.Cmp(y.BlobGasFeeCap) == 0 &&
+		len(m.SetCodeAuthorizations) == len(y.SetCodeAuthorizations)
 	if !equal {
 		return false
 	}
@@ -135,6 +141,15 @@ func (m *Message) Equal(y *Message) bool {
 			if mKey != yKey {
 				return false
 			}
+		}
+	}
+
+	// check SetCodeAuthorizations
+	for i, mEntry := range m.SetCodeAuthorizations {
+		yEntry := y.SetCodeAuthorizations[i]
+
+		if !mEntry.Equal(yEntry) {
+			return false
 		}
 	}
 
@@ -168,6 +183,16 @@ func (m *Message) String() string {
 		for i, key := range tuple.StorageKeys {
 			builder.WriteString(fmt.Sprintf("Storage Key %v: %v", i, key))
 		}
+	}
+
+	for _, authorization := range m.SetCodeAuthorizations {
+		builder.WriteString(fmt.Sprintf("SetCodeAuthorization:\n"))
+		builder.WriteString(fmt.Sprintf("ChainID: %d\n", authorization.ChainID.Uint64()))
+		builder.WriteString(fmt.Sprintf("Address: %s\n", authorization.Address.String()))
+		builder.WriteString(fmt.Sprintf("Nonce: %d\n", authorization.Nonce))
+		builder.WriteString(fmt.Sprintf("V: %d\n", authorization.V))
+		builder.WriteString(fmt.Sprintf("R: %s\n", authorization.R.String()))
+		builder.WriteString(fmt.Sprintf("S: %s\n", authorization.S.String()))
 	}
 
 	return builder.String()

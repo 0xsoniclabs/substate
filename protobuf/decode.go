@@ -143,12 +143,10 @@ func (msg *Substate_TxMessage) decode(lookup getCodeFunc) (*substate.Message, er
 	// Berlin hard fork, EIP-2930: Optional access lists
 	var accessList types.AccessList = []types.AccessTuple{}
 	switch txType {
-	case Substate_TxMessage_TXTYPE_SETCODE:
-		return nil, fmt.Errorf("setcode tx type is not supported")
 	case Substate_TxMessage_TXTYPE_ACCESSLIST,
 		Substate_TxMessage_TXTYPE_DYNAMICFEE,
-		Substate_TxMessage_TXTYPE_BLOB:
-
+		Substate_TxMessage_TXTYPE_BLOB,
+		Substate_TxMessage_TXTYPE_SETCODE:
 		accessList = make([]types.AccessTuple, len(msg.GetAccessList()))
 		for i, entry := range msg.GetAccessList() {
 			addr, keys := entry.decode()
@@ -170,11 +168,9 @@ func (msg *Substate_TxMessage) decode(lookup getCodeFunc) (*substate.Message, er
 	var gasFeeCap *big.Int = BytesToBigInt(msg.GetGasPrice())
 	var gasTipCap *big.Int = BytesToBigInt(msg.GetGasPrice())
 	switch txType {
-	case Substate_TxMessage_TXTYPE_SETCODE:
-		return nil, fmt.Errorf("setcode tx type is not supported")
 	case Substate_TxMessage_TXTYPE_DYNAMICFEE,
-		Substate_TxMessage_TXTYPE_BLOB:
-
+		Substate_TxMessage_TXTYPE_BLOB,
+		Substate_TxMessage_TXTYPE_SETCODE:
 		gasFeeCap = BytesValueToBigInt(msg.GetGasFeeCap())
 		gasTipCap = BytesValueToBigInt(msg.GetGasTipCap())
 	}
@@ -182,8 +178,6 @@ func (msg *Substate_TxMessage) decode(lookup getCodeFunc) (*substate.Message, er
 	// Cancun hard fork, EIP-4844
 	var blobHashes []types.Hash = nil
 	switch txType {
-	case Substate_TxMessage_TXTYPE_SETCODE:
-		return nil, fmt.Errorf("setcode tx type is not supported")
 	case Substate_TxMessage_TXTYPE_BLOB:
 		msgBlobHashes := msg.GetBlobHashes()
 		if msgBlobHashes == nil {
@@ -198,8 +192,6 @@ func (msg *Substate_TxMessage) decode(lookup getCodeFunc) (*substate.Message, er
 
 	var txTypeInt int32
 	switch x := *msg.TxType; x {
-	case Substate_TxMessage_TXTYPE_SETCODE:
-		return nil, fmt.Errorf("setcode tx type is not supported")
 	case Substate_TxMessage_TXTYPE_LEGACY:
 		txTypeInt = substate.LegacyTxType
 	case Substate_TxMessage_TXTYPE_ACCESSLIST:
@@ -208,30 +200,61 @@ func (msg *Substate_TxMessage) decode(lookup getCodeFunc) (*substate.Message, er
 		txTypeInt = substate.DynamicFeeTxType
 	case Substate_TxMessage_TXTYPE_BLOB:
 		txTypeInt = substate.BlobTxType
+	case Substate_TxMessage_TXTYPE_SETCODE:
+		txTypeInt = substate.SetCodeTxType
 	default:
 		return nil, fmt.Errorf("unknown tx type: %d", x)
 	}
 
+	// Pectra hard fork, EIP-7702
+	var setCodeAuthorizationsList []types.SetCodeAuthorization
+	switch txType {
+	case Substate_TxMessage_TXTYPE_SETCODE:
+		setCodeAuthorizationsList = msg.decodeSetCodeAuthorizations()
+	}
+
 	return &substate.Message{
-		Nonce:          msg.GetNonce(),
-		CheckNonce:     true,
-		GasPrice:       BytesToBigInt(msg.GetGasPrice()),
-		Gas:            msg.GetGas(),
-		From:           types.BytesToAddress(msg.GetFrom()),
-		To:             pTo,
-		Value:          BytesToBigInt(msg.GetValue()),
-		Data:           data,
-		ProtobufTxType: &txTypeInt,
-		AccessList:     accessList,
-		GasFeeCap:      gasFeeCap,
-		GasTipCap:      gasTipCap,
-		BlobGasFeeCap:  BytesValueToBigInt(msg.GetBlobGasFeeCap()),
-		BlobHashes:     blobHashes,
+		Nonce:                 msg.GetNonce(),
+		CheckNonce:            true,
+		GasPrice:              BytesToBigInt(msg.GetGasPrice()),
+		Gas:                   msg.GetGas(),
+		From:                  types.BytesToAddress(msg.GetFrom()),
+		To:                    pTo,
+		Value:                 BytesToBigInt(msg.GetValue()),
+		Data:                  data,
+		ProtobufTxType:        &txTypeInt,
+		AccessList:            accessList,
+		GasFeeCap:             gasFeeCap,
+		GasTipCap:             gasTipCap,
+		BlobGasFeeCap:         BytesValueToBigInt(msg.GetBlobGasFeeCap()),
+		BlobHashes:            blobHashes,
+		SetCodeAuthorizations: setCodeAuthorizationsList,
 	}, nil
+}
+
+// decodeSetCodeAuthorizations retrieves list of SetCodeAuthorizations
+func (msg *Substate_TxMessage) decodeSetCodeAuthorizations() []types.SetCodeAuthorization {
+	setCodeAuthorizationsList := make([]types.SetCodeAuthorization, len(msg.GetSetCodeAuthorizations()))
+	for i, entry := range msg.GetSetCodeAuthorizations() {
+		chainId, addr, nonce, v, r, s := entry.decode()
+		setCodeAuthorizationsList[i] = types.SetCodeAuthorization{
+			ChainID: *BytesToUint256(chainId),
+			Address: types.BytesToAddress(addr),
+			Nonce:   nonce,
+			V:       v[0],
+			R:       *BytesToUint256(r),
+			S:       *BytesToUint256(s),
+		}
+	}
+	return setCodeAuthorizationsList
 }
 
 func (entry *Substate_TxMessage_AccessListEntry) decode() ([]byte, [][]byte) {
 	return entry.GetAddress(), entry.GetStorageKeys()
+}
+
+func (entry *Substate_TxMessage_SetCodeAuthorization) decode() ([]byte, []byte, uint64, []byte, []byte, []byte) {
+	return entry.GetChainId(), entry.GetAddress(), entry.GetNonce(), entry.GetV(), entry.GetR(), entry.GetS()
 }
 
 // getContractAddress returns, the address.Bytes() of the newly created contract,

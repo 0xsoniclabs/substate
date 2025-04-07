@@ -147,27 +147,6 @@ func TestDecode_OutputAllocDecodeFails(t *testing.T) {
 	assert.Contains(t, err.Error(), "Error looking up codehash")
 }
 
-func TestDecode_TxMessageDecodeFails(t *testing.T) {
-	lookup := func(hash types.Hash) ([]byte, error) {
-		return []byte{1, 2, 3}, nil
-	}
-
-	s := &Substate{
-		InputAlloc:  &Substate_Alloc{},
-		OutputAlloc: &Substate_Alloc{},
-		BlockEnv:    &Substate_BlockEnv{},
-		TxMessage: &Substate_TxMessage{
-			TxType: Substate_TxMessage_TXTYPE_SETCODE.Enum(),
-		},
-	}
-
-	result, err := s.Decode(lookup, 1, 0)
-
-	assert.Error(t, err)
-	assert.Nil(t, result)
-	assert.Contains(t, err.Error(), "setcode tx type is not supported")
-}
-
 func TestDecode_TxMessageLegacy(t *testing.T) {
 	lookup := func(hash types.Hash) ([]byte, error) {
 		return []byte{1, 2, 3}, nil
@@ -291,24 +270,53 @@ func TestDecode_TxMessageBlob(t *testing.T) {
 	assert.Equal(t, expectedBlob2, result.BlobHashes[1])
 }
 
-func TestDecode_TxMessageSetCodeFails(t *testing.T) {
+func TestDecode_TxMessageSetCodeSuccess(t *testing.T) {
 	lookup := func(hash types.Hash) ([]byte, error) {
-		return []byte{7, 8, 9}, nil
+		return []byte{1, 2, 3}, nil
 	}
 
 	msg := &Substate_TxMessage{
-		From:   []byte{1},
-		TxType: Substate_TxMessage_TXTYPE_SETCODE.Enum(),
-		Input: &Substate_TxMessage_InitCodeHash{
-			InitCodeHash: []byte{1},
+		Nonce:    uint64Ptr(1),
+		GasPrice: big.NewInt(100).Bytes(),
+		Gas:      uint64Ptr(21000),
+		From:     []byte{1},
+		To:       &wrapperspb.BytesValue{Value: []byte{2}},
+		Value:    big.NewInt(1000).Bytes(),
+		Input: &Substate_TxMessage_Data{
+			Data: []byte{4, 5, 6},
 		},
+		SetCodeAuthorizations: []*Substate_TxMessage_SetCodeAuthorization{
+			{
+				ChainId: big.NewInt(1).Bytes(),
+				Address: types.Address{2}.Bytes(),
+				Nonce:   uint64Ptr(3),
+				V:       []byte{4},
+				R:       big.NewInt(5).Bytes(),
+				S:       big.NewInt(6).Bytes(),
+			},
+		},
+		TxType: Substate_TxMessage_TXTYPE_SETCODE.Enum(),
 	}
 
 	result, err := msg.decode(lookup)
 
-	assert.Error(t, err)
-	assert.Nil(t, result)
-	assert.Contains(t, err.Error(), "setcode tx type is not supported")
+	expectedFrom := types.Address{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1}
+	expectedTo := types.Address{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2}
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(1), result.Nonce)
+	assert.Equal(t, big.NewInt(100), result.GasPrice)
+	assert.Equal(t, uint64(21000), result.Gas)
+	assert.Equal(t, expectedFrom, result.From)
+	assert.Equal(t, expectedTo, *result.To)
+	assert.Equal(t, big.NewInt(1000), result.Value)
+	assert.Equal(t, []byte{4, 5, 6}, result.Data)
+	assert.Equal(t, uint64(1), result.SetCodeAuthorizations[0].ChainID.Uint64())
+	assert.Equal(t, types.Address{2}, result.SetCodeAuthorizations[0].Address)
+	assert.Equal(t, uint64(3), result.SetCodeAuthorizations[0].Nonce)
+	assert.Equal(t, uint8(4), result.SetCodeAuthorizations[0].V)
+	assert.Equal(t, uint64(5), result.SetCodeAuthorizations[0].R.Uint64())
+	assert.Equal(t, uint64(6), result.SetCodeAuthorizations[0].S.Uint64())
+	assert.Equal(t, int32(substate.SetCodeTxType), *result.ProtobufTxType)
 }
 
 func TestDecode_TxMessageUnknownType(t *testing.T) {

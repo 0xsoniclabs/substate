@@ -169,7 +169,19 @@ func TestEncode_TxMessage(t *testing.T) {
 		AccessList: types.AccessList{
 			{Address: types.Address{1}, StorageKeys: []types.Hash{{2}, {3}}},
 		},
-		BlobHashes: []types.Hash{{1}},
+		BlobHashes:    []types.Hash{{1}},
+		GasFeeCap:     big.NewInt(1000),
+		GasTipCap:     big.NewInt(2000),
+		BlobGasFeeCap: big.NewInt(3000),
+		SetCodeAuthorizations: []types.SetCodeAuthorization{
+			{
+				ChainID: *uint256.NewInt(1),
+				Address: types.Address{2},
+				Nonce:   3,
+				V:       4,
+				R:       *uint256.NewInt(5),
+				S:       *uint256.NewInt(6),
+			}},
 	}
 
 	encoded := toProtobufTxMessage(msg)
