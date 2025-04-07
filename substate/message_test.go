@@ -224,8 +224,8 @@ func TestMessage_DataHashGeneratesNewHashIfNil(t *testing.T) {
 }
 
 func TestMessage_EqualSetCodeAuthorization(t *testing.T) {
-	msg := &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: uint256.NewInt(1), Address: types.Address{0}, Nonce: 1, V: 1, R: uint256.NewInt(1), S: uint256.NewInt(1)}}}
-	comparedMsg := &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: uint256.NewInt(2), Address: types.Address{0}, Nonce: 1, V: 1, R: uint256.NewInt(1), S: uint256.NewInt(1)}}}
+	msg := &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: *uint256.NewInt(1), Address: types.Address{0}, Nonce: 1, V: 1, R: *uint256.NewInt(1), S: *uint256.NewInt(1)}}}
+	comparedMsg := &Message{SetCodeAuthorizations: []types.SetCodeAuthorization{{ChainID: *uint256.NewInt(2), Address: types.Address{0}, Nonce: 1, V: 1, R: *uint256.NewInt(1), S: *uint256.NewInt(1)}}}
 
 	if msg.Equal(comparedMsg) {
 		t.Fatal("messages setCodeAuthorizations have different chainId but equal returned true")
@@ -251,12 +251,12 @@ func TestMessage_NewMessage(t *testing.T) {
 		BlobHashes:     []types.Hash{types.BytesToHash([]byte{1})},
 		SetCodeAuthorizations: []types.SetCodeAuthorization{
 			{
-				ChainID: uint256.NewInt(1),
+				ChainID: *uint256.NewInt(1),
 				Address: types.Address{1},
 				Nonce:   1,
 				V:       1,
-				R:       uint256.NewInt(1),
-				S:       uint256.NewInt(1),
+				R:       *uint256.NewInt(1),
+				S:       *uint256.NewInt(1),
 			},
 		},
 	}
@@ -277,7 +277,7 @@ func TestMessage_NewMessage(t *testing.T) {
 		new(big.Int).SetUint64(1),
 		new(big.Int).SetUint64(1),
 		[]types.Hash{types.BytesToHash([]byte{1})},
-		[]types.SetCodeAuthorization{{ChainID: uint256.NewInt(1), Address: types.Address{1}, Nonce: 1, V: 1, R: uint256.NewInt(1), S: uint256.NewInt(1)}},
+		[]types.SetCodeAuthorization{{ChainID: *uint256.NewInt(1), Address: types.Address{1}, Nonce: 1, V: 1, R: *uint256.NewInt(1), S: *uint256.NewInt(1)}},
 	)
 
 	assert.Equal(t, want, got)
@@ -311,12 +311,12 @@ func TestMessage_String(t *testing.T) {
 		BlobHashes:     []types.Hash{types.BytesToHash([]byte{1})},
 		SetCodeAuthorizations: []types.SetCodeAuthorization{
 			{
-				ChainID: uint256.NewInt(1),
+				ChainID: *uint256.NewInt(1),
 				Address: types.Address{1},
 				Nonce:   1,
 				V:       1,
-				R:       uint256.NewInt(1),
-				S:       uint256.NewInt(1),
+				R:       *uint256.NewInt(1),
+				S:       *uint256.NewInt(1),
 			},
 		},
 	}

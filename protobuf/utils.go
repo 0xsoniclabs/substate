@@ -66,7 +66,7 @@ func BytesToUint256(b []byte) *uint256.Int {
 	if b == nil {
 		return nil
 	}
-	return new(uint256.Int).SetBytes(b)
+	return uint256.MustFromBig(BytesToBigInt(b))
 }
 
 func BigIntToBytes(i *big.Int) []byte {

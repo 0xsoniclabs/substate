@@ -238,12 +238,12 @@ func (msg *Substate_TxMessage) decodeSetCodeAuthorizations() []types.SetCodeAuth
 	for i, entry := range msg.GetSetCodeAuthorizations() {
 		chainId, addr, nonce, v, r, s := entry.decode()
 		setCodeAuthorizationsList[i] = types.SetCodeAuthorization{
-			ChainID: BytesToUint256(chainId),
+			ChainID: *BytesToUint256(chainId),
 			Address: types.BytesToAddress(addr),
 			Nonce:   nonce,
 			V:       v[0],
-			R:       BytesToUint256(r),
-			S:       BytesToUint256(s),
+			R:       *BytesToUint256(r),
+			S:       *BytesToUint256(s),
 		}
 	}
 	return setCodeAuthorizationsList

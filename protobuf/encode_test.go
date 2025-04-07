@@ -175,12 +175,12 @@ func TestEncode_TxMessage(t *testing.T) {
 		BlobGasFeeCap: big.NewInt(3000),
 		SetCodeAuthorizations: []types.SetCodeAuthorization{
 			{
-				ChainID: uint256.NewInt(1),
+				ChainID: *uint256.NewInt(1),
 				Address: types.Address{2},
 				Nonce:   3,
 				V:       4,
-				R:       uint256.NewInt(5),
-				S:       uint256.NewInt(6),
+				R:       *uint256.NewInt(5),
+				S:       *uint256.NewInt(6),
 			}},
 	}
 
