@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"log"
 	"math/big"
 
 	"github.com/holiman/uint256"
@@ -280,7 +279,6 @@ func createAddress(addr types.Address, nonce uint64) types.Address {
 	buffer.Write(addr.Bytes())
 	buffer.Write(nonceBytes)
 	data := buffer.Bytes()
-	log.Printf("%x", data)
 	return types.BytesToAddress(hash.Keccak256Hash(data).Bytes()[12:])
 }
 
