@@ -1,6 +1,9 @@
 package updateset
 
 import (
+	"crypto/md5"
+	"encoding/binary"
+	"encoding/hex"
 	"testing"
 
 	"github.com/syndtr/goleveldb/leveldb"
@@ -30,32 +33,32 @@ func TestUpdateSet_ToWorldStateRLP(t *testing.T) {
 	// Create update set
 	updateSet := NewUpdateSet(ws, 10)
 
-	// Convert to RLP
-	rlpState := updateSet.ToWorldStateRLP()
+	// Convert to PB
+	pbState := updateSet.ToWorldStatePB()
 
-	// Verify addresses and accounts length match
-	assert.Equal(t, len(rlpState.Addresses), len(rlpState.Accounts))
-	assert.Equal(t, 2, len(rlpState.Addresses))
+	// Verify word state length
+	assert.Equal(t, len(ws), len(pbState.Alloc))
 
 	// Find the accounts in the RLP representation
 	var foundAcc1, foundAcc2 bool
-	for i, addr := range rlpState.Addresses {
-		acc := rlpState.Accounts[i]
+	for _, alloc := range pbState.Alloc {
+		acc := alloc.Account
+		addr := types.BytesToAddress(alloc.Address)
 
 		if addr == (types.Address{1}) {
 			foundAcc1 = true
-			assert.Equal(t, uint64(1), acc.Nonce)
-			assert.Equal(t, uint64(100), acc.Balance.Uint64())
-			assert.Equal(t, acc1.CodeHash(), acc.CodeHash)
-			assert.Equal(t, 1, len(acc.Storage))
+			assert.Equal(t, uint64(1), acc.GetNonce())
+			assert.Equal(t, uint64(100), bytesToUint64(acc.GetBalance()))
+			assert.Equal(t, acc1.CodeHash(), types.BytesToHash(acc.GetCodeHash()))
+			assert.Equal(t, 1, len(acc.GetStorage()))
 		}
 
 		if addr == (types.Address{2}) {
 			foundAcc2 = true
-			assert.Equal(t, uint64(2), acc.Nonce)
-			assert.Equal(t, uint64(200), acc.Balance.Uint64())
-			assert.Equal(t, acc2.CodeHash(), acc.CodeHash)
-			assert.Equal(t, 0, len(acc.Storage))
+			assert.Equal(t, uint64(2), acc.GetNonce())
+			assert.Equal(t, uint64(200), bytesToUint64(acc.GetBalance()))
+			assert.Equal(t, acc2.CodeHash(), types.BytesToHash(acc.GetCodeHash()))
+			assert.Equal(t, 0, len(acc.GetStorage()))
 		}
 	}
 
@@ -200,6 +203,68 @@ func TestUpdateSetRLP_ToWorldStateError(t *testing.T) {
 
 	// Convert back to world state
 	newUpdateSet, err := rlpUpdateSet.ToWorldState(getCodeFunc, 10)
-	assert.Equal(t, leveldb.ErrReadOnly, err)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "leveldb: read-only mode")
 	assert.Nil(t, newUpdateSet)
+}
+
+func TestUpdateSetPB_EncodeUpdateSetPBSuccess(t *testing.T) {
+	updateSet := NewUpdateSetRLP(&UpdateSet{
+		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
+		Block:           0,
+		DeletedAccounts: []types.Address{},
+	}, []types.Address{{}})
+	value, err := EncodeUpdateSetPB(&updateSet)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "06753c366fe2f1b1bdc6d67cb3e3698f", bytesToMD5(value))
+}
+
+func TestUpdateSetPB_EncodeUpdateSetPBError(t *testing.T) {
+	value, err := EncodeUpdateSetPB(&UpdateSetPB{})
+	assert.Error(t, err)
+	assert.Nil(t, value)
+}
+
+func TestUpdateSetPB_DecodeUpdateSetPBSuccess(t *testing.T) {
+	expected := NewUpdateSetRLP(&UpdateSet{
+		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
+		Block:           0,
+		DeletedAccounts: []types.Address{},
+	}, []types.Address{{}})
+
+	value, err := DecodeUpdateSetPB([]byte{0xa, 0x41, 0xa, 0x3f, 0xa, 0x14, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x12, 0x27, 0x8, 0x1, 0x12, 0x1, 0x1, 0x2a, 0x20, 0xc5, 0xd2, 0x46, 0x1, 0x86, 0xf7, 0x23, 0x3c, 0x92, 0x7e, 0x7d, 0xb2, 0xdc, 0xc7, 0x3, 0xc0, 0xe5, 0x0, 0xb6, 0x53, 0xca, 0x82, 0x27, 0x3b, 0x7b, 0xfa, 0xd8, 0x4, 0x5d, 0x85, 0xa4, 0x70, 0x12, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0})
+	assert.NoError(t, err)
+	assert.Equal(t, expected.DeletedAccounts, value.DeletedAccounts)
+	assert.Equal(t, len(expected.WorldState.Alloc), len(value.WorldState.Alloc))
+	assert.Equal(t, expected.WorldState.Alloc[0].Address, value.WorldState.Alloc[0].Address)
+	assert.Equal(t, expected.WorldState.Alloc[0].Account.GetNonce(), value.WorldState.Alloc[0].Account.GetNonce())
+	assert.Equal(t, expected.WorldState.Alloc[0].Account.GetBalance(), value.WorldState.Alloc[0].Account.GetBalance())
+	assert.Equal(t, expected.WorldState.Alloc[0].Account.GetCode(), value.WorldState.Alloc[0].Account.GetCode())
+}
+
+func TestUpdateSetPB_DecodeUpdateSetPBError(t *testing.T) {
+	value, err := DecodeUpdateSetPB(nil)
+	assert.Error(t, err)
+	assert.NotNil(t, value)
+}
+
+// bytesToUint64 converts a byte slice to a uint64 value.
+func bytesToUint64(b []byte) uint64 {
+	// Ensure the byte slice has enough bytes
+	if len(b) < 8 {
+		// Create a new 8-byte slice
+		buf := make([]byte, 8)
+		// Copy the input bytes to the end of the buffer
+		copy(buf[8-len(b):], b)
+		b = buf
+	}
+	return binary.BigEndian.Uint64(b)
+}
+
+// bytesToMD5 computes the MD5 hash of the input byte slice and returns it as a hexadecimal string.
+func bytesToMD5(data []byte) string {
+	hash := md5.Sum(data)
+	hashString := hex.EncodeToString(hash[:])
+	return hashString
 }

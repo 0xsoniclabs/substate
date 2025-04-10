@@ -4,10 +4,8 @@ import (
 	"fmt"
 
 	pb "github.com/0xsoniclabs/substate/protobuf"
-	"github.com/0xsoniclabs/substate/rlp"
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
-	trlp "github.com/0xsoniclabs/substate/types/rlp"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -53,17 +51,7 @@ type codeLookupFunc = func(types.Hash) ([]byte, error)
 // newSubstateDecoder returns requested SubstateDecoder
 func newSubstateEncoding(encoding string, lookup codeLookupFunc) (*substateEncoding, error) {
 	switch encoding {
-
-	case "", "default", "rlp":
-		return &substateEncoding{
-			schema: "rlp",
-			decode: func(bytes []byte, block uint64, tx int) (*substate.Substate, error) {
-				return decodeRlp(bytes, lookup, block, tx)
-			},
-			encode: encodeRlp,
-		}, nil
-
-	case "protobuf", "pb":
+	case "", "default", "protobuf", "pb":
 		return &substateEncoding{
 			schema: "protobuf",
 			decode: func(bytes []byte, block uint64, tx int) (*substate.Substate, error) {
@@ -86,26 +74,6 @@ func (db *substateDB) decodeToSubstate(bytes []byte, block uint64, tx int) (*sub
 // encodeSubstate defensively defaults to "default" if nil
 func (db *substateDB) encodeSubstate(ss *substate.Substate, block uint64, tx int) ([]byte, error) {
 	return db.encoding.encode(ss, block, tx)
-}
-
-// decodeRlp decodes into substate the provided rlp-encoded bytecode
-func decodeRlp(bytes []byte, lookup codeLookupFunc, block uint64, tx int) (*substate.Substate, error) {
-	rlpSubstate, err := rlp.Decode(bytes)
-	if err != nil {
-		return nil, fmt.Errorf("cannot decode substate data from rlp block: %v, tx %v; %w", block, tx, err)
-	}
-
-	return rlpSubstate.ToSubstate(lookup, block, tx)
-}
-
-// encodeRlp encodes substate into rlp-encoded bytes
-func encodeRlp(ss *substate.Substate, block uint64, tx int) ([]byte, error) {
-	t := rlp.NewRLP(ss)
-	bytes, err := trlp.EncodeToBytes(t)
-	if err != nil {
-		return nil, fmt.Errorf("cannot encode substate into rlp block: %v, tx %v; %w", block, tx, err)
-	}
-	return bytes, nil
 }
 
 // decodeProtobuf decodes protobuf-encoded bytecode into substate
