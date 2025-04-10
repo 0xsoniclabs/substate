@@ -1,6 +1,7 @@
 package updateset
 
 import (
+	"encoding/binary"
 	"testing"
 
 	"github.com/syndtr/goleveldb/leveldb"
@@ -30,32 +31,32 @@ func TestUpdateSet_ToWorldStateRLP(t *testing.T) {
 	// Create update set
 	updateSet := NewUpdateSet(ws, 10)
 
-	// Convert to RLP
-	rlpState := updateSet.ToWorldStateRLP()
+	// Convert to PB
+	pbState := updateSet.ToWorldStatePB()
 
-	// Verify addresses and accounts length match
-	assert.Equal(t, len(rlpState.Addresses), len(rlpState.Accounts))
-	assert.Equal(t, 2, len(rlpState.Addresses))
+	// Verify word state length
+	assert.Equal(t, len(ws), len(pbState.Alloc))
 
 	// Find the accounts in the RLP representation
 	var foundAcc1, foundAcc2 bool
-	for i, addr := range rlpState.Addresses {
-		acc := rlpState.Accounts[i]
+	for _, alloc := range pbState.Alloc {
+		acc := alloc.Account
+		addr := types.BytesToAddress(alloc.Address)
 
 		if addr == (types.Address{1}) {
 			foundAcc1 = true
-			assert.Equal(t, uint64(1), acc.Nonce)
-			assert.Equal(t, uint64(100), acc.Balance.Uint64())
-			assert.Equal(t, acc1.CodeHash(), acc.CodeHash)
-			assert.Equal(t, 1, len(acc.Storage))
+			assert.Equal(t, uint64(1), acc.GetNonce())
+			assert.Equal(t, uint64(100), bytesToUint64(acc.GetBalance()))
+			assert.Equal(t, acc1.CodeHash(), types.BytesToHash(acc.GetCodeHash()))
+			assert.Equal(t, 1, len(acc.GetStorage()))
 		}
 
 		if addr == (types.Address{2}) {
 			foundAcc2 = true
-			assert.Equal(t, uint64(2), acc.Nonce)
-			assert.Equal(t, uint64(200), acc.Balance.Uint64())
-			assert.Equal(t, acc2.CodeHash(), acc.CodeHash)
-			assert.Equal(t, 0, len(acc.Storage))
+			assert.Equal(t, uint64(2), acc.GetNonce())
+			assert.Equal(t, uint64(200), bytesToUint64(acc.GetBalance()))
+			assert.Equal(t, acc2.CodeHash(), types.BytesToHash(acc.GetCodeHash()))
+			assert.Equal(t, 0, len(acc.GetStorage()))
 		}
 	}
 
@@ -200,6 +201,20 @@ func TestUpdateSetRLP_ToWorldStateError(t *testing.T) {
 
 	// Convert back to world state
 	newUpdateSet, err := rlpUpdateSet.ToWorldState(getCodeFunc, 10)
-	assert.Equal(t, leveldb.ErrReadOnly, err)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "leveldb: read-only mode")
 	assert.Nil(t, newUpdateSet)
+}
+
+// bytesToUint64 converts a byte slice to a uint64 value.
+func bytesToUint64(b []byte) uint64 {
+	// Ensure the byte slice has enough bytes
+	if len(b) < 8 {
+		// Create a new 8-byte slice
+		buf := make([]byte, 8)
+		// Copy the input bytes to the end of the buffer
+		copy(buf[8-len(b):], b)
+		b = buf
+	}
+	return binary.BigEndian.Uint64(b)
 }
