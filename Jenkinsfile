@@ -32,7 +32,6 @@ pipeline {
         stage('Lint') {
             steps {
                 //TODO remove binary
-                sh 'curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.0.2'
                 sh 'golangci-lint run ./...'
             }
         }
