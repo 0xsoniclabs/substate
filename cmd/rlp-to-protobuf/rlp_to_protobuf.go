@@ -59,7 +59,7 @@ func (c *rlpToProtobufCommand) performSubstateUpgrade(
 	return nil
 }
 
-func RunRlpToProtobuf(ctx *cli.Context) error {
+func RunRlpToProtobuf(ctx *cli.Context) (err error) {
 	// Open old DB
 	src, err := db.NewSubstateDB(ctx.String(SrcDbFlag.Name), &opt.Options{
 		OpenFilesCacheCapacity: 1024,
@@ -70,7 +70,9 @@ func RunRlpToProtobuf(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	defer src.Close()
+	defer func() {
+		err = src.Close()
+	}()
 
 	// Open new DB
 	dst, err := db.NewSubstateDB(ctx.String(DstDbFlag.Name), &opt.Options{
@@ -82,7 +84,9 @@ func RunRlpToProtobuf(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	defer dst.Close()
+	defer func() {
+		err = dst.Close()
+	}()
 
 	command := rlpToProtobufCommand{
 		src: src,

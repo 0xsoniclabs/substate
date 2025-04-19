@@ -3,7 +3,6 @@ package protobuf
 import (
 	"errors"
 	"fmt"
-	"math/big"
 
 	"github.com/holiman/uint256"
 
@@ -60,7 +59,7 @@ func (alloc *Substate_Alloc) decode(lookup getCodeFunc) (*substate.WorldState, e
 
 		code, err := lookup(codehash)
 		if err != nil && !errors.Is(err, leveldb.ErrNotFound) {
-			return nil, fmt.Errorf("Error looking up codehash; %w", err)
+			return nil, fmt.Errorf("error looking up codehash; %w", err)
 		}
 
 		world[address] = substate.NewAccount(nonce, balance, code)
@@ -129,7 +128,7 @@ func (msg *Substate_TxMessage) decode(lookup getCodeFunc) (*substate.Message, er
 
 	// In normal cases, pass data directly.
 	// In case of contract creation, lookup msg.GetInitCodeHash() and pass that instead
-	var data []byte = msg.GetData()
+	var data = msg.GetData()
 	if pTo == nil {
 		code, err := lookup(types.BytesToHash(msg.GetInitCodeHash()))
 		if err != nil && !errors.Is(err, leveldb.ErrNotFound) {
@@ -165,8 +164,8 @@ func (msg *Substate_TxMessage) decode(lookup getCodeFunc) (*substate.Message, er
 	}
 
 	// London hard fork, EIP-1559: Fee market
-	var gasFeeCap *big.Int = BytesToBigInt(msg.GetGasPrice())
-	var gasTipCap *big.Int = BytesToBigInt(msg.GetGasPrice())
+	var gasFeeCap = BytesToBigInt(msg.GetGasPrice())
+	var gasTipCap = BytesToBigInt(msg.GetGasPrice())
 	switch txType {
 	case Substate_TxMessage_TXTYPE_DYNAMICFEE,
 		Substate_TxMessage_TXTYPE_BLOB,

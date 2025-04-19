@@ -30,7 +30,7 @@ type Decoder interface {
 	DecodeRLP(*Stream) error
 }
 
-var EOL = errors.New("rlp: end of list")
+var ErrEOL = errors.New("rlp: end of list")
 
 var (
 	ErrExpectedString         = errors.New("rlp: expected String or Byte")
@@ -44,7 +44,7 @@ var (
 
 	// internal errors
 	errNotInList     = errors.New("rlp: call of ListEnd outside of any list")
-	errNotAtEOL      = errors.New("rlp: call of ListEnd not positioned at EOL")
+	errNotAtEOL      = errors.New("rlp: call of ListEnd not positioned at ErrEOL")
 	errUintOverflow  = errors.New("rlp: uint overflow")
 	errNoPointer     = errors.New("rlp: interface given to Decode must be a pointer")
 	errDecodeIntoNil = errors.New("rlp: pointer given to Decode must not be nil")
@@ -117,7 +117,7 @@ func DecodeBytes(b []byte, val interface{}) error {
 // positioned just before the type information for the next value.
 //
 // When decoding a list and the input position reaches the declared
-// length of the list, all operations will return error EOL.
+// length of the list, all operations will return error ErrEOL.
 // The end of the list must be acknowledged using ListEnd to continue
 // reading the enclosing list.
 //
@@ -231,7 +231,7 @@ func (s *Stream) Kind() (kind Kind, size uint64, err error) {
 	// checks against the list size, and would return the wrong error.
 	inList, listLimit := s.listLimit()
 	if inList && listLimit == 0 {
-		return 0, 0, EOL
+		return 0, 0, ErrEOL
 	}
 	// Read the actual size tag.
 	s.kind, s.size, s.kinderr = s.readKind()
@@ -408,7 +408,7 @@ func (s *Stream) ListEnd() error {
 
 // List starts decoding an RLP list. If the input does not contain a
 // list, the returned error will be ErrExpectedList. When the list's
-// end has been reached, any Stream operation will return EOL.
+// end has been reached, any Stream operation will return ErrEOL.
 func (s *Stream) List() (size uint64, err error) {
 	kind, size, err := s.Kind()
 	if err != nil {
@@ -756,7 +756,7 @@ func decodeListArray(s *Stream, val reflect.Value, elemdec decoder) error {
 	vlen := val.Len()
 	i := 0
 	for ; i < vlen; i++ {
-		if err := elemdec(s, val.Index(i)); err == EOL {
+		if err := elemdec(s, val.Index(i)); err == ErrEOL {
 			break
 		} else if err != nil {
 			return addErrorContext(err, fmt.Sprint("[", i, "]"))
@@ -828,7 +828,7 @@ func makeStructDecoder(typ reflect.Type) (decoder, error) {
 		}
 		for i, f := range fields {
 			err := f.info.decoder(s, val.Field(f.index))
-			if err == EOL {
+			if err == ErrEOL {
 				if f.optional {
 					// The field is optional, so reaching the end of the list before
 					// reaching the last field is acceptable. All remaining undecoded
@@ -981,7 +981,7 @@ func decodeSliceElems(s *Stream, val reflect.Value, elemdec decoder) error {
 			val.SetLen(i + 1)
 		}
 		// decode into element
-		if err := elemdec(s, val.Index(i)); err == EOL {
+		if err := elemdec(s, val.Index(i)); err == ErrEOL {
 			break
 		} else if err != nil {
 			return addErrorContext(err, fmt.Sprint("[", i, "]"))
