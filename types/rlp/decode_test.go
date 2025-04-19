@@ -255,7 +255,10 @@ func TestStreamRaw(t *testing.T) {
 	}
 	for i, tt := range tests {
 		s := NewStream(bytes.NewReader(unhex(tt.input)), 0)
-		s.List()
+		_, err := s.List()
+		if err != nil {
+			t.Errorf("test %d: List error: %v", i, err)
+		}
 
 		want := unhex(tt.output)
 		raw, err := s.Raw()
@@ -1026,7 +1029,11 @@ func ExampleDecode_structTagNil() {
 	var normalRules struct {
 		String *string
 	}
-	Decode(bytes.NewReader(input), &normalRules)
+	err := Decode(bytes.NewReader(input), &normalRules)
+	if err != nil {
+		fmt.Printf("Decode error: %v", err)
+		return
+	}
 	fmt.Printf("normal: String = %q\n", *normalRules.String)
 
 	// This type uses the struct tag.
@@ -1034,7 +1041,11 @@ func ExampleDecode_structTagNil() {
 	var withEmptyOK struct {
 		String *string `rlp:"nil"`
 	}
-	Decode(bytes.NewReader(input), &withEmptyOK)
+	err = Decode(bytes.NewReader(input), &withEmptyOK)
+	if err != nil {
+		fmt.Printf("Decode error: %v", err)
+		return
+	}
 	fmt.Printf("with nil tag: String = %v\n", withEmptyOK.String)
 
 	// Output:

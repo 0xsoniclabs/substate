@@ -41,9 +41,11 @@ func getTestSubstate(encoding SubstateEncodingSchema) *substate.Substate {
 			1,
 			types.Address{1},
 			new(types.Address), new(big.Int).SetUint64(1), []byte{1}, nil, &txType,
-			types.AccessList{{types.Address{1}, []types.Hash{{1}, {2}}}}, new(big.Int).SetUint64(1),
+			types.AccessList{{Address: types.Address{1}, StorageKeys: []types.Hash{{1}, {2}}}}, new(big.Int).SetUint64(1),
 			new(big.Int).SetUint64(1), new(big.Int).SetUint64(1), make([]types.Hash, 0),
-			[]types.SetCodeAuthorization{{*uint256.NewInt(1), types.Address{1}, 1, 1, *uint256.NewInt(1), *uint256.NewInt(1)}}),
+			[]types.SetCodeAuthorization{
+				{ChainID: *uint256.NewInt(1), Address: types.Address{1}, Nonce: 1, V: 1, R: *uint256.NewInt(1), S: *uint256.NewInt(1)},
+			}),
 		Result: substate.NewResult(1, types.Bloom{1}, []*types.Log{
 			{
 				Address: types.Address{1},
@@ -271,7 +273,10 @@ func TestSubstateDB_GetFirstSubstateSuccess(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	db.SetSubstateEncoding(ProtobufEncodingSchema)
+	err := db.SetSubstateEncoding(ProtobufEncodingSchema)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// case 1: return substate
 	kv := &testutil.KeyValue{}
@@ -304,7 +309,10 @@ func TestSubstateDB_GetFirstSubstateFail(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	db.SetSubstateEncoding(ProtobufEncodingSchema)
+	err := db.SetSubstateEncoding(ProtobufEncodingSchema)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	kv := &testutil.KeyValue{}
 	kv.PutU([]byte{1}, []byte{2})
@@ -357,7 +365,10 @@ func TestSubstateDB_GetSubstateSuccess(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	db.SetSubstateEncoding(ProtobufEncodingSchema)
+	err := db.SetSubstateEncoding(ProtobufEncodingSchema)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	ss := getSubstate()
 	encoded, _ := db.encodeSubstate(ss, 1, 1)
@@ -388,7 +399,10 @@ func TestSubstateDB_GetSubstateFail(t *testing.T) {
 	assert.Nil(t, result)
 
 	// Case 2: Decode error
-	db.SetSubstateEncoding(ProtobufEncodingSchema)
+	err = db.SetSubstateEncoding(ProtobufEncodingSchema)
+	if err != nil {
+		t.Fatal(err)
+	}
 	mockDb.EXPECT().Get(SubstateDBKey(1, 1)).Return([]byte{1, 2, 3}, nil)
 	result, err = db.GetSubstate(1, 1)
 
@@ -405,7 +419,10 @@ func TestSubstateDB_GetBlockSubstatesSuccess(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	db.SetSubstateEncoding(ProtobufEncodingSchema)
+	err := db.SetSubstateEncoding(ProtobufEncodingSchema)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	ss := getSubstate()
 	encoded, _ := db.encodeSubstate(ss, 1, 1)
@@ -494,7 +511,10 @@ func TestSubstateDB_PutSubstateSuccess(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	db.SetSubstateEncoding(ProtobufEncodingSchema)
+	err := db.SetSubstateEncoding(ProtobufEncodingSchema)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	ss := getSubstate()
 	ss.Message.To = nil
@@ -502,8 +522,7 @@ func TestSubstateDB_PutSubstateSuccess(t *testing.T) {
 	mockDb.EXPECT().PutCode(gomock.Any()).Return(nil).Times(3)
 	mockDb.EXPECT().Put(SubstateDBKey(1, 1), gomock.Any()).Return(nil)
 
-	err := db.PutSubstate(ss)
-
+	err = db.PutSubstate(ss)
 	assert.Nil(t, err)
 }
 
@@ -516,7 +535,10 @@ func TestSubstateDB_PutSubstateFail(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	db.SetSubstateEncoding(ProtobufEncodingSchema)
+	err := db.SetSubstateEncoding(ProtobufEncodingSchema)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	ss := getSubstate()
 	ss.Message.To = nil
@@ -524,7 +546,7 @@ func TestSubstateDB_PutSubstateFail(t *testing.T) {
 	// Case 1: Input code save error
 	mockDb.EXPECT().PutCode(gomock.Any()).Return(errors.New("code save error"))
 
-	err := db.PutSubstate(ss)
+	err = db.PutSubstate(ss)
 
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "cannot put preState code")
@@ -570,7 +592,7 @@ func TestSubstateDB_PutSubstateFail(t *testing.T) {
 	}
 	mockDb.EXPECT().PutCode(gomock.Any()).Return(nil).Times(3)
 	err = db.PutSubstate(ss)
-
+	assert.NotNil(t, err)
 }
 
 func TestSubstateDB_DeleteSubstateSuccess(t *testing.T) {
@@ -617,7 +639,10 @@ func TestSubstateDB_NewSubstateIterator(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	db.SetSubstateEncoding(ProtobufEncodingSchema)
+	err := db.SetSubstateEncoding(ProtobufEncodingSchema)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Test with empty DB
 	kv := &testutil.KeyValue{}
@@ -759,7 +784,10 @@ func TestSubstateDB_GetLastSubstateSuccess(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	db.SetSubstateEncoding(ProtobufEncodingSchema)
+	err := db.SetSubstateEncoding(ProtobufEncodingSchema)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	ss := getSubstate()
 	ss.Block = uint64(72340172838076673)
@@ -795,7 +823,10 @@ func TestSubstateDB_GetLastSubstateFail(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	db.SetSubstateEncoding(ProtobufEncodingSchema)
+	err := db.SetSubstateEncoding(ProtobufEncodingSchema)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Case 1: getLastBlock error
 	mockDb.EXPECT().hasKeyValuesFor(gomock.Any(), gomock.Any()).Return(false).Times(8)

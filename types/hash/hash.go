@@ -17,6 +17,7 @@
 package hash
 
 import (
+	"fmt"
 	"hash"
 
 	"golang.org/x/crypto/sha3"
@@ -42,8 +43,14 @@ func NewKeccakState() KeccakState {
 func Keccak256Hash(data ...[]byte) (h types.Hash) {
 	d := NewKeccakState()
 	for _, b := range data {
-		d.Write(b)
+		_, err := d.Write(b)
+		if err != nil {
+			panic(fmt.Errorf("failed to write to keccak256 hash: %v", err))
+		}
 	}
-	d.Read(h[:])
+	_, err := d.Read(h[:])
+	if err != nil {
+		panic(fmt.Errorf("failed to read from keccak256 hash: %v", err))
+	}
 	return h
 }
