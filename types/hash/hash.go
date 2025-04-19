@@ -25,9 +25,14 @@ import (
 	"github.com/0xsoniclabs/substate/types"
 )
 
+var newKeccakStateDelegate = NewKeccakState
+
 // KeccakState wraps sha3.state. In addition to the usual hash methods, it also supports
 // Read to get a variable amount of data from the hash state. Read is faster than Sum
 // because it doesn't copy the internal state, but also modifies the internal state.
+//
+//go:generate mockgen -source=hash.go -destination=./hash_mock.go -package=h
+//go:generate mockgen -source=hash.go -destination=./hash_mock.go -package=hash
 type KeccakState interface {
 	hash.Hash
 	Read([]byte) (int, error)
@@ -41,7 +46,7 @@ func NewKeccakState() KeccakState {
 // Keccak256Hash calculates and returns the Keccak256 hash of the input data,
 // converting it to an internal Hash data structure.
 func Keccak256Hash(data ...[]byte) (h types.Hash) {
-	d := NewKeccakState()
+	d := newKeccakStateDelegate()
 	for _, b := range data {
 		_, err := d.Write(b)
 		if err != nil {
