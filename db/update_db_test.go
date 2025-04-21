@@ -7,7 +7,6 @@ import (
 
 	"github.com/holiman/uint256"
 
-	trlp "github.com/0xsoniclabs/substate/types/rlp"
 	"github.com/stretchr/testify/assert"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/iterator"
@@ -314,14 +313,12 @@ func TestUpdateDB_GetUpdateSetSuccess(t *testing.T) {
 	blockNum := uint64(10)
 	key := UpdateDBKey(blockNum)
 
-	encodedData, _ := trlp.EncodeToBytes(updateset.UpdateSetRLP{
-		WorldState: updateset.UpdateSet{
-			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
-			Block:           0,
-			DeletedAccounts: []types.Address{},
-		}.ToWorldStateRLP(),
+	updateSet := updateset.NewUpdateSetRLP(&updateset.UpdateSet{
+		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
+		Block:           0,
 		DeletedAccounts: []types.Address{},
-	})
+	}, []types.Address{{}})
+	encodedData, _ := updateset.EncodeUpdateSetPB(&updateSet)
 
 	db := &updateDB{mockDB}
 
@@ -482,14 +479,15 @@ func TestUpdateDB_NewUpdateSetIterator(t *testing.T) {
 
 	// Create a mock iterator that would be returned internally
 	kv := &testutil.KeyValue{}
-	rlpData, _ := trlp.EncodeToBytes(updateset.UpdateSetRLP{
-		WorldState: updateset.UpdateSet{
-			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
-			Block:           0,
-			DeletedAccounts: []types.Address{},
-		}.ToWorldStateRLP(),
+	updateSet := updateset.NewUpdateSetRLP(&updateset.UpdateSet{
+		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
+		Block:           0,
 		DeletedAccounts: []types.Address{},
-	})
+	}, []types.Address{{}})
+	rlpData, err := updateset.EncodeUpdateSetPB(&updateSet)
+	if err != nil {
+		t.Fatal(err)
+	}
 	kv.PutU(UpdateDBKey(1), rlpData)
 	kv.PutU(UpdateDBKey(2), rlpData)
 	kv.PutU(UpdateDBKey(3), rlpData)

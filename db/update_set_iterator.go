@@ -6,7 +6,6 @@ import (
 
 	"github.com/syndtr/goleveldb/leveldb/util"
 
-	"github.com/0xsoniclabs/substate/types/rlp"
 	"github.com/0xsoniclabs/substate/updateset"
 )
 
@@ -39,8 +38,7 @@ func (i *updateSetIterator) decode(data rawEntry) (*updateset.UpdateSet, error) 
 		return nil, fmt.Errorf("substate: invalid update-set key found: %v - issue: %w", key, err)
 	}
 
-	var updateSetRLP updateset.UpdateSetRLP
-	err = rlp.DecodeBytes(value, &updateSetRLP)
+	updateSetRLP, err := updateset.DecodeUpdateSetPB(value)
 	if err != nil {
 		return nil, err
 	}

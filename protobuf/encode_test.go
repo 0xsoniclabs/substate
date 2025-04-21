@@ -132,7 +132,7 @@ func TestEncode_WorldState(t *testing.T) {
 		},
 	}
 
-	alloc := toProtobufAlloc(ws)
+	alloc := ToProtobufAlloc(ws)
 	assert.Equal(t, 1, len(alloc.Alloc))
 	assert.Equal(t, ws[types.Address{1}].Balance.Bytes(), alloc.Alloc[0].Account.Balance)
 }
