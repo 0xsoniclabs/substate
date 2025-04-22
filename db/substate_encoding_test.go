@@ -2,6 +2,7 @@ package db
 
 import (
 	"math/big"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -323,4 +324,20 @@ func TestDecodeProtobuf_Success(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Nil(t, value)
 
+}
+
+func TestMockDelegate(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// test mock
+	mockFunc := func(s string, lookupFunc codeLookupFunc) (*substateEncoding, error) {
+		return nil, nil
+	}
+	mockNewSubstateEncodingDelegate(mockFunc)
+	assert.Equal(t, reflect.ValueOf(mockFunc).Pointer(), reflect.ValueOf(newSubstateEncodingDelegate).Pointer())
+
+	// test unmock
+	resetNewSubstateEncodingDelegate()
+	assert.Equal(t, reflect.ValueOf(newSubstateEncoding).Pointer(), reflect.ValueOf(newSubstateEncodingDelegate).Pointer())
 }

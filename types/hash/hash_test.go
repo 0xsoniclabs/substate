@@ -2,6 +2,7 @@ package hash
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 
 	"github.com/0xsoniclabs/substate/types"
@@ -27,18 +28,42 @@ func TestKeccak256Hash_Fail(t *testing.T) {
 	}
 	mockErr := errors.New("mock error")
 
-	defer func() {
-		r := recover()
-		assert.NotNil(t, r)
+	// Test Write error
+	func() {
+		defer func() {
+			r := recover()
+			assert.NotNil(t, r)
+		}()
+		mock.EXPECT().Write(gomock.Any()).Return(0, mockErr)
+		h := Keccak256Hash([]byte("input"))
+		assert.Equal(t, types.Hash{}, h)
 	}()
-	mock.EXPECT().Write(gomock.Any()).Return(0, mockErr)
-	Keccak256Hash([]byte("input"))
 
-	defer func() {
-		r := recover()
-		assert.NotNil(t, r)
+	// Test Read error
+	func() {
+		defer func() {
+			r := recover()
+			assert.NotNil(t, r)
+		}()
+		mock.EXPECT().Write(gomock.Any()).Return(0, nil).AnyTimes()
+		mock.EXPECT().Read(gomock.Any()).Return(0, mockErr)
+		h := Keccak256Hash([]byte("input"))
+		assert.Equal(t, types.Hash{}, h)
 	}()
-	mock.EXPECT().Write(gomock.Any()).Return(0, nil).AnyTimes()
-	mock.EXPECT().Read(gomock.Any()).Return(0, mockErr)
-	Keccak256Hash([]byte("input"))
+}
+
+func TestMockDelegate(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// test mock
+	mockFunc := func() KeccakState {
+		return nil
+	}
+	mockNewKeccakStateDelegate(mockFunc)
+	assert.Equal(t, reflect.ValueOf(mockFunc).Pointer(), reflect.ValueOf(newKeccakStateDelegate).Pointer())
+
+	// test unmock
+	resetNewKeccakStateDelegate()
+	assert.Equal(t, reflect.ValueOf(NewKeccakState).Pointer(), reflect.ValueOf(newKeccakStateDelegate).Pointer())
 }
