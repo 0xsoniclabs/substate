@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/syndtr/goleveldb/leveldb/opt"
@@ -59,7 +60,7 @@ func (c *rlpToProtobufCommand) performSubstateUpgrade(
 	return nil
 }
 
-func RunRlpToProtobuf(ctx *cli.Context) (err error) {
+func RunRlpToProtobuf(ctx *cli.Context) (outErr error) {
 	// Open old DB
 	src, err := db.NewSubstateDB(ctx.String(SrcDbFlag.Name), &opt.Options{
 		OpenFilesCacheCapacity: 1024,
@@ -71,7 +72,10 @@ func RunRlpToProtobuf(ctx *cli.Context) (err error) {
 		return err
 	}
 	defer func() {
-		err = src.Close()
+		e := src.Close()
+		if e != nil {
+			outErr = errors.Join(outErr, e)
+		}
 	}()
 
 	// Open new DB
@@ -85,7 +89,10 @@ func RunRlpToProtobuf(ctx *cli.Context) (err error) {
 		return err
 	}
 	defer func() {
-		err = dst.Close()
+		e := dst.Close()
+		if e != nil {
+			outErr = errors.Join(outErr, e)
+		}
 	}()
 
 	command := rlpToProtobufCommand{
