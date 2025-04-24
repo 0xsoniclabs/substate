@@ -20,7 +20,7 @@ import (
 	"github.com/0xsoniclabs/substate/types"
 )
 
-func getTestSubstate(encoding string) *substate.Substate {
+func getTestSubstate(encoding SubstateEncodingSchema) *substate.Substate {
 	txType := int32(substate.SetCodeTxType)
 	ss := &substate.Substate{
 		InputSubstate:  substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
@@ -65,7 +65,7 @@ func getTestSubstate(encoding string) *substate.Substate {
 
 	// remove fields that are not supported in rlp encoding
 	// TODO once protobuf becomes default add ' && encoding != "default" ' to the condition
-	if encoding != "protobuf" {
+	if encoding != ProtobufEncodingSchema {
 		ss.Env.Random = nil
 		ss.Message.AccessList = types.AccessList{}
 		ss.Message.SetCodeAuthorizations = nil
@@ -271,7 +271,7 @@ func TestSubstateDB_GetFirstSubstateSuccess(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	db.SetSubstateEncoding("protobuf")
+	db.SetSubstateEncoding(ProtobufEncodingSchema)
 
 	// case 1: return substate
 	kv := &testutil.KeyValue{}
@@ -304,7 +304,7 @@ func TestSubstateDB_GetFirstSubstateFail(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	db.SetSubstateEncoding("protobuf")
+	db.SetSubstateEncoding(ProtobufEncodingSchema)
 
 	kv := &testutil.KeyValue{}
 	kv.PutU([]byte{1}, []byte{2})
@@ -357,7 +357,7 @@ func TestSubstateDB_GetSubstateSuccess(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	db.SetSubstateEncoding("protobuf")
+	db.SetSubstateEncoding(ProtobufEncodingSchema)
 
 	ss := getSubstate()
 	encoded, _ := db.encodeSubstate(ss, 1, 1)
@@ -388,7 +388,7 @@ func TestSubstateDB_GetSubstateFail(t *testing.T) {
 	assert.Nil(t, result)
 
 	// Case 2: Decode error
-	db.SetSubstateEncoding("protobuf")
+	db.SetSubstateEncoding(ProtobufEncodingSchema)
 	mockDb.EXPECT().Get(SubstateDBKey(1, 1)).Return([]byte{1, 2, 3}, nil)
 	result, err = db.GetSubstate(1, 1)
 
@@ -405,7 +405,7 @@ func TestSubstateDB_GetBlockSubstatesSuccess(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	db.SetSubstateEncoding("protobuf")
+	db.SetSubstateEncoding(ProtobufEncodingSchema)
 
 	ss := getSubstate()
 	encoded, _ := db.encodeSubstate(ss, 1, 1)
@@ -432,7 +432,7 @@ func TestSubstateDB_GetBlockSubstatesFail(t *testing.T) {
 	db := &substateDB{
 		CodeDB: mockDb,
 		encoding: &substateEncoding{
-			schema: "protobuf",
+			schema: ProtobufEncodingSchema,
 			decode: func(bytes []byte, block uint64, tx int) (*substate.Substate, error) {
 				return nil, errors.New("mock Error")
 			},
@@ -494,7 +494,7 @@ func TestSubstateDB_PutSubstateSuccess(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	db.SetSubstateEncoding("protobuf")
+	db.SetSubstateEncoding(ProtobufEncodingSchema)
 
 	ss := getSubstate()
 	ss.Message.To = nil
@@ -516,7 +516,7 @@ func TestSubstateDB_PutSubstateFail(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	db.SetSubstateEncoding("protobuf")
+	db.SetSubstateEncoding(ProtobufEncodingSchema)
 
 	ss := getSubstate()
 	ss.Message.To = nil
@@ -559,7 +559,7 @@ func TestSubstateDB_PutSubstateFail(t *testing.T) {
 	db = &substateDB{
 		CodeDB: mockDb,
 		encoding: &substateEncoding{
-			schema: "protobuf",
+			schema: ProtobufEncodingSchema,
 			decode: func(bytes []byte, block uint64, tx int) (*substate.Substate, error) {
 				return nil, errors.New("mock Error")
 			},
@@ -617,7 +617,7 @@ func TestSubstateDB_NewSubstateIterator(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	db.SetSubstateEncoding("protobuf")
+	db.SetSubstateEncoding(ProtobufEncodingSchema)
 
 	// Test with empty DB
 	kv := &testutil.KeyValue{}
@@ -759,7 +759,7 @@ func TestSubstateDB_GetLastSubstateSuccess(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	db.SetSubstateEncoding("protobuf")
+	db.SetSubstateEncoding(ProtobufEncodingSchema)
 
 	ss := getSubstate()
 	ss.Block = uint64(72340172838076673)
@@ -795,7 +795,7 @@ func TestSubstateDB_GetLastSubstateFail(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	db.SetSubstateEncoding("protobuf")
+	db.SetSubstateEncoding(ProtobufEncodingSchema)
 
 	// Case 1: getLastBlock error
 	mockDb.EXPECT().hasKeyValuesFor(gomock.Any(), gomock.Any()).Return(false).Times(8)

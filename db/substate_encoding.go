@@ -11,13 +11,21 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
+type SubstateEncodingSchema string
+
+const (
+	DefaultEncodingSchema  SubstateEncodingSchema = "default"
+	ProtobufEncodingSchema SubstateEncodingSchema = "protobuf"
+	RLPEncodingSchema      SubstateEncodingSchema = "rlp"
+)
+
 // SetSubstateEncoding sets the runtime encoding/decoding behavior of substateDB
 // intended usage:
 //
 //	db := &substateDB{..} // default to rlp
 //	     err := db.SetSubstateEncoding(<schema>) // set encoding
 //	     db.GetSubstateDecoder() // returns configured encoding
-func (db *substateDB) SetSubstateEncoding(schema string) error {
+func (db *substateDB) SetSubstateEncoding(schema SubstateEncodingSchema) error {
 	encoding, err := newSubstateEncoding(schema, db.GetCode)
 	if err != nil {
 		return fmt.Errorf("failed to set decoder; %w", err)
@@ -27,8 +35,8 @@ func (db *substateDB) SetSubstateEncoding(schema string) error {
 	return nil
 }
 
-// GetDecoder returns the encoding in use
-func (db *substateDB) GetSubstateEncoding() string {
+// GetSubstateEncoding returns the encoding schema in use.
+func (db *substateDB) GetSubstateEncoding() SubstateEncodingSchema {
 	if db.encoding == nil {
 		return ""
 	}
@@ -36,7 +44,7 @@ func (db *substateDB) GetSubstateEncoding() string {
 }
 
 type substateEncoding struct {
-	schema string
+	schema SubstateEncodingSchema
 	decode decodeFunc
 	encode encodeFunc
 }
@@ -51,21 +59,21 @@ type encodeFunc func(*substate.Substate, uint64, int) ([]byte, error)
 type codeLookupFunc = func(types.Hash) ([]byte, error)
 
 // newSubstateDecoder returns requested SubstateDecoder
-func newSubstateEncoding(encoding string, lookup codeLookupFunc) (*substateEncoding, error) {
+func newSubstateEncoding(encoding SubstateEncodingSchema, lookup codeLookupFunc) (*substateEncoding, error) {
 	switch encoding {
 
-	case "", "default", "rlp":
+	case RLPEncodingSchema:
 		return &substateEncoding{
-			schema: "rlp",
+			schema: RLPEncodingSchema,
 			decode: func(bytes []byte, block uint64, tx int) (*substate.Substate, error) {
 				return decodeRlp(bytes, lookup, block, tx)
 			},
 			encode: encodeRlp,
 		}, nil
 
-	case "protobuf", "pb":
+	case "", DefaultEncodingSchema, ProtobufEncodingSchema:
 		return &substateEncoding{
-			schema: "protobuf",
+			schema: ProtobufEncodingSchema,
 			decode: func(bytes []byte, block uint64, tx int) (*substate.Substate, error) {
 				return decodeProtobuf(bytes, lookup, block, tx)
 			},
