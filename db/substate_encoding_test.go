@@ -30,19 +30,19 @@ var (
 	blk = getTestSubstate("default").Block
 	tx  = getTestSubstate("default").Transaction
 
-	simplePb, _ = pb.Encode(getTestSubstate("protobuf"), blk, tx)
+	simplePb, _ = pb.Encode(getTestSubstate(ProtobufEncodingSchema), blk, tx)
 	testPb      = encTest{bytes: simplePb, blk: blk, tx: tx}
 
-	simpleRlp, _ = trlp.EncodeToBytes(rlp.NewRLP(getTestSubstate("rlp")))
+	simpleRlp, _ = trlp.EncodeToBytes(rlp.NewRLP(getTestSubstate(RLPEncodingSchema)))
 	testRlp      = encTest{bytes: simpleRlp, blk: blk, tx: tx}
 
-	supportedEncoding = map[string]encTest{
-		"rlp":      testRlp,
-		"protobuf": testPb,
+	supportedEncoding = map[SubstateEncodingSchema]encTest{
+		RLPEncodingSchema:      testRlp,
+		ProtobufEncodingSchema: testPb,
 	}
 )
 
-func TestSubstateEncoding_NilEncodingDefaultsToRlp(t *testing.T) {
+func TestSubstateEncoding_NilEncodingDefaultsToProtobuf(t *testing.T) {
 	path := t.TempDir() + "test-db"
 	db, err := newSubstateDB(path, nil, nil, nil)
 	if err != nil {
@@ -52,20 +52,20 @@ func TestSubstateEncoding_NilEncodingDefaultsToRlp(t *testing.T) {
 	// purposely never set encoding
 
 	// defaults to rlp
-	if got := db.GetSubstateEncoding(); got != "rlp" {
+	if got := db.GetSubstateEncoding(); got != ProtobufEncodingSchema {
 		t.Fatalf("substate encoding should be nil, got: %s", got)
 	}
 
-	_, err = db.decodeToSubstate(testRlp.bytes, testRlp.blk, testRlp.tx)
+	_, err = db.decodeToSubstate(testPb.bytes, testPb.blk, testPb.tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-func TestSubstateEncoding_DefaultEncodingDefaultsToRlp(t *testing.T) {
-	defaultKeywords := []string{"", "default"}
+func TestSubstateEncoding_DefaultEncodingDefaultsToProtobuf(t *testing.T) {
+	defaultKeywords := []SubstateEncodingSchema{"", DefaultEncodingSchema}
 	for _, defaultEncoding := range defaultKeywords {
-		path := t.TempDir() + "test-db-" + defaultEncoding
+		path := t.TempDir() + "test-db-" + string(defaultEncoding)
 		db, err := newSubstateDB(path, nil, nil, nil)
 		if err != nil {
 			t.Errorf("cannot open db; %v", err)
@@ -76,12 +76,12 @@ func TestSubstateEncoding_DefaultEncodingDefaultsToRlp(t *testing.T) {
 			t.Fatalf("Default encoding '%s' must be supported, but error", defaultEncoding)
 		}
 
-		_, err = db.decodeToSubstate(testRlp.bytes, testRlp.blk, testRlp.tx)
+		_, err = db.decodeToSubstate(testPb.bytes, testPb.blk, testPb.tx)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if got := db.GetSubstateEncoding(); got != "rlp" {
+		if got := db.GetSubstateEncoding(); got != ProtobufEncodingSchema {
 			t.Fatalf("db should default to rlp, got: %s", got)
 		}
 	}
@@ -102,7 +102,7 @@ func TestSubstateEncoding_UnsupportedEncodingThrowsError(t *testing.T) {
 
 func TestSubstateEncoding_TestDb(t *testing.T) {
 	for encoding, et := range supportedEncoding {
-		path := t.TempDir() + "test-db-" + encoding
+		path := t.TempDir() + "test-db-" + string(encoding)
 		db, err := newSubstateDB(path, nil, nil, nil)
 		if err != nil {
 			t.Fatalf("cannot open db; %v", err)
@@ -133,7 +133,7 @@ func TestSubstateEncoding_TestDb(t *testing.T) {
 
 func TestSubstateEncoding_TestIterator(t *testing.T) {
 	for encoding, et := range supportedEncoding {
-		path := t.TempDir() + "test-db-" + encoding
+		path := t.TempDir() + "test-db-" + string(encoding)
 		db, err := newSubstateDB(path, nil, nil, nil)
 		if err != nil {
 			t.Errorf("cannot open db; %v", err)
@@ -257,7 +257,7 @@ func TestSubstateDB_GetSubstateEncodingNilSuccess(t *testing.T) {
 	}
 
 	value := db.GetSubstateEncoding()
-	assert.Equal(t, "", value)
+	assert.Equal(t, SubstateEncodingSchema(""), value)
 }
 
 func TestSubstateDB_GetSubstateEncodingSuccess(t *testing.T) {
@@ -270,11 +270,11 @@ func TestSubstateDB_GetSubstateEncodingSuccess(t *testing.T) {
 		CodeDB:   mockDb,
 		encoding: nil,
 	}
-	err := db.SetSubstateEncoding("protobuf")
+	err := db.SetSubstateEncoding(ProtobufEncodingSchema)
 	assert.Nil(t, err)
 
 	value := db.GetSubstateEncoding()
-	assert.Equal(t, "protobuf", value)
+	assert.Equal(t, ProtobufEncodingSchema, value)
 }
 
 func TestSubstateDB_DecodeToSubstate(t *testing.T) {
@@ -290,7 +290,7 @@ func TestSubstateDB_DecodeToSubstate(t *testing.T) {
 	input := getSubstate()
 	encoded, err := protobuf.Encode(input, 1, 1)
 	assert.Nil(t, err)
-	err = db.SetSubstateEncoding("protobuf")
+	err = db.SetSubstateEncoding(ProtobufEncodingSchema)
 	assert.Nil(t, err)
 
 	value, err := db.decodeToSubstate(encoded, 1, 1)
@@ -311,7 +311,7 @@ func TestSubstateDB_EncodeToSubstate(t *testing.T) {
 	input := getSubstate()
 	encoded, err := protobuf.Encode(input, 1, 1)
 	assert.Nil(t, err)
-	err = db.SetSubstateEncoding("protobuf")
+	err = db.SetSubstateEncoding(ProtobufEncodingSchema)
 	assert.Nil(t, err)
 
 	value, err := db.encodeSubstate(input, 1, 1)

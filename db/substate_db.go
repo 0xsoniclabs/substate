@@ -45,10 +45,10 @@ type SubstateDB interface {
 	GetLastSubstate() (*substate.Substate, error)
 
 	// SetSubstateEncoding sets the decoder func to the provided encoding
-	SetSubstateEncoding(encoding string) error
+	SetSubstateEncoding(encoding SubstateEncodingSchema) error
 
 	// GetSubstateEncoding returns the currently configured encoding
-	GetSubstateEncoding() string
+	GetSubstateEncoding() SubstateEncodingSchema
 
 	// decodeSubstate defensively defaults to "default" if nil
 	decodeToSubstate(bytes []byte, block uint64, tx int) (*substate.Substate, error)
