@@ -47,7 +47,7 @@ func TestRLPtoProtobufCommand_SetEncodingFail(t *testing.T) {
 	ctx := cli.NewContext(&cli.App{}, set, nil)
 	mockErr := errors.New("error")
 
-	dst.EXPECT().SetSubstateEncoding("protobuf").Return(mockErr)
+	dst.EXPECT().SetSubstateEncoding(db.ProtobufEncodingSchema).Return(mockErr)
 
 	command := rlpToProtobufCommand{
 		src: src,
@@ -111,7 +111,7 @@ func TestRLPtoProtobufCommand_ExecuteUpgradeFail(t *testing.T) {
 		Transaction: 1,
 	}
 
-	dst.EXPECT().SetSubstateEncoding("protobuf").Return(nil)
+	dst.EXPECT().SetSubstateEncoding(db.ProtobufEncodingSchema).Return(nil)
 	gomock.InOrder(
 		src.EXPECT().GetBlockSubstates(uint64(0)).Return(map[int]*substate.Substate{
 			0: input0,
@@ -182,7 +182,7 @@ func TestRLPtoProtobufCommand_ExecuteSuccessful(t *testing.T) {
 		Transaction: 1,
 	}
 
-	dst.EXPECT().SetSubstateEncoding("protobuf").Return(nil)
+	dst.EXPECT().SetSubstateEncoding(db.ProtobufEncodingSchema).Return(nil)
 	gomock.InOrder(
 		src.EXPECT().GetBlockSubstates(uint64(0)).Return(map[int]*substate.Substate{
 			0: input0,
@@ -251,7 +251,7 @@ func TestRLPtoProtobufCommand_ExecuteParallelSuccessful(t *testing.T) {
 		Transaction: 1,
 	}
 
-	dst.EXPECT().SetSubstateEncoding("protobuf").Return(nil)
+	dst.EXPECT().SetSubstateEncoding(db.ProtobufEncodingSchema).Return(nil)
 
 	src.EXPECT().GetBlockSubstates(uint64(0)).Return(map[int]*substate.Substate{
 		0: input0,
@@ -320,7 +320,7 @@ func TestRLPtoProtobufCommand_ExecuteFail(t *testing.T) {
 		Transaction: 1,
 	}
 
-	dst.EXPECT().SetSubstateEncoding("protobuf").Return(nil)
+	dst.EXPECT().SetSubstateEncoding(db.ProtobufEncodingSchema).Return(nil)
 	gomock.InOrder(
 		src.EXPECT().GetBlockSubstates(uint64(0)).Return(map[int]*substate.Substate{
 			0: input0,
@@ -388,7 +388,7 @@ func TestRLPtoProtobufCommand_ExecuteParallelFail(t *testing.T) {
 		Transaction: 1,
 	}
 
-	dst.EXPECT().SetSubstateEncoding("protobuf").Return(nil)
+	dst.EXPECT().SetSubstateEncoding(db.ProtobufEncodingSchema).Return(nil)
 
 	src.EXPECT().GetBlockSubstates(uint64(0)).Return(map[int]*substate.Substate{
 		0: input0,

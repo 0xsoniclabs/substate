@@ -39,7 +39,7 @@ func (c *rlpToProtobufCommand) execute() error {
 
 		DB: c.src,
 	}
-	err = c.dst.SetSubstateEncoding("protobuf")
+	err = c.dst.SetSubstateEncoding(db.ProtobufEncodingSchema)
 	if err != nil {
 		return err
 	}
