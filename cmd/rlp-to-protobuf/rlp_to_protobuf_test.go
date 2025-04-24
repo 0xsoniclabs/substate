@@ -10,6 +10,7 @@ import (
 	"github.com/0xsoniclabs/substate/db"
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
+	"github.com/0xsoniclabs/substate/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/mock/gomock"
@@ -21,8 +22,8 @@ func TestRLPtoProtobufCommand_ParsingFail(t *testing.T) {
 	dst := db.NewMockSubstateDB(ctrl)
 
 	set := flag.NewFlagSet("test", 0)
-	_ = set.String(BlockSegmentFlag.Name, "0-abc", "")
-	_ = set.String(WorkersFlag.Name, "1", "")
+	_ = set.String(utils.BlockSegmentFlag.Name, "0-abc", "")
+	_ = set.String(utils.WorkersFlag.Name, "1", "")
 	ctx := cli.NewContext(&cli.App{}, set, nil)
 
 	command := rlpToProtobufCommand{
@@ -42,8 +43,8 @@ func TestRLPtoProtobufCommand_SetEncodingFail(t *testing.T) {
 	dst := db.NewMockSubstateDB(ctrl)
 
 	set := flag.NewFlagSet("test", 0)
-	_ = set.String(BlockSegmentFlag.Name, "0-2", "")
-	_ = set.String(WorkersFlag.Name, "1", "")
+	_ = set.String(utils.BlockSegmentFlag.Name, "0-2", "")
+	_ = set.String(utils.WorkersFlag.Name, "1", "")
 	ctx := cli.NewContext(&cli.App{}, set, nil)
 	mockErr := errors.New("error")
 
@@ -66,8 +67,8 @@ func TestRLPtoProtobufCommand_ExecuteUpgradeFail(t *testing.T) {
 	dst := db.NewMockSubstateDB(ctrl)
 
 	set := flag.NewFlagSet("test", 0)
-	_ = set.String(BlockSegmentFlag.Name, "0-2", "")
-	_ = set.String(WorkersFlag.Name, "1", "")
+	_ = set.String(utils.BlockSegmentFlag.Name, "0-2", "")
+	_ = set.String(utils.WorkersFlag.Name, "1", "")
 	ctx := cli.NewContext(&cli.App{}, set, nil)
 
 	mockErr := errors.New("error")
@@ -139,8 +140,8 @@ func TestRLPtoProtobufCommand_ExecuteSuccessful(t *testing.T) {
 	dst := db.NewMockSubstateDB(ctrl)
 
 	set := flag.NewFlagSet("test", 0)
-	_ = set.String(BlockSegmentFlag.Name, "0-2", "")
-	_ = set.String(WorkersFlag.Name, "1", "")
+	_ = set.String(utils.BlockSegmentFlag.Name, "0-2", "")
+	_ = set.String(utils.WorkersFlag.Name, "1", "")
 	ctx := cli.NewContext(&cli.App{}, set, nil)
 
 	command := rlpToProtobufCommand{
@@ -207,8 +208,8 @@ func TestRLPtoProtobufCommand_ExecuteParallelSuccessful(t *testing.T) {
 	dst := db.NewMockSubstateDB(ctrl)
 
 	set := flag.NewFlagSet("test", 0)
-	_ = set.String(BlockSegmentFlag.Name, "0-2", "")
-	_ = set.String(WorkersFlag.Name, "4", "")
+	_ = set.String(utils.BlockSegmentFlag.Name, "0-2", "")
+	_ = set.String(utils.WorkersFlag.Name, "4", "")
 	ctx := cli.NewContext(&cli.App{}, set, nil)
 
 	command := rlpToProtobufCommand{
@@ -275,8 +276,8 @@ func TestRLPtoProtobufCommand_ExecuteFail(t *testing.T) {
 	dst := db.NewMockSubstateDB(ctrl)
 
 	set := flag.NewFlagSet("test", 0)
-	_ = set.String(BlockSegmentFlag.Name, "0-2", "")
-	_ = set.String(WorkersFlag.Name, "1", "")
+	_ = set.String(utils.BlockSegmentFlag.Name, "0-2", "")
+	_ = set.String(utils.WorkersFlag.Name, "1", "")
 	ctx := cli.NewContext(&cli.App{}, set, nil)
 	mockErr := errors.New("error")
 
@@ -343,8 +344,8 @@ func TestRLPtoProtobufCommand_ExecuteParallelFail(t *testing.T) {
 	dst := db.NewMockSubstateDB(ctrl)
 
 	set := flag.NewFlagSet("test", 0)
-	_ = set.String(BlockSegmentFlag.Name, "0-2", "")
-	_ = set.String(WorkersFlag.Name, "4", "")
+	_ = set.String(utils.BlockSegmentFlag.Name, "0-2", "")
+	_ = set.String(utils.WorkersFlag.Name, "4", "")
 	ctx := cli.NewContext(&cli.App{}, set, nil)
 	mockErr := errors.New("error")
 

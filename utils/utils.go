@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"fmt"
@@ -18,7 +18,7 @@ func newBlockSegment(first, last uint64) *blockSegment {
 	}
 }
 
-// parseBlockSegment parses a string representation of a block segment into a blockSegment struct.
+// ParseBlockSegment parses a string representation of a block segment into a blockSegment struct.
 // The string can be in the format "first" or "first-last" with optional SI units (k for 1000, M for 1000000).
 // If the last block number is not provided, it is assumed to be the same as the first block number.
 //
@@ -28,7 +28,7 @@ func newBlockSegment(first, last uint64) *blockSegment {
 // Returns:
 // - A pointer to a blockSegment struct with the parsed first and last block numbers.
 // - An error if the string is not in a valid format or if the block numbers are invalid.
-func parseBlockSegment(s string) (*blockSegment, error) {
+func ParseBlockSegment(s string) (*blockSegment, error) {
 	var err error
 	// <first>: first block number
 	// <last>: optional, last block number
