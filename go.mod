@@ -1,8 +1,6 @@
 module github.com/0xsoniclabs/substate
 
-go 1.23.0
-
-toolchain go1.23.6
+go 1.24
 
 require (
 	github.com/holiman/uint256 v1.3.2
