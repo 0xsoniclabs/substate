@@ -270,7 +270,7 @@ func TestSubstateDB_MakeDefaultSubstateDBFromBaseDB(t *testing.T) {
 	assert.NotNil(t, db2)
 
 	// failure case
-	mockNewSubstateEncodingDelegate(func(schema string, lookup codeLookupFunc) (*substateEncoding, error) {
+	mockNewSubstateEncodingDelegate(func(schema SubstateEncodingSchema, lookup codeLookupFunc) (*substateEncoding, error) {
 		return nil, errors.New("mock error")
 	})
 	defer func() {
@@ -294,7 +294,7 @@ func TestSubstateDB_MakeDefaultSubstateDB(t *testing.T) {
 	assert.NotNil(t, db2)
 
 	// failure case
-	mockNewSubstateEncodingDelegate(func(schema string, lookup codeLookupFunc) (*substateEncoding, error) {
+	mockNewSubstateEncodingDelegate(func(schema SubstateEncodingSchema, lookup codeLookupFunc) (*substateEncoding, error) {
 		return nil, errors.New("mock error")
 	})
 	defer func() {
@@ -318,7 +318,7 @@ func TestSubstateDB_MakeSubstateDB(t *testing.T) {
 	assert.NotNil(t, db2)
 
 	// failure case
-	mockNewSubstateEncodingDelegate(func(schema string, lookup codeLookupFunc) (*substateEncoding, error) {
+	mockNewSubstateEncodingDelegate(func(schema SubstateEncodingSchema, lookup codeLookupFunc) (*substateEncoding, error) {
 		return nil, errors.New("mock error")
 	})
 	defer func() {

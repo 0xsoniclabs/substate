@@ -331,7 +331,7 @@ func TestMockDelegate(t *testing.T) {
 	defer ctrl.Finish()
 
 	// test mock
-	mockFunc := func(s string, lookupFunc codeLookupFunc) (*substateEncoding, error) {
+	mockFunc := func(s SubstateEncodingSchema, lookupFunc codeLookupFunc) (*substateEncoding, error) {
 		return nil, nil
 	}
 	mockNewSubstateEncodingDelegate(mockFunc)
