@@ -6,6 +6,7 @@ coverage:
         threshold: 1% # allow the coverage to drop by <threshold>%
       ignore:
         - "cmd"
+        - "types"
     project:
       default: # status check name
         target: 80% # target coverage of the changes
@@ -14,4 +15,3 @@ ignore:
   - "**/*.pb.go"
   - "**/*_test.go"
   - "**/*_mock.go"
-  - "types"
