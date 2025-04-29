@@ -4,7 +4,7 @@ coverage:
       default: # status check name
         target: 80% # target coverage of the changes
         threshold: 1% # allow the coverage to drop by <threshold>%
-      ignore:
+      paths:
         - "!cmd/*"
         - "!types/*"
     project:
