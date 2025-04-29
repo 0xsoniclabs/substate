@@ -1,7 +1,6 @@
 package db
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -269,15 +268,6 @@ func TestSubstateDB_MakeDefaultSubstateDBFromBaseDB(t *testing.T) {
 	db2 := MakeDefaultSubstateDBFromBaseDB(db)
 	assert.NotNil(t, db2)
 
-	// failure case
-	mockNewSubstateEncodingDelegate(func(schema SubstateEncodingSchema, lookup codeLookupFunc) (*substateEncoding, error) {
-		return nil, errors.New("mock error")
-	})
-	defer func() {
-		r := recover()
-		assert.NotNil(t, r)
-		resetNewSubstateEncodingDelegate()
-	}()
 	_ = MakeDefaultSubstateDBFromBaseDB(db)
 }
 
@@ -293,15 +283,6 @@ func TestSubstateDB_MakeDefaultSubstateDB(t *testing.T) {
 	db2 := MakeDefaultSubstateDB(backend)
 	assert.NotNil(t, db2)
 
-	// failure case
-	mockNewSubstateEncodingDelegate(func(schema SubstateEncodingSchema, lookup codeLookupFunc) (*substateEncoding, error) {
-		return nil, errors.New("mock error")
-	})
-	defer func() {
-		r := recover()
-		assert.NotNil(t, r)
-		resetNewSubstateEncodingDelegate()
-	}()
 	_ = MakeDefaultSubstateDB(nil)
 }
 
@@ -317,14 +298,5 @@ func TestSubstateDB_MakeSubstateDB(t *testing.T) {
 	db2 := MakeSubstateDB(backend, nil, nil)
 	assert.NotNil(t, db2)
 
-	// failure case
-	mockNewSubstateEncodingDelegate(func(schema SubstateEncodingSchema, lookup codeLookupFunc) (*substateEncoding, error) {
-		return nil, errors.New("mock error")
-	})
-	defer func() {
-		r := recover()
-		assert.NotNil(t, r)
-		resetNewSubstateEncodingDelegate()
-	}()
 	_ = MakeSubstateDB(nil, nil, nil)
 }

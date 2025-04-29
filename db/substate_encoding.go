@@ -11,16 +11,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var newSubstateEncodingDelegate = newSubstateEncoding
-
-func mockNewSubstateEncodingDelegate(f func(SubstateEncodingSchema, codeLookupFunc) (*substateEncoding, error)) {
-	newSubstateEncodingDelegate = f
-}
-
-func resetNewSubstateEncodingDelegate() {
-	newSubstateEncodingDelegate = newSubstateEncoding
-}
-
 type SubstateEncodingSchema string
 
 const (
@@ -36,7 +26,7 @@ const (
 //	     err := db.SetSubstateEncoding(<schema>) // set encoding
 //	     db.GetSubstateDecoder() // returns configured encoding
 func (db *substateDB) SetSubstateEncoding(schema SubstateEncodingSchema) error {
-	encoding, err := newSubstateEncodingDelegate(schema, db.GetCode)
+	encoding, err := newSubstateEncoding(schema, db.GetCode)
 	if err != nil {
 		return fmt.Errorf("failed to set decoder; %w", err)
 	}
