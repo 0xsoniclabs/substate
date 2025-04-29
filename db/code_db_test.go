@@ -67,7 +67,7 @@ func TestCodeDB_GetCode(t *testing.T) {
 		t.Fatalf("get code returned error; %v", err)
 	}
 
-	if bytes.Compare(code, testCode) != 0 {
+	if !bytes.Equal(code, testCode) {
 		t.Fatal("code returned by the db is different")
 	}
 }

@@ -4,6 +4,8 @@ import (
 	"encoding/binary"
 	"fmt"
 
+	"github.com/syndtr/goleveldb/leveldb"
+
 	"github.com/syndtr/goleveldb/leveldb/opt"
 
 	"github.com/0xsoniclabs/substate/types"
@@ -137,14 +139,15 @@ func (db *DestroyedAccountDB) GetFirstKey() (uint64, error) {
 	iter := db.backend.NewIterator([]byte(DestroyedAccountPrefix), nil)
 	defer iter.Release()
 
-	for iter.Next() {
+	exist := iter.Next()
+	if exist {
 		firstBlock, _, err := DecodeDestroyedAccountKey(iter.Key())
 		if err != nil {
 			return 0, fmt.Errorf("cannot decode updateset key; %w", err)
 		}
 		return firstBlock, nil
 	}
-	return 0, fmt.Errorf("no updateset found")
+	return 0, leveldb.ErrNotFound
 }
 
 // GetLastKey returns the last block number in the database.
@@ -153,12 +156,15 @@ func (db *DestroyedAccountDB) GetLastKey() (uint64, error) {
 	var block uint64
 	var err error
 	iter := db.backend.NewIterator([]byte(DestroyedAccountPrefix), nil)
-	for iter.Next() {
+	defer iter.Release()
+
+	exist := iter.Last()
+	if exist {
 		block, _, err = DecodeDestroyedAccountKey(iter.Key())
 		if err != nil {
 			return 0, fmt.Errorf("cannot decode updateset key; %w", err)
 		}
+		return block, nil
 	}
-	iter.Release()
-	return block, nil
+	return 0, leveldb.ErrNotFound
 }
