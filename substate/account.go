@@ -50,7 +50,7 @@ func (a *Account) Equal(y *Account) bool {
 
 	for aKey, aVal := range a.Storage {
 		yValue, exists := y.Storage[aKey]
-		if !(exists && aVal == yValue) {
+		if !exists || aVal != yValue {
 			return false
 		}
 	}

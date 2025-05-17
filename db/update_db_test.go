@@ -177,6 +177,7 @@ func TestUpdateDB_GetFirstKeySuccess(t *testing.T) {
 	mockDB := NewMockCodeDB(ctrl)
 	kv := &testutil.KeyValue{}
 	kv.PutU(UpdateDBKey(1), []byte{42})
+	kv.PutU(UpdateDBKey(2), []byte{43})
 	mockIter := iterator.NewArrayIterator(kv)
 
 	mockDB.EXPECT().newIterator(gomock.Any()).Return(mockIter)
@@ -226,6 +227,7 @@ func TestUpdateDB_GetLastKeySuccess(t *testing.T) {
 
 	mockDB := NewMockCodeDB(ctrl)
 	kv := &testutil.KeyValue{}
+	kv.PutU(UpdateDBKey(1), []byte{30})
 	kv.PutU(UpdateDBKey(5), []byte{42})
 	mockIter := iterator.NewArrayIterator(kv)
 
@@ -255,7 +257,7 @@ func TestUpdateDB_GetLastKeyFail(t *testing.T) {
 	result, err := db.GetLastKey()
 
 	assert.Error(t, err)
-	assert.Equal(t, "no updateset found", err.Error())
+	assert.Equal(t, leveldb.ErrNotFound, err)
 	assert.Equal(t, uint64(0), result)
 
 	// case 2: decode error

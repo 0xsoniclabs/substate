@@ -14,7 +14,6 @@ import (
 	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/proto"
 
-	pb "github.com/0xsoniclabs/substate/protobuf"
 	"github.com/0xsoniclabs/substate/rlp"
 
 	trlp "github.com/0xsoniclabs/substate/types/rlp"
@@ -30,7 +29,7 @@ var (
 	blk = getTestSubstate("default").Block
 	tx  = getTestSubstate("default").Transaction
 
-	simplePb, _ = pb.Encode(getTestSubstate(ProtobufEncodingSchema), blk, tx)
+	simplePb, _ = protobuf.Encode(getTestSubstate(ProtobufEncodingSchema), blk, tx)
 	testPb      = encTest{bytes: simplePb, blk: blk, tx: tx}
 
 	simpleRlp, _ = trlp.EncodeToBytes(rlp.NewRLP(getTestSubstate(RLPEncodingSchema)))

@@ -75,7 +75,7 @@ func (e *Env) Equal(y *Env) bool {
 
 	for k, xv := range e.BlockHashes {
 		yv, exist := y.BlockHashes[k]
-		if !(exist && xv == yv) {
+		if !exist || xv != yv {
 			return false
 		}
 	}

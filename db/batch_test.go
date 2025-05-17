@@ -155,12 +155,15 @@ func TestBatch_Replay(t *testing.T) {
 	}
 
 	// Add some operations to the batch
-	b.Put([]byte("key1"), []byte("value1"))
+	err := b.Put([]byte("key1"), []byte("value1"))
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Test successful replay
 	mockWriter.EXPECT().Put([]byte("key1"), []byte("value1")).Return(nil)
 
-	err := b.Replay(mockWriter)
+	err = b.Replay(mockWriter)
 	assert.Nil(t, err)
 }
 

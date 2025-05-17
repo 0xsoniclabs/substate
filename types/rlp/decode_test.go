@@ -89,9 +89,9 @@ func TestStreamErrors(t *testing.T) {
 		{"89000000000000000001", calls{"Uint"}, nil, errUintOverflow},
 		{"00", calls{"List"}, nil, ErrExpectedList},
 		{"80", calls{"List"}, nil, ErrExpectedList},
-		{"C0", calls{"List", "Uint"}, nil, EOL},
+		{"C0", calls{"List", "Uint"}, nil, ErrEOL},
 		{"C8C9010101010101010101", calls{"List", "Kind"}, nil, ErrElemTooLarge},
-		{"C3C2010201", calls{"List", "List", "Uint", "Uint", "ListEnd", "Uint"}, nil, EOL},
+		{"C3C2010201", calls{"List", "List", "Uint", "Uint", "ListEnd", "Uint"}, nil, ErrEOL},
 		{"00", calls{"ListEnd"}, nil, errNotInList},
 		{"C401020304", calls{"List", "Uint", "ListEnd"}, nil, errNotAtEOL},
 
@@ -174,7 +174,7 @@ func TestStreamErrors(t *testing.T) {
 
 			"Bytes", // past final element
 			"Bytes", // this one should fail
-		}, nil, EOL},
+		}, nil, ErrEOL},
 	}
 
 testfor:
@@ -231,8 +231,8 @@ func TestStreamList(t *testing.T) {
 		}
 	}
 
-	if _, err := s.Uint(); err != EOL {
-		t.Errorf("Uint error mismatch, got %v, want %v", err, EOL)
+	if _, err := s.Uint(); err != ErrEOL {
+		t.Errorf("Uint error mismatch, got %v, want %v", err, ErrEOL)
 	}
 	if err = s.ListEnd(); err != nil {
 		t.Fatalf("ListEnd error: %v", err)
@@ -255,7 +255,10 @@ func TestStreamRaw(t *testing.T) {
 	}
 	for i, tt := range tests {
 		s := NewStream(bytes.NewReader(unhex(tt.input)), 0)
-		s.List()
+		_, err := s.List()
+		if err != nil {
+			t.Errorf("test %d: List error: %v", i, err)
+		}
 
 		want := unhex(tt.output)
 		raw, err := s.Raw()
@@ -1026,7 +1029,11 @@ func ExampleDecode_structTagNil() {
 	var normalRules struct {
 		String *string
 	}
-	Decode(bytes.NewReader(input), &normalRules)
+	err := Decode(bytes.NewReader(input), &normalRules)
+	if err != nil {
+		fmt.Printf("Decode error: %v", err)
+		return
+	}
 	fmt.Printf("normal: String = %q\n", *normalRules.String)
 
 	// This type uses the struct tag.
@@ -1034,7 +1041,11 @@ func ExampleDecode_structTagNil() {
 	var withEmptyOK struct {
 		String *string `rlp:"nil"`
 	}
-	Decode(bytes.NewReader(input), &withEmptyOK)
+	err = Decode(bytes.NewReader(input), &withEmptyOK)
+	if err != nil {
+		fmt.Printf("Decode error: %v", err)
+		return
+	}
 	fmt.Printf("with nil tag: String = %v\n", withEmptyOK.String)
 
 	// Output:
@@ -1132,7 +1143,7 @@ func encodeTestSlice(n uint) []byte {
 }
 
 func unhex(str string) []byte {
-	b, err := hex.DecodeString(strings.Replace(str, " ", "", -1))
+	b, err := hex.DecodeString(strings.ReplaceAll(str, " ", ""))
 	if err != nil {
 		panic(fmt.Sprintf("invalid hex string: %q", str))
 	}

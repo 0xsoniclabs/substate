@@ -7,7 +7,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
-func TestBaseDB_FactorySuccess(t *testing.T) {
+func TestBaseDB_ConstructorSuccess(t *testing.T) {
 	dbPath := t.TempDir() + "test-db"
 
 	db, err := NewDefaultBaseDB(dbPath)
@@ -33,14 +33,14 @@ func TestBaseDB_FactorySuccess(t *testing.T) {
 	assert.NoError(t, db.Close())
 }
 
-func TestBaseDB_FactoryError(t *testing.T) {
+func TestBaseDB_ConstructorError(t *testing.T) {
 	dbPath := t.TempDir() + "test-db"
-	db, err := NewDefaultBaseDB(dbPath)
+	_, err := NewDefaultBaseDB(dbPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	db, err = NewDefaultBaseDB(dbPath)
+	db, err := NewDefaultBaseDB(dbPath)
 	assert.NotNil(t, err)
 	assert.Nil(t, db)
 
@@ -69,7 +69,7 @@ func TestBaseDB_MakeDefaultBaseDBFromBaseDB(t *testing.T) {
 	assert.Equal(t, db, db2)
 }
 
-func TestUpdateDB_FactorySuccess(t *testing.T) {
+func TestUpdateDB_ConstructorSuccess(t *testing.T) {
 	dbPath := t.TempDir() + "test-db"
 
 	db, err := NewDefaultUpdateDB(dbPath)
@@ -90,14 +90,14 @@ func TestUpdateDB_FactorySuccess(t *testing.T) {
 	assert.Nil(t, db.Close())
 }
 
-func TestUpdateDB_FactoryError(t *testing.T) {
+func TestUpdateDB_ConstructorError(t *testing.T) {
 	dbPath := t.TempDir() + "test-db"
-	db, err := NewDefaultBaseDB(dbPath)
+	_, err := NewDefaultBaseDB(dbPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	db, err = NewDefaultBaseDB(dbPath)
+	db, err := NewDefaultBaseDB(dbPath)
 	assert.NotNil(t, err)
 	assert.Nil(t, db)
 
@@ -122,7 +122,7 @@ func TestUpdateDB_MakeDefaultUpdateDBFromBaseDB(t *testing.T) {
 	assert.Equal(t, db, db2)
 }
 
-func TestCodeDB_FactorySuccess(t *testing.T) {
+func TestCodeDB_ConstructorSuccess(t *testing.T) {
 	dbPath := t.TempDir() + "test-db"
 
 	db, err := NewDefaultCodeDB(dbPath)
@@ -143,14 +143,14 @@ func TestCodeDB_FactorySuccess(t *testing.T) {
 	assert.Nil(t, db.Close())
 }
 
-func TestCodeDB_FactoryError(t *testing.T) {
+func TestCodeDB_ConstructorError(t *testing.T) {
 	dbPath := t.TempDir() + "test-db"
-	db, err := NewDefaultCodeDB(dbPath)
+	_, err := NewDefaultCodeDB(dbPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	db, err = NewDefaultCodeDB(dbPath)
+	db, err := NewDefaultCodeDB(dbPath)
 	assert.NotNil(t, err)
 	assert.Nil(t, db)
 
@@ -175,7 +175,7 @@ func TestCodeDB_MakeDefaultCodeDBFromBaseDB(t *testing.T) {
 	assert.Equal(t, db, db2)
 }
 
-func TestDestroyedAccountDB_FactorySuccess(t *testing.T) {
+func TestDestroyedAccountDB_ConstructorSuccess(t *testing.T) {
 	dbPath := t.TempDir() + "test-db"
 	db, err := NewDefaultDestroyedAccountDB(dbPath)
 	assert.Nil(t, err)
@@ -190,14 +190,14 @@ func TestDestroyedAccountDB_FactorySuccess(t *testing.T) {
 	assert.Nil(t, db.Close())
 }
 
-func TestDestroyedAccountDB_FactoryError(t *testing.T) {
+func TestDestroyedAccountDB_ConstructorError(t *testing.T) {
 	dbPath := t.TempDir() + "test-db"
-	db, err := NewDefaultDestroyedAccountDB(dbPath)
+	_, err := NewDefaultDestroyedAccountDB(dbPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	db, err = NewDefaultDestroyedAccountDB(dbPath)
+	db, err := NewDefaultDestroyedAccountDB(dbPath)
 	assert.NotNil(t, err)
 	assert.Nil(t, db)
 
@@ -218,7 +218,7 @@ func TestSubstateDB_MakeDefaultDestroyedAccountDBFromBaseDB(t *testing.T) {
 	assert.Equal(t, db, db2)
 }
 
-func TestSubstateDB_FactorySuccess(t *testing.T) {
+func TestSubstateDB_ConstructorSuccess(t *testing.T) {
 	dbPath := t.TempDir() + "test-db"
 	db, err := NewDefaultSubstateDB(dbPath)
 	assert.Nil(t, err)
@@ -238,14 +238,14 @@ func TestSubstateDB_FactorySuccess(t *testing.T) {
 	assert.Nil(t, db.Close())
 }
 
-func TestSubstateDB_FactoryError(t *testing.T) {
+func TestSubstateDB_ConstructorError(t *testing.T) {
 	dbPath := t.TempDir() + "test-db"
-	db, err := NewDefaultSubstateDB(dbPath)
+	_, err := NewDefaultSubstateDB(dbPath)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	db, err = NewDefaultSubstateDB(dbPath)
+	db, err := NewDefaultSubstateDB(dbPath)
 	assert.NotNil(t, err)
 	assert.Nil(t, db)
 
@@ -267,6 +267,8 @@ func TestSubstateDB_MakeDefaultSubstateDBFromBaseDB(t *testing.T) {
 
 	db2 := MakeDefaultSubstateDBFromBaseDB(db)
 	assert.NotNil(t, db2)
+
+	_ = MakeDefaultSubstateDBFromBaseDB(db)
 }
 
 func TestSubstateDB_MakeDefaultSubstateDB(t *testing.T) {
@@ -280,6 +282,8 @@ func TestSubstateDB_MakeDefaultSubstateDB(t *testing.T) {
 	backend := db.getBackend().(*leveldb.DB)
 	db2 := MakeDefaultSubstateDB(backend)
 	assert.NotNil(t, db2)
+
+	_ = MakeDefaultSubstateDB(nil)
 }
 
 func TestSubstateDB_MakeSubstateDB(t *testing.T) {
@@ -293,4 +297,6 @@ func TestSubstateDB_MakeSubstateDB(t *testing.T) {
 	backend := db.getBackend().(*leveldb.DB)
 	db2 := MakeSubstateDB(backend, nil, nil)
 	assert.NotNil(t, db2)
+
+	_ = MakeSubstateDB(nil, nil, nil)
 }

@@ -2,7 +2,6 @@ package db
 
 import (
 	"encoding/binary"
-	"errors"
 	"fmt"
 
 	"github.com/syndtr/goleveldb/leveldb"
@@ -85,7 +84,8 @@ func (db *updateDB) GetFirstKey() (uint64, error) {
 	iter := db.newIterator(r)
 	defer iter.Release()
 
-	for iter.Next() {
+	exist := iter.First()
+	if exist {
 		firstBlock, err := DecodeUpdateSetKey(iter.Key())
 		if err != nil {
 			return 0, fmt.Errorf("cannot decode updateset key; %v", err)
@@ -101,16 +101,15 @@ func (db *updateDB) GetLastKey() (uint64, error) {
 	iter := db.newIterator(r)
 	defer iter.Release()
 
-	for iter.Next() {
+	exist := iter.Last()
+	if exist {
 		lastBlock, err := DecodeUpdateSetKey(iter.Key())
 		if err != nil {
 			return 0, fmt.Errorf("cannot decode updateset key; %v", err)
 		}
-
 		return lastBlock, nil
 	}
-
-	return 0, errors.New("no updateset found")
+	return 0, leveldb.ErrNotFound
 }
 
 func (db *updateDB) HasUpdateSet(block uint64) (bool, error) {
