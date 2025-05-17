@@ -31,7 +31,6 @@ pipeline {
         }
         stage('Lint') {
             steps {
-                //TODO remove binary
                 sh 'golangci-lint run ./...'
             }
         }
