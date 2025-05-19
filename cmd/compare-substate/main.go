@@ -41,10 +41,6 @@ func compare(ctx *cli.Context) error {
 		return err
 	}
 	defer src.Close()
-	err = src.SetSubstateEncoding("pb")
-	if err != nil {
-		return err
-	}
 
 	// Open target DB
 	target, err := db.NewSubstateDB(ctx.String(utils.TargetDbFlag.Name), &opt.Options{
@@ -57,10 +53,6 @@ func compare(ctx *cli.Context) error {
 		return err
 	}
 	defer target.Close()
-	err = target.SetSubstateEncoding("pb")
-	if err != nil {
-		return err
-	}
 
 	segment, err := utils.ParseBlockSegment(ctx.String(utils.BlockSegmentFlag.Name))
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/0xsoniclabs/substate/db"
+	"github.com/0xsoniclabs/substate/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/urfave/cli/v2"
 )
@@ -35,13 +36,13 @@ func TestRunRlpToProtobuf_Simple(t *testing.T) {
 		Name:   "test",
 		Action: RunRlpToProtobuf,
 		Flags: []cli.Flag{
-			&WorkersFlag,
-			&SrcDbFlag,
-			&DstDbFlag,
-			&SkipTransferTxsFlag,
-			&SkipCallTxsFlag,
-			&SkipCreateTxsFlag,
-			&BlockSegmentFlag,
+			&utils.WorkersFlag,
+			&utils.SrcDbFlag,
+			&utils.DstDbFlag,
+			&utils.SkipTransferTxsFlag,
+			&utils.SkipCallTxsFlag,
+			&utils.SkipCreateTxsFlag,
+			&utils.BlockSegmentFlag,
 		},
 	}
 	err = app.Run(args)
