@@ -19,22 +19,24 @@ type comparePair struct {
 
 // Compare function compares substates from two databases
 func Compare(ctx *cli.Context, src db.SubstateDB, target db.SubstateDB, workers int, first uint64, last uint64) error {
-	errChan := make(chan error, 3)
+	errChan := make(chan error, 3+workers)
 	wg := &sync.WaitGroup{}
-	wg.Add(3)
 
 	srcSubstateChan := make(chan *substate.Substate, workers*10)
 	targetSubstateChan := make(chan *substate.Substate, workers*10)
 
 	compareCtx, cancelCtx := context.WithCancel(ctx.Context)
 
+	wg.Add(1)
 	go comparator(compareCtx, srcSubstateChan, targetSubstateChan, errChan, workers, wg)
 
 	// using only src database for substates counter
 	var counter uint64
 
 	// start taskpools to retrieve substates
+	wg.Add(1)
 	go startCompareTaskPool(compareCtx, src, srcSubstateChan, first, last, workers, errChan, ctx, &counter, wg)
+	wg.Add(1)
 	go startCompareTaskPool(compareCtx, target, targetSubstateChan, first, last, workers, errChan, ctx, nil, wg)
 
 	go func() {
@@ -160,6 +162,9 @@ func comparator(ctx context.Context, srcChan chan *substate.Substate, targetChan
 
 	select {
 	case <-ctx.Done():
+		{
+			workersWg.Wait()
+		}
 	case <-doneChan:
 	}
 }
