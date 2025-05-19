@@ -336,9 +336,9 @@ func makeWriter(typ reflect.Type, ts tags) (writer, error) {
 	switch {
 	case typ == rawValueType:
 		return writeRawValue, nil
-	case typ.AssignableTo(reflect.PtrTo(bigInt)):
+	case typ.AssignableTo(reflect.PointerTo(bigInt)):
 		return writeBigIntPtr, nil
-	case typ.AssignableTo(reflect.PtrTo(uint256Int)):
+	case typ.AssignableTo(reflect.PointerTo(uint256Int)):
 		return writeUint256Ptr, nil
 	case typ.AssignableTo(bigInt):
 		return writeBigIntNoPtr, nil
@@ -346,7 +346,7 @@ func makeWriter(typ reflect.Type, ts tags) (writer, error) {
 		return writeUint256NoPtr, nil
 	case kind == reflect.Ptr:
 		return makePtrWriter(typ, ts)
-	case reflect.PtrTo(typ).Implements(encoderInterface):
+	case reflect.PointerTo(typ).Implements(encoderInterface):
 		return makeEncoderWriter(typ), nil
 	case isUint(kind):
 		return writeUint, nil
@@ -487,9 +487,9 @@ func writeByteArray(val reflect.Value, w *encbuf) error {
 	if !val.CanAddr() {
 		// Getting the byte slice of val requires it to be addressable. Make it
 		// addressable by copying.
-		copy := reflect.New(val.Type()).Elem()
-		copy.Set(val)
-		val = copy
+		c := reflect.New(val.Type()).Elem()
+		c.Set(val)
+		val = c
 	}
 
 	slice := byteArrayBytes(val)

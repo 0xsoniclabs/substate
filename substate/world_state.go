@@ -124,7 +124,7 @@ func (ws WorldState) Equal(y WorldState) bool {
 
 	for key, val := range ws {
 		yVal, exist := y[key]
-		if !(exist && val.Equal(yVal)) {
+		if !exist || !val.Equal(yVal) {
 			return false
 		}
 	}

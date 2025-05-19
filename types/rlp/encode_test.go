@@ -21,11 +21,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math/big"
 	"runtime"
 	"sync"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/holiman/uint256"
 )
@@ -41,14 +42,20 @@ func (e *testEncoder) EncodeRLP(w io.Writer) error {
 	if e.err != nil {
 		return e.err
 	}
-	w.Write([]byte{0, 1, 0, 1, 0, 1, 0, 1, 0, 1})
+	_, err := w.Write([]byte{0, 1, 0, 1, 0, 1, 0, 1, 0, 1})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 type testEncoderValueMethod struct{}
 
 func (e testEncoderValueMethod) EncodeRLP(w io.Writer) error {
-	w.Write([]byte{0xFA, 0xFE, 0xF0})
+	_, err := w.Write([]byte{0xFA, 0xFE, 0xF0})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -57,14 +64,20 @@ type byteEncoder byte
 var EmptyList = []byte{0xC0}
 
 func (e byteEncoder) EncodeRLP(w io.Writer) error {
-	w.Write(EmptyList)
+	_, err := w.Write(EmptyList)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 type undecodableEncoder func()
 
 func (f undecodableEncoder) EncodeRLP(w io.Writer) error {
-	w.Write([]byte{0xF5, 0xF5, 0xF5})
+	_, err := w.Write([]byte{0xF5, 0xF5, 0xF5})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -421,7 +434,7 @@ func TestEncodeToReader(t *testing.T) {
 		if err != nil {
 			return nil, err
 		}
-		return ioutil.ReadAll(r)
+		return io.ReadAll(r)
 	})
 }
 
@@ -461,12 +474,24 @@ func TestEncodeToReaderReturnToPool(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			for i := 0; i < 1000; i++ {
-				_, r, _ := EncodeToReader("foo")
-				ioutil.ReadAll(r)
-				r.Read(buf)
-				r.Read(buf)
-				r.Read(buf)
-				r.Read(buf)
+				s, r, err := EncodeToReader("foo")
+				assert.Equal(t, 4, s)
+				assert.NoError(t, err)
+				b, err := io.ReadAll(r)
+				assert.NoError(t, err)
+				assert.Equal(t, []byte{0x83, 0x66, 0x6f, 0x6f}, b)
+				n, err := r.Read(buf)
+				assert.Equal(t, io.EOF, err)
+				assert.Equal(t, 0, n)
+				n, err = r.Read(buf)
+				assert.Equal(t, io.EOF, err)
+				assert.Equal(t, 0, n)
+				n, err = r.Read(buf)
+				assert.Equal(t, io.EOF, err)
+				assert.Equal(t, 0, n)
+				n, err = r.Read(buf)
+				assert.Equal(t, io.EOF, err)
+				assert.Equal(t, 0, n)
 			}
 			wg.Done()
 		}()

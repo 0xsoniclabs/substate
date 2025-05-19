@@ -186,7 +186,7 @@ func (m *Message) String() string {
 	}
 
 	for _, authorization := range m.SetCodeAuthorizations {
-		builder.WriteString(fmt.Sprintf("SetCodeAuthorization:\n"))
+		builder.WriteString("SetCodeAuthorization:\n")
 		builder.WriteString(fmt.Sprintf("ChainID: %d\n", authorization.ChainID.Uint64()))
 		builder.WriteString(fmt.Sprintf("Address: %s\n", authorization.Address.String()))
 		builder.WriteString(fmt.Sprintf("Nonce: %d\n", authorization.Nonce))

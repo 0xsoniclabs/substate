@@ -8,7 +8,7 @@ import (
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
 	trlp "github.com/0xsoniclabs/substate/types/rlp"
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 type SubstateEncodingSchema string

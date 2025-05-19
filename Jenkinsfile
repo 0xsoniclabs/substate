@@ -29,7 +29,11 @@ pipeline {
                 sh 'diff=`gofmt -s -d .`; echo "$diff"; test -z "$diff"'
             }
         }
-
+        stage('Lint') {
+            steps {
+                sh 'golangci-lint run ./...'
+            }
+        }
         stage('Run go tests') {
             steps {
                 sh 'go mod tidy'

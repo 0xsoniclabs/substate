@@ -5,6 +5,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/syndtr/goleveldb/leveldb"
+
 	"github.com/0xsoniclabs/substate/types"
 	"github.com/0xsoniclabs/substate/types/rlp"
 	"github.com/stretchr/testify/assert"
@@ -237,10 +239,9 @@ func TestDestroyedAccountDB_GetFirstKeySuccess(t *testing.T) {
 
 	baseDb := NewMockBaseDB(ctrl)
 
-	expectedBlock := uint64(5)
-	key := encodeDestroyedAccountKey(expectedBlock, 0)
 	kv := &testutil.KeyValue{}
-	kv.PutU(key, []byte("value"))
+	kv.PutU(encodeDestroyedAccountKey(5, 0), []byte("value0"))
+	kv.PutU(encodeDestroyedAccountKey(6, 1), []byte("value1"))
 	iter := iterator.NewArrayIterator(kv)
 	db := &DestroyedAccountDB{
 		backend: baseDb,
@@ -250,7 +251,7 @@ func TestDestroyedAccountDB_GetFirstKeySuccess(t *testing.T) {
 
 	block, err := db.GetFirstKey()
 	assert.Nil(t, err)
-	assert.Equal(t, expectedBlock, block)
+	assert.Equal(t, uint64(5), block)
 }
 
 func TestDestroyedAccountDB_GetFirstKeyDecodeFail(t *testing.T) {
@@ -258,17 +259,25 @@ func TestDestroyedAccountDB_GetFirstKeyDecodeFail(t *testing.T) {
 	defer ctrl.Finish()
 
 	baseDb := NewMockBaseDB(ctrl)
+
+	// case decode key fail
 	kv := &testutil.KeyValue{}
 	kv.PutU([]byte{1}, []byte("value"))
 	iter := iterator.NewArrayIterator(kv)
 	db := &DestroyedAccountDB{
 		backend: baseDb,
 	}
-
 	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
-
 	block, err := db.GetFirstKey()
 	assert.NotNil(t, err)
+	assert.Equal(t, uint64(0), block)
+
+	// case empty iterator
+	kv = &testutil.KeyValue{}
+	iter = iterator.NewArrayIterator(kv)
+	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
+	block, err = db.GetFirstKey()
+	assert.Equal(t, leveldb.ErrNotFound, err)
 	assert.Equal(t, uint64(0), block)
 }
 
@@ -296,11 +305,8 @@ func TestDestroyedAccountDB_GetLastKeySuccess(t *testing.T) {
 
 	baseDb := NewMockBaseDB(ctrl)
 	kv := &testutil.KeyValue{}
-	expectedBlock := uint64(10)
-	key1 := encodeDestroyedAccountKey(5, 0)
-	key2 := encodeDestroyedAccountKey(expectedBlock, 0)
-	kv.PutU(key1, []byte("value"))
-	kv.PutU(key2, []byte("value"))
+	kv.PutU(encodeDestroyedAccountKey(5, 0), []byte("value0"))
+	kv.PutU(encodeDestroyedAccountKey(10, 1), []byte("value1"))
 	iter := iterator.NewArrayIterator(kv)
 
 	db := &DestroyedAccountDB{
@@ -311,7 +317,7 @@ func TestDestroyedAccountDB_GetLastKeySuccess(t *testing.T) {
 
 	block, err := db.GetLastKey()
 	assert.Nil(t, err)
-	assert.Equal(t, expectedBlock, block)
+	assert.Equal(t, uint64(10), block)
 }
 
 func TestDestroyedAccountDB_GetLastKeyFail(t *testing.T) {
@@ -319,17 +325,26 @@ func TestDestroyedAccountDB_GetLastKeyFail(t *testing.T) {
 	defer ctrl.Finish()
 
 	baseDb := NewMockBaseDB(ctrl)
+
+	// case decode key fail
 	kv := &testutil.KeyValue{}
 	kv.PutU([]byte{1}, []byte("invalid_key"))
 	iter := iterator.NewArrayIterator(kv)
 	db := &DestroyedAccountDB{
 		backend: baseDb,
 	}
-
 	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
 
 	block, err := db.GetLastKey()
 	assert.NotNil(t, err)
+	assert.Equal(t, uint64(0), block)
+
+	// case empty iterator
+	kv = &testutil.KeyValue{}
+	iter = iterator.NewArrayIterator(kv)
+	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
+	block, err = db.GetLastKey()
+	assert.Equal(t, leveldb.ErrNotFound, err)
 	assert.Equal(t, uint64(0), block)
 }
 

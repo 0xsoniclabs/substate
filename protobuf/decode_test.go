@@ -118,7 +118,7 @@ func TestDecode_InputAllocDecodeFails(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, result)
-	assert.Contains(t, err.Error(), "Error looking up codehash")
+	assert.Contains(t, err.Error(), "error looking up codehash")
 }
 
 func TestDecode_OutputAllocDecodeFails(t *testing.T) {
@@ -144,7 +144,7 @@ func TestDecode_OutputAllocDecodeFails(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, result)
-	assert.Contains(t, err.Error(), "Error looking up codehash")
+	assert.Contains(t, err.Error(), "error looking up codehash")
 }
 
 func TestDecode_TxMessageLegacy(t *testing.T) {
