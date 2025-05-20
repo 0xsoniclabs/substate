@@ -68,5 +68,5 @@ func compare(ctx *cli.Context) error {
 		return err
 	}
 
-	return utils.Compare(ctx, src, target, ctx.Int(utils.WorkersFlag.Name), segment.First, segment.Last)
+	return Compare(ctx, src, target, ctx.Int(utils.WorkersFlag.Name), segment.First, segment.Last)
 }

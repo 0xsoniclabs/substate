@@ -1,4 +1,4 @@
-package utils
+package main
 
 import (
 	"context"
@@ -35,9 +35,9 @@ func Compare(ctx *cli.Context, src db.SubstateDB, target db.SubstateDB, workers 
 
 	// start taskpools to retrieve substates
 	wg.Add(1)
-	go startCompareTaskPool(compareCtx, src, srcSubstateChan, first, last, workers, errChan, ctx, &counter, wg)
+	go startCompareTaskPool(compareCtx, "compare-source", src, srcSubstateChan, first, last, errChan, ctx, &counter, wg)
 	wg.Add(1)
-	go startCompareTaskPool(compareCtx, target, targetSubstateChan, first, last, workers, errChan, ctx, nil, wg)
+	go startCompareTaskPool(compareCtx, "compare-target", target, targetSubstateChan, first, last, errChan, ctx, nil, wg)
 
 	go func() {
 		wg.Wait()
@@ -56,31 +56,33 @@ func Compare(ctx *cli.Context, src db.SubstateDB, target db.SubstateDB, workers 
 	return nil
 }
 
-func startCompareTaskPool(compareCtx context.Context, dbInstance db.SubstateDB, substateChan chan *substate.Substate, first uint64, last uint64, workers int, errChan chan error, ctx *cli.Context, counter *uint64, wg *sync.WaitGroup) {
+func startIterator(compareCtx context.Context, dbInstance db.SubstateDB, substateChan chan *substate.Substate, first uint64, last uint64, workers int, wg *sync.WaitGroup) {
 	defer wg.Done()
 	defer close(substateChan)
 
-	feeder := func(block uint64, tx int, substate *substate.Substate, taskPool *db.SubstateTaskPool) error {
-		if counter != nil {
-			atomic.AddUint64(counter, 1)
+	iter := dbInstance.NewSubstateIterator(int(first), workers)
+	for iter.Next() {
+		tx := iter.Value()
+		if tx.Block > last {
+			break
 		}
-
 		select {
 		case <-compareCtx.Done():
-		case substateChan <- substate:
+			return
+		case substateChan <- tx.Clone():
 		}
-		return nil
 	}
 
-	var name string
-	if counter != nil {
-		name += "compare-source"
-	} else {
-		name += "compare-target"
-	}
+}
+
+// startCompareTaskPool is wrapper around the SubstateTask pool to retrieve the substates in order
+func startCompareTaskPool(compareCtx context.Context, name string, dbInstance db.SubstateDB, substateChan chan *substate.Substate, first uint64, last uint64, errChan chan error, ctx *cli.Context, counter *uint64, wg *sync.WaitGroup) {
+	defer wg.Done()
+	defer close(substateChan)
+
 	taskPool := &db.SubstateTaskPool{
 		Name:     name,
-		TaskFunc: feeder,
+		TaskFunc: compareFeeder(compareCtx, counter, substateChan),
 
 		First: first,
 		Last:  last,
@@ -93,6 +95,21 @@ func startCompareTaskPool(compareCtx context.Context, dbInstance db.SubstateDB, 
 	err := taskPool.Execute()
 	if err != nil {
 		errChan <- err
+	}
+}
+
+// compareFeeder is a task function that feeds the substate channel with the substates from SubstateTaskPool
+func compareFeeder(compareCtx context.Context, counter *uint64, substateChan chan *substate.Substate) db.SubstateTaskFunc {
+	return func(block uint64, tx int, substate *substate.Substate, taskPool *db.SubstateTaskPool) error {
+		if counter != nil {
+			atomic.AddUint64(counter, 1)
+		}
+
+		select {
+		case <-compareCtx.Done():
+		case substateChan <- substate:
+		}
+		return nil
 	}
 }
 
