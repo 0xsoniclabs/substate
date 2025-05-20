@@ -124,6 +124,7 @@ func TestSubstate_Clone(t *testing.T) {
 	result := &Result{
 		Status:  1,
 		GasUsed: 2,
+		Logs:    []*types.Log{{Address: types.Address{0}}},
 	}
 	block := uint64(10)
 	transaction := 5
