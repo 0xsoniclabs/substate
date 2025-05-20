@@ -94,6 +94,9 @@ func (r *Result) Clone() *Result {
 }
 
 func cloneLogs(logs []*types.Log) []*types.Log {
+	if logs == nil {
+		return nil
+	}
 	clonedLogs := make([]*types.Log, len(logs))
 	for i, log := range logs {
 		clonedLog := *log
