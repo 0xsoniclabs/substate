@@ -2,11 +2,13 @@ package utils
 
 import (
 	"math/big"
+	"strings"
 	"testing"
 
 	"github.com/0xsoniclabs/substate/db"
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
+	"github.com/holiman/uint256"
 	"github.com/stretchr/testify/assert"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/mock/gomock"
@@ -49,44 +51,92 @@ func TestCompare_Identical(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestCompare_Different(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	src := db.NewMockSubstateDB(ctrl)
-	dst := db.NewMockSubstateDB(ctrl)
+func TestCompare_DifferentValues(t *testing.T) {
+	tests := []struct {
+		name    string
+		input1  *substate.Substate
+		errWant string
+	}{
+		{
+			name: "different input substates",
+			input1: func() *substate.Substate {
+				input := getGenericSubstate()
+				input.InputSubstate = input.InputSubstate.Add(types.Address{1}, 1, uint256.NewInt(1), nil)
+				return input
+			}(),
+			errWant: "preState is different",
+		},
+		{
+			name: "different output substates",
+			input1: func() *substate.Substate {
+				input := getGenericSubstate()
+				input.OutputSubstate = input.OutputSubstate.Add(types.Address{1}, 1, uint256.NewInt(1), nil)
+				return input
+			}(),
+			errWant: "postState is different",
+		},
+		{
+			name: "different env",
+			input1: func() *substate.Substate {
+				input := getGenericSubstate()
+				input.Env.Coinbase = types.Address{2}
+				return input
+			}(),
+			errWant: "env is different",
+		},
+		{
+			name: "different message",
+			input1: func() *substate.Substate {
+				input := getGenericSubstate()
+				input.Message.GasPrice = new(big.Int).SetUint64(2)
+				return input
+			}(),
+			errWant: "message is different",
+		},
+		{
+			name: "different result",
+			input1: func() *substate.Substate {
+				input := getGenericSubstate()
+				input.Result.Status = 2
+				return input
+			}(),
+			errWant: "result is different",
+		},
+	}
 
-	input0 := getGenericSubstate()
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			src := db.NewMockSubstateDB(ctrl)
+			dst := db.NewMockSubstateDB(ctrl)
+			input0 := getGenericSubstate()
+			gomock.InOrder(
+				src.EXPECT().GetBlockSubstates(uint64(0)).Return(map[int]*substate.Substate{
+					0: input0,
+				}, nil),
+				src.EXPECT().GetBlockSubstates(uint64(1)).Return(map[int]*substate.Substate{
+					0: input0,
+				}, nil),
+			)
 
-	input1 := input0.Clone()
-	input1.Message.Nonce = 2
+			gomock.InOrder(
+				dst.EXPECT().GetBlockSubstates(uint64(0)).Return(map[int]*substate.Substate{
+					0: input0,
+				}, nil),
+				dst.EXPECT().GetBlockSubstates(uint64(1)).Return(map[int]*substate.Substate{
+					0: test.input1,
+				}, nil),
+			)
 
-	gomock.InOrder(
-		src.EXPECT().GetBlockSubstates(uint64(0)).Return(map[int]*substate.Substate{
-			0: input0,
-		}, nil),
-		src.EXPECT().GetBlockSubstates(uint64(1)).Return(map[int]*substate.Substate{
-			0: input0,
-		}, nil),
-		src.EXPECT().GetBlockSubstates(uint64(2)).Return(map[int]*substate.Substate{
-			0: input0,
-		}, nil),
-	)
-
-	gomock.InOrder(
-		dst.EXPECT().GetBlockSubstates(uint64(0)).Return(map[int]*substate.Substate{
-			0: input0,
-		}, nil),
-		dst.EXPECT().GetBlockSubstates(uint64(1)).Return(map[int]*substate.Substate{
-			0: input0,
-		}, nil),
-		dst.EXPECT().GetBlockSubstates(uint64(2)).Return(map[int]*substate.Substate{
-			0: input1,
-		}, nil),
-	)
-
-	app := cli.NewApp()
-	ctx := cli.NewContext(app, nil, nil)
-	err := Compare(ctx, src, dst, 1, 0, 2)
-	assert.Error(t, err)
+			app := cli.NewApp()
+			ctx := cli.NewContext(app, nil, nil)
+			err := Compare(ctx, src, dst, 1, 0, 1)
+			assert.Error(t, err)
+			if !strings.HasPrefix(err.Error(), test.errWant) {
+				t.Fatalf("expected error: expected %v, got %v", test.errWant, err)
+			}
+		})
+	}
 }
 
 func TestCompare_MissingDst(t *testing.T) {
