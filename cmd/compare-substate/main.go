@@ -40,7 +40,11 @@ func compare(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	defer src.Close()
+	defer func() {
+		if err = src.Close(); err != nil {
+			log.Printf("Error closing source DB: %v", err)
+		}
+	}()
 
 	// Open target DB
 	target, err := db.NewSubstateDB(ctx.String(utils.TargetDbFlag.Name), &opt.Options{
@@ -52,7 +56,11 @@ func compare(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	defer target.Close()
+	defer func() {
+		if err = target.Close(); err != nil {
+			log.Printf("Error closing target DB: %v", err)
+		}
+	}()
 
 	segment, err := utils.ParseBlockSegment(ctx.String(utils.BlockSegmentFlag.Name))
 	if err != nil {
