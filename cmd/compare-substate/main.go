@@ -12,8 +12,9 @@ import (
 
 func main() {
 	app := &cli.App{
-		Name:   "compare-substate",
-		Usage:  "compare two substate databases",
+		Name: "compare-substate",
+		Usage: "Compare two substate databases for equality. " +
+			"The tool iterates trough both databases, pairs up the corresponding substates and compares them for equality.",
 		Action: compare,
 		Flags: []cli.Flag{
 			&utils.WorkersFlag,
