@@ -64,13 +64,13 @@ func TestRunRlpToProtobuf_SrcError(t *testing.T) {
 		Name:   "test",
 		Action: RunRlpToProtobuf,
 		Flags: []cli.Flag{
-			&WorkersFlag,
-			&SrcDbFlag,
-			&DstDbFlag,
-			&SkipTransferTxsFlag,
-			&SkipCallTxsFlag,
-			&SkipCreateTxsFlag,
-			&BlockSegmentFlag,
+			&utils.WorkersFlag,
+			&utils.SrcDbFlag,
+			&utils.DstDbFlag,
+			&utils.SkipTransferTxsFlag,
+			&utils.SkipCallTxsFlag,
+			&utils.SkipCreateTxsFlag,
+			&utils.BlockSegmentFlag,
 		},
 	}
 	err := app.Run(args)
@@ -119,13 +119,13 @@ func TestRunRlpToProtobuf_DstError(t *testing.T) {
 		Name:   "test",
 		Action: RunRlpToProtobuf,
 		Flags: []cli.Flag{
-			&WorkersFlag,
-			&SrcDbFlag,
-			&DstDbFlag,
-			&SkipTransferTxsFlag,
-			&SkipCallTxsFlag,
-			&SkipCreateTxsFlag,
-			&BlockSegmentFlag,
+			&utils.WorkersFlag,
+			&utils.SrcDbFlag,
+			&utils.DstDbFlag,
+			&utils.SkipTransferTxsFlag,
+			&utils.SkipCallTxsFlag,
+			&utils.SkipCreateTxsFlag,
+			&utils.BlockSegmentFlag,
 		},
 	}
 	err = app.Run(args)
