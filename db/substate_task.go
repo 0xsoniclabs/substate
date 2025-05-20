@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/0xsoniclabs/substate/substate"
+	"github.com/0xsoniclabs/substate/types"
 	"github.com/urfave/cli/v2"
 )
 
@@ -84,7 +85,11 @@ func (pool *SubstateTaskPool) ExecuteBlock(block uint64) (numTx int64, gas int64
 		alloc := substate.InputSubstate
 		msg := substate.Message
 
-		to := msg.To
+		var to *types.Address
+		if msg != nil {
+			to = msg.To
+		}
+
 		if pool.SkipTransferTxs && to != nil {
 			// skip regular transactions (ETH transfer)
 			if account, exist := alloc[*to]; !exist || len(account.Code) == 0 {

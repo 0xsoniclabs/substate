@@ -107,3 +107,40 @@ func TestSubstate_String(t *testing.T) {
 	expected := "InputSubstate: \nOutputSubstate: \nEnv World State: Coinbase: 0x0000000000000000000000000000000000000000\nDifficulty: <nil>\nGas Limit: 0\nNumber: 0\nTimestamp: 0\nBase Fee: <nil>\nBlob Base Fee: <nil>\nBlock Hashes: \nRandom: <nil>\n\nMessage World State: Nonce: 0\nCheckNonce: false\nFrom: 0x0000000000000000000000000000000000000000\nTo: <nil>\nValue: <nil>\nData: \nData Hash: <nil>\nGas Fee Cap: <nil>\nGas Tip Cap: <nil>\n\nResult World State: Status: 0Bloom: \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Contract Address: 0x0000000000000000000000000000000000000000Gas Used: 0\n"
 	assert.Equal(t, expected, substate.String())
 }
+
+func TestSubstate_Clone(t *testing.T) {
+	preState := WorldState{}
+	postState := WorldState{}
+	env := &Env{
+		Coinbase:  types.Address{1, 2, 3},
+		GasLimit:  100,
+		Number:    42,
+		Timestamp: 123456,
+	}
+	message := &Message{
+		Nonce: 7,
+		Gas:   8,
+	}
+	result := &Result{
+		Status:  1,
+		GasUsed: 2,
+		Logs:    []*types.Log{{Address: types.Address{0}}},
+	}
+	block := uint64(10)
+	transaction := 5
+
+	original := NewSubstate(preState, postState, env, message, result, block, transaction)
+	clone := original.Clone()
+
+	assert.NotSame(t, original, clone)
+	assert.Equal(t, original.InputSubstate, clone.InputSubstate)
+	assert.Equal(t, original.OutputSubstate, clone.OutputSubstate)
+	assert.NotSame(t, original.Env, clone.Env)
+	assert.Equal(t, original.Env, clone.Env)
+	assert.NotSame(t, original.Message, clone.Message)
+	assert.Equal(t, original.Message, clone.Message)
+	assert.NotSame(t, original.Result, clone.Result)
+	assert.Equal(t, original.Result, clone.Result)
+	assert.Equal(t, original.Block, clone.Block)
+	assert.Equal(t, original.Transaction, clone.Transaction)
+}

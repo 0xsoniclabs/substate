@@ -9,9 +9,9 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func TestRunRlpToProtobuf_Simple(t *testing.T) {
+func TestCompareSubstate_Simple(t *testing.T) {
 	src := t.TempDir() + "src-db"
-	dst := t.TempDir() + "dst-db"
+	target := t.TempDir() + "target-db"
 
 	srcDb, err := db.NewDefaultSubstateDB(src)
 	if err != nil {
@@ -25,23 +25,32 @@ func TestRunRlpToProtobuf_Simple(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	targetDb, err := db.NewDefaultSubstateDB(target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if targetDb == nil {
+		t.Fatal("targetDb is nil")
+	}
+	err = targetDb.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	args := []string{
 		"dummy",
 		"--workers", "1",
 		"--src", src,
-		"--dst", dst,
+		"--target", target,
 		"--block-segment", "0_1000000",
 	}
 	app := &cli.App{
 		Name:   "test",
-		Action: RunRlpToProtobuf,
+		Action: compare,
 		Flags: []cli.Flag{
 			&utils.WorkersFlag,
 			&utils.SrcDbFlag,
-			&utils.DstDbFlag,
-			&utils.SkipTransferTxsFlag,
-			&utils.SkipCallTxsFlag,
-			&utils.SkipCreateTxsFlag,
+			&utils.TargetDbFlag,
 			&utils.BlockSegmentFlag,
 		},
 	}
@@ -49,27 +58,24 @@ func TestRunRlpToProtobuf_Simple(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestRunRlpToProtobuf_SrcError(t *testing.T) {
+func TestCompareSubstate_SrcError(t *testing.T) {
 	src := t.TempDir() + "src-db"
-	dst := t.TempDir() + "dst-db"
+	target := t.TempDir() + "target-db"
 
 	args := []string{
 		"dummy",
 		"--workers", "1",
 		"--src", src,
-		"--dst", dst,
+		"--target", target,
 		"--block-segment", "0_1000000",
 	}
 	app := &cli.App{
 		Name:   "test",
-		Action: RunRlpToProtobuf,
+		Action: compare,
 		Flags: []cli.Flag{
 			&utils.WorkersFlag,
 			&utils.SrcDbFlag,
-			&utils.DstDbFlag,
-			&utils.SkipTransferTxsFlag,
-			&utils.SkipCallTxsFlag,
-			&utils.SkipCreateTxsFlag,
+			&utils.TargetDbFlag,
 			&utils.BlockSegmentFlag,
 		},
 	}
@@ -78,9 +84,9 @@ func TestRunRlpToProtobuf_SrcError(t *testing.T) {
 	assert.Contains(t, err.Error(), "cannot open leveldb")
 }
 
-func TestRunRlpToProtobuf_DstError(t *testing.T) {
+func TestCompareSubstate_TargetError(t *testing.T) {
 	src := t.TempDir() + "src-db"
-	dst := t.TempDir() + "dst-db"
+	target := t.TempDir() + "target-db"
 
 	srcDb, err := db.NewDefaultSubstateDB(src)
 	if err != nil {
@@ -94,37 +100,34 @@ func TestRunRlpToProtobuf_DstError(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	dstDb, err := db.NewDefaultSubstateDB(dst)
+	targetDb, err := db.NewDefaultSubstateDB(target)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if dstDb == nil {
-		t.Fatal("dstDb is nil")
+	if targetDb == nil {
+		t.Fatal("targetDb is nil")
 	}
-	defer func(dstDb db.SubstateDB) {
-		err := dstDb.Close()
+	defer func(targetDb db.SubstateDB) {
+		err := targetDb.Close()
 		if err != nil {
 			t.Fatal(err)
 		}
-	}(dstDb)
+	}(targetDb)
 
 	args := []string{
 		"dummy",
 		"--workers", "1",
 		"--src", src,
-		"--dst", dst,
+		"--target", target,
 		"--block-segment", "0_1000000",
 	}
 	app := &cli.App{
 		Name:   "test",
-		Action: RunRlpToProtobuf,
+		Action: compare,
 		Flags: []cli.Flag{
 			&utils.WorkersFlag,
 			&utils.SrcDbFlag,
-			&utils.DstDbFlag,
-			&utils.SkipTransferTxsFlag,
-			&utils.SkipCallTxsFlag,
-			&utils.SkipCreateTxsFlag,
+			&utils.TargetDbFlag,
 			&utils.BlockSegmentFlag,
 		},
 	}
