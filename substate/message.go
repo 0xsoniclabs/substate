@@ -166,6 +166,10 @@ func (m *Message) DataHash() types.Hash {
 }
 
 func (m *Message) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+
 	var builder strings.Builder
 
 	builder.WriteString(fmt.Sprintf("Nonce: %v\n", m.Nonce))
@@ -199,6 +203,9 @@ func (m *Message) String() string {
 }
 
 func (m *Message) Clone() *Message {
+	if m == nil {
+		return nil
+	}
 	return &Message{
 		Nonce:          m.Nonce,
 		CheckNonce:     m.CheckNonce,
