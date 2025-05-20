@@ -56,24 +56,24 @@ func Compare(ctx *cli.Context, src db.SubstateDB, target db.SubstateDB, workers 
 	return nil
 }
 
-func startIterator(compareCtx context.Context, dbInstance db.SubstateDB, substateChan chan *substate.Substate, first uint64, last uint64, workers int, wg *sync.WaitGroup) {
-	defer wg.Done()
-	defer close(substateChan)
-
-	iter := dbInstance.NewSubstateIterator(int(first), workers)
-	for iter.Next() {
-		tx := iter.Value()
-		if tx.Block > last {
-			break
-		}
-		select {
-		case <-compareCtx.Done():
-			return
-		case substateChan <- tx.Clone():
-		}
-	}
-
-}
+// TODO exchange startCompareTaskPool with startIterator once the iterator is testable
+//func startIterator(compareCtx context.Context, dbInstance db.SubstateDB, substateChan chan *substate.Substate, first uint64, last uint64, workers int, wg *sync.WaitGroup) {
+//	defer wg.Done()
+//	defer close(substateChan)
+//
+//	iter := dbInstance.NewSubstateIterator(int(first), workers)
+//	for iter.Next() {
+//		tx := iter.Value()
+//		if tx.Block > last {
+//			break
+//		}
+//		select {
+//		case <-compareCtx.Done():
+//			return
+//		case substateChan <- tx.Clone():
+//		}
+//	}
+//}
 
 // startCompareTaskPool is wrapper around the SubstateTask pool to retrieve the substates in order
 func startCompareTaskPool(compareCtx context.Context, name string, dbInstance db.SubstateDB, substateChan chan *substate.Substate, first uint64, last uint64, errChan chan error, ctx *cli.Context, counter *uint64, wg *sync.WaitGroup) {
