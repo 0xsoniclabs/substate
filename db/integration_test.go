@@ -279,7 +279,7 @@ func TestSubstateDB_MakeDefaultSubstateDB(t *testing.T) {
 	}
 
 	// cast interface to struct
-	backend := db.getBackend().(*leveldb.DB)
+	backend := db.GetBackend().(*leveldb.DB)
 	db2 := MakeDefaultSubstateDB(backend)
 	assert.NotNil(t, db2)
 
@@ -294,7 +294,7 @@ func TestSubstateDB_MakeSubstateDB(t *testing.T) {
 	}
 
 	// cast interface to struct
-	backend := db.getBackend().(*leveldb.DB)
+	backend := db.GetBackend().(*leveldb.DB)
 	db2 := MakeSubstateDB(backend, nil, nil)
 	assert.NotNil(t, db2)
 

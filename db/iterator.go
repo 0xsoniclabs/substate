@@ -16,6 +16,9 @@ import (
 // An iterator must be released after use, but it is not necessary to read
 // until exhaustion. An iterator is not safe for concurrent use, but it
 // is safe to use multiple iterators concurrently.
+//
+//go:generate mockgen -source=iterator.go -destination=./iterator_mock.go -package
+//go:generate mockgen -source=iterator.go -destination=./iterator_mock.go -package=db
 type IIterator[T comparable] interface {
 	// Next moves the iterator to the next key/value pair. It returns whether the
 	// iterator is exhausted.

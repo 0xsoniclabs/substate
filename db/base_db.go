@@ -12,11 +12,11 @@ import (
 	ldbiterator "github.com/syndtr/goleveldb/leveldb/iterator"
 )
 
-// dbAdapter defines the interface for a database adapter that provides
+// DbAdapter defines the interface for a database adapter that provides
 // basic database operations such as Put, Get, Delete, and iteration.
 //
 //go:generate mockgen -source=base_db.go -destination=./base_db_mock.go -package=db
-type dbAdapter interface {
+type DbAdapter interface {
 	// Delete removes the key-value pair associated with the given key.
 	// wo specifies the write options.
 	Delete(key []byte, wo *opt.WriteOptions) error
@@ -107,8 +107,8 @@ type BaseDB interface {
 	// Other methods should not be called after the DB has been closed.
 	Close() error
 
-	// getBackend returns the database backend.
-	getBackend() dbAdapter
+	// GetBackend returns the database backend.
+	GetBackend() DbAdapter
 
 	hasKeyValuesFor(prefix []byte, start []byte) bool
 
@@ -131,7 +131,7 @@ func NewBaseDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.ReadOp
 }
 
 func MakeDefaultBaseDBFromBaseDB(db BaseDB) BaseDB {
-	return &baseDB{backend: db.getBackend()}
+	return &baseDB{backend: db.GetBackend()}
 }
 
 // NewReadOnlyBaseDB creates a new instance of read-only BaseDB.
@@ -163,7 +163,7 @@ func newBaseDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.ReadOp
 
 // baseDB implements method needed by all three types of DBs.
 type baseDB struct {
-	backend dbAdapter
+	backend DbAdapter
 	wo      *opt.WriteOptions
 	ro      *opt.ReadOptions
 }
@@ -172,7 +172,7 @@ func (db *baseDB) stats(stats *leveldb.DBStats) error {
 	return db.backend.Stats(stats)
 }
 
-func (db *baseDB) getBackend() dbAdapter {
+func (db *baseDB) GetBackend() DbAdapter {
 	return db.backend
 }
 
