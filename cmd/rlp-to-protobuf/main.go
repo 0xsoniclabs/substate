@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/0xsoniclabs/substate/utils"
 	"github.com/urfave/cli/v2"
 )
 
@@ -13,13 +14,13 @@ func main() {
 		Usage:  "Convert rlp encoded substate to protobuf encoded substate",
 		Action: RunRlpToProtobuf,
 		Flags: []cli.Flag{
-			&WorkersFlag,
-			&SrcDbFlag,
-			&DstDbFlag,
-			&SkipTransferTxsFlag,
-			&SkipCallTxsFlag,
-			&SkipCreateTxsFlag,
-			&BlockSegmentFlag,
+			&utils.WorkersFlag,
+			&utils.SrcDbFlag,
+			&utils.DstDbFlag,
+			&utils.SkipTransferTxsFlag,
+			&utils.SkipCallTxsFlag,
+			&utils.SkipCreateTxsFlag,
+			&utils.BlockSegmentFlag,
 		},
 	}
 

@@ -3,6 +3,7 @@ package substate
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"strings"
 )
 
@@ -78,4 +79,16 @@ func (s *Substate) String() string {
 	builder.WriteString(fmt.Sprintf("Result World State: %v\n", s.Result.String()))
 
 	return builder.String()
+}
+
+func (s *Substate) Clone() *Substate {
+	return &Substate{
+		InputSubstate:  maps.Clone(s.InputSubstate),
+		OutputSubstate: maps.Clone(s.OutputSubstate),
+		Env:            s.Env.Clone(),
+		Message:        s.Message.Clone(),
+		Result:         s.Result.Clone(),
+		Block:          s.Block,
+		Transaction:    s.Transaction,
+	}
 }

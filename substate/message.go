@@ -166,6 +166,10 @@ func (m *Message) DataHash() types.Hash {
 }
 
 func (m *Message) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+
 	var builder strings.Builder
 
 	builder.WriteString(fmt.Sprintf("Nonce: %v\n", m.Nonce))
@@ -196,4 +200,27 @@ func (m *Message) String() string {
 	}
 
 	return builder.String()
+}
+
+func (m *Message) Clone() *Message {
+	if m == nil {
+		return nil
+	}
+	return &Message{
+		Nonce:          m.Nonce,
+		CheckNonce:     m.CheckNonce,
+		GasPrice:       m.GasPrice,
+		Gas:            m.Gas,
+		From:           m.From,
+		To:             m.To,
+		Value:          m.Value,
+		Data:           append([]byte(nil), m.Data...),
+		dataHash:       m.dataHash,
+		ProtobufTxType: m.ProtobufTxType,
+		AccessList:     slices.Clone(m.AccessList),
+		GasFeeCap:      m.GasFeeCap,
+		GasTipCap:      m.GasTipCap,
+		BlobGasFeeCap:  m.BlobGasFeeCap,
+		BlobHashes:     slices.Clone(m.BlobHashes),
+	}
 }
