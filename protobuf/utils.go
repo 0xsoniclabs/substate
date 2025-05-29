@@ -123,7 +123,7 @@ func (s *Substate) HashedCopy() *Substate {
 		account := entry.Account
 		if code := account.GetCode(); code != nil {
 			codeHash := CodeHash(code)
-			account.Contract = &Substate_Account_CodeHash{
+			account.Contract = &Account_CodeHash{
 				CodeHash: HashToBytes(&codeHash),
 			}
 		}
@@ -133,7 +133,7 @@ func (s *Substate) HashedCopy() *Substate {
 		account := entry.Account
 		if code := account.GetCode(); code != nil {
 			codeHash := CodeHash(code)
-			account.Contract = &Substate_Account_CodeHash{
+			account.Contract = &Account_CodeHash{
 				CodeHash: HashToBytes(&codeHash),
 			}
 		}

@@ -48,8 +48,8 @@ func (s *Substate) Decode(lookup getCodeFunc, block uint64, tx int) (*substate.S
 	}, nil
 }
 
-// decode converts protobuf-encoded Substate_Alloc into aida-comprehensible WorldState
-func (alloc *Substate_Alloc) decode(lookup getCodeFunc) (*substate.WorldState, error) {
+// decode converts protobuf-encoded Alloc into aida-comprehensible WorldState
+func (alloc *Alloc) decode(lookup getCodeFunc) (*substate.WorldState, error) {
 	world := make(substate.WorldState, len(alloc.GetAlloc()))
 
 	for _, entry := range alloc.GetAlloc() {
@@ -72,22 +72,22 @@ func (alloc *Substate_Alloc) decode(lookup getCodeFunc) (*substate.WorldState, e
 	return &world, nil
 }
 
-func (entry *Substate_AllocEntry) decode() ([]byte, *Substate_Account) {
+func (entry *AllocEntry) decode() ([]byte, *Account) {
 	return entry.GetAddress(), entry.GetAccount()
 }
 
-func (acct *Substate_Account) decode() (uint64, *uint256.Int, []byte, types.Hash) {
+func (acct *Account) decode() (uint64, *uint256.Int, []byte, types.Hash) {
 	return acct.GetNonce(),
 		BytesToUint256(acct.GetBalance()),
 		acct.GetCode(),
 		types.BytesToHash(acct.GetCodeHash())
 }
 
-func (entry *Substate_Account_StorageEntry) decode() (types.Hash, types.Hash) {
+func (entry *Account_StorageEntry) decode() (types.Hash, types.Hash) {
 	return types.BytesToHash(entry.GetKey()), types.BytesToHash(entry.GetValue())
 }
 
-// decode converts protobuf-encoded Substate_BlockEnv into aida-comprehensible Env
+// decode converts protobuf-encoded BlockEnv into aida-comprehensible Env
 func (env *Substate_BlockEnv) decode() *substate.Env {
 	var blockHashes map[uint64]types.Hash = nil
 	if env.GetBlockHashes() != nil {
