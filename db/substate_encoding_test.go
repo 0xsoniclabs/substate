@@ -81,7 +81,7 @@ func TestSubstateEncoding_DefaultEncodingDefaultsToProtobuf(t *testing.T) {
 		}
 
 		if got := db.GetSubstateEncoding(); got != ProtobufEncodingSchema {
-			t.Fatalf("db should default to rlp, got: %s", got)
+			t.Fatalf("db should default to protobuf, got: %s", got)
 		}
 	}
 }
@@ -96,6 +96,31 @@ func TestSubstateEncoding_UnsupportedEncodingThrowsError(t *testing.T) {
 	err = db.SetSubstateEncoding("EncodingNotSupported")
 	if err == nil || !strings.Contains(err.Error(), "encoding not supported") {
 		t.Error("encoding not supported, but no error")
+	}
+}
+
+func TestSubstateEncoding_AcceptLagacyEncodingAlias(t *testing.T) {
+	protobufKeywords := []SubstateEncodingSchema{"pb", LegacyProtobufEncodingAlias, ProtobufEncodingSchema}
+	for _, encoding := range protobufKeywords {
+		path := t.TempDir() + "test-db-" + string(encoding)
+		db, err := newSubstateDB(path, nil, nil, nil)
+		if err != nil {
+			t.Errorf("cannot open db; %v", err)
+		}
+
+		err = db.SetSubstateEncoding(encoding)
+		if err != nil {
+			t.Fatalf("Encoding '%s' must be supported, but error", encoding)
+		}
+
+		_, err = db.decodeToSubstate(testPb.bytes, testPb.blk, testPb.tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if got := db.GetSubstateEncoding(); got != ProtobufEncodingSchema {
+			t.Fatalf("db should should use protobuf encoding, got: %s", got)
+		}
 	}
 }
 
