@@ -102,10 +102,8 @@ func (i *exceptionIterator) start(numWorkers int) {
 					case resultChs[id] <- transaction:
 					case <-i.stopCh:
 						return
-
 					}
 				}
-
 			}
 		}()
 	}

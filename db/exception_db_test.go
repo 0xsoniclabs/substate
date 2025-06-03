@@ -57,7 +57,6 @@ func TestExceptionDB_PutAndGetException(t *testing.T) {
 	assert.NoError(t, err)
 
 	mockDB.EXPECT().Get(ExceptionDBBlockPrefix(block)).Return(encoded, nil)
-	//mockDB.EXPECT().GetCode(gomock.Any()).Return([]byte{}, nil).AnyTimes()
 	// decodeException will fail because pbExceptionData.Decode returns error (not implemented in test)
 	_, err = db.GetException(block)
 	assert.Error(t, err)
