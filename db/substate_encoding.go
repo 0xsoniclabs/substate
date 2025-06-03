@@ -14,9 +14,10 @@ import (
 type SubstateEncodingSchema string
 
 const (
-	DefaultEncodingSchema  SubstateEncodingSchema = "default"
-	ProtobufEncodingSchema SubstateEncodingSchema = "protobuf"
-	RLPEncodingSchema      SubstateEncodingSchema = "rlp"
+	DefaultEncodingSchema       SubstateEncodingSchema = "default"
+	ProtobufEncodingSchema      SubstateEncodingSchema = "protobuf"
+	RLPEncodingSchema           SubstateEncodingSchema = "rlp"
+	LegacyProtobufEncodingAlias SubstateEncodingSchema = "pb"
 )
 
 // SetSubstateEncoding sets the runtime encoding/decoding behavior of substateDB
@@ -71,7 +72,7 @@ func newSubstateEncoding(encoding SubstateEncodingSchema, lookup codeLookupFunc)
 			encode: encodeRlp,
 		}, nil
 
-	case "", DefaultEncodingSchema, ProtobufEncodingSchema:
+	case "", DefaultEncodingSchema, ProtobufEncodingSchema, LegacyProtobufEncodingAlias:
 		return &substateEncoding{
 			schema: ProtobufEncodingSchema,
 			decode: func(bytes []byte, block uint64, tx int) (*substate.Substate, error) {
