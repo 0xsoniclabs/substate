@@ -15,7 +15,7 @@ func TestBaseDB_BinarySearchForLastPrefixKeySuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockBackend := NewMockdbAdapter(ctrl)
+	mockBackend := NewMockDbAdapter(ctrl)
 	db := &baseDB{backend: mockBackend}
 
 	// Case 1: found at max value
@@ -44,7 +44,7 @@ func TestBaseDB_BinarySearchForLastPrefixKeyFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockBackend := NewMockdbAdapter(ctrl)
+	mockBackend := NewMockDbAdapter(ctrl)
 	db := &baseDB{backend: mockBackend}
 
 	// Case 1: undefined behavior
@@ -61,7 +61,7 @@ func TestBaseDB_HasKeyValuesFor(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockBackend := NewMockdbAdapter(ctrl)
+	mockBackend := NewMockDbAdapter(ctrl)
 	db := &baseDB{backend: mockBackend}
 
 	// Case 1: Success - found at max value
@@ -78,7 +78,7 @@ func TestBaseDB_BasicOperations(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockBackend := NewMockdbAdapter(ctrl)
+	mockBackend := NewMockDbAdapter(ctrl)
 	db := &baseDB{backend: mockBackend}
 
 	// Test stats
@@ -87,8 +87,8 @@ func TestBaseDB_BasicOperations(t *testing.T) {
 	err := db.stats(stats)
 	assert.Nil(t, err)
 
-	// Test getBackend
-	backend := db.getBackend()
+	// Test GetBackend
+	backend := db.GetBackend()
 	assert.Equal(t, mockBackend, backend)
 
 	// Test Put
@@ -127,7 +127,7 @@ func TestBaseDB_newIterator(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockBackend := NewMockdbAdapter(ctrl)
+	mockBackend := NewMockDbAdapter(ctrl)
 	mockIter := iterator.NewArrayIterator(&testutil.KeyValue{})
 	db := &baseDB{backend: mockBackend}
 
@@ -140,7 +140,7 @@ func TestBaseDB_NewIterator(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockBackend := NewMockdbAdapter(ctrl)
+	mockBackend := NewMockDbAdapter(ctrl)
 	mockIter := iterator.NewArrayIterator(&testutil.KeyValue{})
 	db := &baseDB{backend: mockBackend}
 
@@ -153,7 +153,7 @@ func TestBaseDB_Compact(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockBackend := NewMockdbAdapter(ctrl)
+	mockBackend := NewMockDbAdapter(ctrl)
 	db := &baseDB{backend: mockBackend}
 
 	mockBackend.EXPECT().CompactRange(gomock.Any()).Return(nil)
@@ -165,7 +165,7 @@ func TestBaseDB_Stat(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockBackend := NewMockdbAdapter(ctrl)
+	mockBackend := NewMockDbAdapter(ctrl)
 	db := &baseDB{backend: mockBackend}
 
 	mockBackend.EXPECT().GetProperty("property").Return("value", nil)

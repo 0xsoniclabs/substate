@@ -415,17 +415,17 @@ func (mr *MockSubstateDBMockRecorder) decodeToSubstate(bytes, block, tx interfac
 }
 
 // getBackend mocks base method.
-func (m *MockSubstateDB) getBackend() dbAdapter {
+func (m *MockSubstateDB) GetBackend() DbAdapter {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "getBackend")
-	ret0, _ := ret[0].(dbAdapter)
+	ret := m.ctrl.Call(m, "GetBackend")
+	ret0, _ := ret[0].(DbAdapter)
 	return ret0
 }
 
 // getBackend indicates an expected call of getBackend.
 func (mr *MockSubstateDBMockRecorder) getBackend() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getBackend", reflect.TypeOf((*MockSubstateDB)(nil).getBackend))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackend", reflect.TypeOf((*MockSubstateDB)(nil).GetBackend))
 }
 
 // hasKeyValuesFor mocks base method.

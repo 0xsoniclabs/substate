@@ -357,17 +357,17 @@ func (mr *MockUpdateDBMockRecorder) binarySearchForLastPrefixKey(lastKeyPrefix i
 }
 
 // getBackend mocks base method.
-func (m *MockUpdateDB) getBackend() dbAdapter {
+func (m *MockUpdateDB) GetBackend() DbAdapter {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "getBackend")
-	ret0, _ := ret[0].(dbAdapter)
+	ret := m.ctrl.Call(m, "GetBackend")
+	ret0, _ := ret[0].(DbAdapter)
 	return ret0
 }
 
 // getBackend indicates an expected call of getBackend.
 func (mr *MockUpdateDBMockRecorder) getBackend() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getBackend", reflect.TypeOf((*MockUpdateDB)(nil).getBackend))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackend", reflect.TypeOf((*MockUpdateDB)(nil).GetBackend))
 }
 
 // hasKeyValuesFor mocks base method.

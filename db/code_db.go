@@ -43,7 +43,7 @@ func NewCodeDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.ReadOp
 }
 
 func MakeDefaultCodeDBFromBaseDB(db BaseDB) CodeDB {
-	return &codeDB{&baseDB{backend: db.getBackend()}}
+	return &codeDB{&baseDB{backend: db.GetBackend()}}
 }
 
 // NewReadOnlyCodeDB creates a new instance of read-only CodeDB.

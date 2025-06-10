@@ -58,7 +58,7 @@ func NewUpdateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.Read
 }
 
 func MakeDefaultUpdateDBFromBaseDB(db BaseDB) UpdateDB {
-	return &updateDB{&codeDB{&baseDB{backend: db.getBackend()}}}
+	return &updateDB{&codeDB{&baseDB{backend: db.GetBackend()}}}
 }
 
 // NewReadOnlyUpdateDB creates a new instance of read-only UpdateDB.

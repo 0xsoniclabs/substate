@@ -59,7 +59,7 @@ func TestBatch_Put(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockAdapter := NewMockdbAdapter(ctrl)
+	mockAdapter := NewMockDbAdapter(ctrl)
 	b := &batch{
 		db: mockAdapter,
 		b:  new(leveldb.Batch),
@@ -77,7 +77,7 @@ func TestBatch_Delete(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockAdapter := NewMockdbAdapter(ctrl)
+	mockAdapter := NewMockDbAdapter(ctrl)
 	b := &batch{
 		db: mockAdapter,
 		b:  new(leveldb.Batch),
@@ -94,7 +94,7 @@ func TestBatch_ValueSize(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockAdapter := NewMockdbAdapter(ctrl)
+	mockAdapter := NewMockDbAdapter(ctrl)
 	b := &batch{
 		db:   mockAdapter,
 		b:    new(leveldb.Batch),
@@ -109,7 +109,7 @@ func TestBatch_Write(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockAdapter := NewMockdbAdapter(ctrl)
+	mockAdapter := NewMockDbAdapter(ctrl)
 	b := &batch{
 		db: mockAdapter,
 		b:  new(leveldb.Batch),
@@ -131,7 +131,7 @@ func TestBatch_Reset(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockAdapter := NewMockdbAdapter(ctrl)
+	mockAdapter := NewMockDbAdapter(ctrl)
 	b := &batch{
 		db:   mockAdapter,
 		b:    new(leveldb.Batch),
@@ -146,7 +146,7 @@ func TestBatch_Replay(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockAdapter := NewMockdbAdapter(ctrl)
+	mockAdapter := NewMockDbAdapter(ctrl)
 	mockWriter := NewMockKeyValueWriter(ctrl)
 
 	b := &batch{
@@ -171,7 +171,7 @@ func TestNewBatch(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockAdapter := NewMockdbAdapter(ctrl)
+	mockAdapter := NewMockDbAdapter(ctrl)
 	b := newBatch(mockAdapter)
 
 	assert.NotNil(t, b)
