@@ -23,6 +23,7 @@ import (
 type MockExceptionDB struct {
 	ctrl     *gomock.Controller
 	recorder *MockExceptionDBMockRecorder
+	isgomock struct{}
 }
 
 // MockExceptionDBMockRecorder is the mock recorder for MockExceptionDB.
@@ -97,6 +98,20 @@ func (m *MockExceptionDB) Get(arg0 []byte) ([]byte, error) {
 func (mr *MockExceptionDBMockRecorder) Get(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockExceptionDB)(nil).Get), arg0)
+}
+
+// GetBackend mocks base method.
+func (m *MockExceptionDB) GetBackend() DbAdapter {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBackend")
+	ret0, _ := ret[0].(DbAdapter)
+	return ret0
+}
+
+// GetBackend indicates an expected call of GetBackend.
+func (mr *MockExceptionDBMockRecorder) GetBackend() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBackend", reflect.TypeOf((*MockExceptionDB)(nil).GetBackend))
 }
 
 // GetException mocks base method.
@@ -272,20 +287,6 @@ func (m *MockExceptionDB) decodeToException(data []byte, block uint64) (*substat
 func (mr *MockExceptionDBMockRecorder) decodeToException(data, block any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "decodeToException", reflect.TypeOf((*MockExceptionDB)(nil).decodeToException), data, block)
-}
-
-// getBackend mocks base method.
-func (m *MockExceptionDB) getBackend() dbAdapter {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "getBackend")
-	ret0, _ := ret[0].(dbAdapter)
-	return ret0
-}
-
-// getBackend indicates an expected call of getBackend.
-func (mr *MockExceptionDBMockRecorder) getBackend() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "getBackend", reflect.TypeOf((*MockExceptionDB)(nil).getBackend))
 }
 
 // hasKeyValuesFor mocks base method.

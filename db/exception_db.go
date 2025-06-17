@@ -53,7 +53,7 @@ func MakeDefaultExceptionDB(db *leveldb.DB) ExceptionDB {
 }
 
 func MakeDefaultExceptionDBFromBaseDB(db BaseDB) ExceptionDB {
-	return &exceptionDB{&codeDB{&baseDB{backend: db.getBackend()}}}
+	return &exceptionDB{&codeDB{&baseDB{backend: db.GetBackend()}}}
 }
 
 // NewReadOnlyExceptionDB creates a new instance of read-only ExceptionDB.
