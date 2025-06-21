@@ -54,8 +54,8 @@ func testExceptionIterator_Value(db *exceptionDB, t *testing.T) {
 		t.Fatal("iterator returned nil")
 	}
 
-	if err := ex.Equal(*testException); err != nil {
-		t.Fatalf("iterator returned different exception: %v", err)
+	if !ex.Equal(*testException) {
+		t.Fatalf("iterator returned different exception.")
 	}
 }
 

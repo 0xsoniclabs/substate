@@ -4,7 +4,7 @@ import (
 	"github.com/0xsoniclabs/substate/substate"
 )
 
-// Decode converts protobuf-encoded bytes into exception block
+// Decode decodes protobuf-encoded bytes into ExceptionBlock struct
 func (s *ExceptionBlock) Decode(lookup getCodeFunc) (*substate.ExceptionBlock, error) {
 	input, err := s.GetPreBlock().decode(lookup)
 	if err != nil {
@@ -29,7 +29,7 @@ func (s *ExceptionBlock) Decode(lookup getCodeFunc) (*substate.ExceptionBlock, e
 	}, nil
 }
 
-// decode converts protobuf-encoded ExceptionTx into aida-comprehensible ExceptionTx
+// decode decodes protobuf-encoded ExceptionTx into ExceptionTx struct
 func (tx *ExceptionTx) decode(lookup getCodeFunc) substate.ExceptionTx {
 	preTransaction, err := tx.GetPreTransaction().decode(lookup)
 	if err != nil {

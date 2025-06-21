@@ -8,10 +8,10 @@ import (
 )
 
 type exceptionBlockEqualTestCase struct {
-	name        string
-	eb1         ExceptionBlock
-	eb2         ExceptionBlock
-	expectedErr string
+	name           string
+	eb1            ExceptionBlock
+	eb2            ExceptionBlock
+	expectedResult bool
 }
 
 func TestExceptionBlock_Equal_Cases(t *testing.T) {
@@ -23,45 +23,50 @@ func TestExceptionBlock_Equal_Cases(t *testing.T) {
 
 	cases := []exceptionBlockEqualTestCase{
 		{
-			name:        "TransactionCountMismatch",
-			eb1:         ExceptionBlock{Transactions: map[int]ExceptionTx{0: {PreTransaction: ws, PostTransaction: ws}}, PreBlock: ws, PostBlock: ws},
-			eb2:         ExceptionBlock{Transactions: map[int]ExceptionTx{}, PreBlock: ws, PostBlock: ws},
-			expectedErr: "transaction count mismatch",
+			name:           "TransactionCountMismatch",
+			eb1:            ExceptionBlock{Transactions: map[int]ExceptionTx{0: {PreTransaction: ws, PostTransaction: ws}}, PreBlock: ws, PostBlock: ws},
+			eb2:            ExceptionBlock{Transactions: map[int]ExceptionTx{}, PreBlock: ws, PostBlock: ws},
+			expectedResult: false,
 		},
 		{
-			name:        "TransactionMismatch",
-			eb1:         ExceptionBlock{Transactions: map[int]ExceptionTx{0: tx1}, PreBlock: ws, PostBlock: ws},
-			eb2:         ExceptionBlock{Transactions: map[int]ExceptionTx{0: tx2}, PreBlock: ws, PostBlock: ws},
-			expectedErr: "VM exception mismatch",
+			name:           "TransactionMismatch",
+			eb1:            ExceptionBlock{Transactions: map[int]ExceptionTx{0: tx1}, PreBlock: ws, PostBlock: ws},
+			eb2:            ExceptionBlock{Transactions: map[int]ExceptionTx{0: tx2}, PreBlock: ws, PostBlock: ws},
+			expectedResult: false,
 		},
 		{
-			name:        "PreBlockMismatch",
-			eb1:         ExceptionBlock{Transactions: map[int]ExceptionTx{}, PreBlock: ws1, PostBlock: ws1},
-			eb2:         ExceptionBlock{Transactions: map[int]ExceptionTx{}, PreBlock: ws2, PostBlock: ws1},
-			expectedErr: "pre block mismatch",
+			name:           "PreBlockMismatch",
+			eb1:            ExceptionBlock{Transactions: map[int]ExceptionTx{}, PreBlock: ws1, PostBlock: ws1},
+			eb2:            ExceptionBlock{Transactions: map[int]ExceptionTx{}, PreBlock: ws2, PostBlock: ws1},
+			expectedResult: false,
 		},
 		{
-			name:        "PostBlockMismatch",
-			eb1:         ExceptionBlock{Transactions: map[int]ExceptionTx{}, PreBlock: ws1, PostBlock: ws1},
-			eb2:         ExceptionBlock{Transactions: map[int]ExceptionTx{}, PreBlock: ws1, PostBlock: ws2},
-			expectedErr: "post block mismatch",
+			name:           "PostBlockMismatch",
+			eb1:            ExceptionBlock{Transactions: map[int]ExceptionTx{}, PreBlock: ws1, PostBlock: ws1},
+			eb2:            ExceptionBlock{Transactions: map[int]ExceptionTx{}, PreBlock: ws1, PostBlock: ws2},
+			expectedResult: false,
+		},
+		{
+			name:           "BlockMatch",
+			eb1:            ExceptionBlock{Transactions: map[int]ExceptionTx{}, PreBlock: ws1, PostBlock: ws1},
+			eb2:            ExceptionBlock{Transactions: map[int]ExceptionTx{}, PreBlock: ws1, PostBlock: ws1},
+			expectedResult: true,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := tc.eb1.Equal(tc.eb2)
-			assert.Error(t, err)
-			assert.Contains(t, err.Error(), tc.expectedErr)
+			ret := tc.eb1.Equal(tc.eb2)
+			assert.Equal(t, tc.expectedResult, ret)
 		})
 	}
 }
 
 type exceptionTxEqualTestCase struct {
-	name        string
-	tx1         ExceptionTx
-	tx2         ExceptionTx
-	expectedErr string
+	name           string
+	tx1            ExceptionTx
+	tx2            ExceptionTx
+	expectedResult bool
 }
 
 func TestExceptionTx_Equal_Cases(t *testing.T) {
@@ -71,40 +76,35 @@ func TestExceptionTx_Equal_Cases(t *testing.T) {
 
 	cases := []exceptionTxEqualTestCase{
 		{
-			name:        "PreTransactionMismatch",
-			tx1:         ExceptionTx{PreTransaction: ws1, PostTransaction: ws1, VmException: false},
-			tx2:         ExceptionTx{PreTransaction: ws2, PostTransaction: ws1, VmException: false},
-			expectedErr: "pre transaction mismatch",
+			name:           "PreTransactionMismatch",
+			tx1:            ExceptionTx{PreTransaction: ws1, PostTransaction: ws1, VmException: false},
+			tx2:            ExceptionTx{PreTransaction: ws2, PostTransaction: ws1, VmException: false},
+			expectedResult: false,
 		},
 		{
-			name:        "PostTransactionMismatch",
-			tx1:         ExceptionTx{PreTransaction: ws1, PostTransaction: ws1, VmException: false},
-			tx2:         ExceptionTx{PreTransaction: ws1, PostTransaction: ws2, VmException: false},
-			expectedErr: "post transaction mismatch",
+			name:           "PostTransactionMismatch",
+			tx1:            ExceptionTx{PreTransaction: ws1, PostTransaction: ws1, VmException: false},
+			tx2:            ExceptionTx{PreTransaction: ws1, PostTransaction: ws2, VmException: false},
+			expectedResult: false,
 		},
 		{
-			name:        "VmExceptionMismatch",
-			tx1:         ExceptionTx{PreTransaction: ws, PostTransaction: ws, VmException: false},
-			tx2:         ExceptionTx{PreTransaction: ws, PostTransaction: ws, VmException: true},
-			expectedErr: "VM exception mismatch",
+			name:           "VmExceptionMismatch",
+			tx1:            ExceptionTx{PreTransaction: ws, PostTransaction: ws, VmException: false},
+			tx2:            ExceptionTx{PreTransaction: ws, PostTransaction: ws, VmException: true},
+			expectedResult: false,
 		},
 		{
-			name:        "Success",
-			tx1:         ExceptionTx{PreTransaction: ws, PostTransaction: ws, VmException: false},
-			tx2:         ExceptionTx{PreTransaction: ws, PostTransaction: ws, VmException: false},
-			expectedErr: "",
+			name:           "Success",
+			tx1:            ExceptionTx{PreTransaction: ws, PostTransaction: ws, VmException: false},
+			tx2:            ExceptionTx{PreTransaction: ws, PostTransaction: ws, VmException: false},
+			expectedResult: true,
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := tc.tx1.Equal(tc.tx2)
-			if tc.expectedErr == "" {
-				assert.NoError(t, err)
-			} else {
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tc.expectedErr)
-			}
+			ret := tc.tx1.Equal(tc.tx2)
+			assert.Equal(t, tc.expectedResult, ret)
 		})
 	}
 }

@@ -1,7 +1,5 @@
 package substate
 
-import "fmt"
-
 type Exception struct {
 	Block uint64
 	Data  ExceptionBlock
@@ -19,52 +17,56 @@ type ExceptionTx struct {
 	VmException     bool
 }
 
-func (ex *Exception) Equal(target Exception) error {
+func (ex *Exception) Equal(target Exception) bool {
+	// Check if the block numbers are the same
 	if ex.Block != target.Block {
-		return fmt.Errorf("block mismatch: got %d, want %d", ex.Block, target.Block)
+		return false
 	}
 
-	if err := ex.Data.Equal(target.Data); err != nil {
-		return fmt.Errorf("exception block mismatch: %w", err)
+	// Check if the contecnt of exceptions are the same
+	if !ex.Data.Equal(target.Data) {
+		return false
 	}
 
-	return nil
+	return true
 }
 
-func (ex *ExceptionBlock) Equal(target ExceptionBlock) error {
+// Equal checks if two ExceptionBlock instances are equal
+func (ex *ExceptionBlock) Equal(target ExceptionBlock) bool {
 	if len(ex.Transactions) != len(target.Transactions) {
-		return fmt.Errorf("transaction count mismatch: got %d, want %d", len(ex.Transactions), len(target.Transactions))
+		return false
 	}
 
-	for i, t := range ex.Transactions {
-		if err := t.Equal(target.Transactions[i]); err != nil {
-			return fmt.Errorf("transaction %d mismatch: %w", i, err)
+	for i, tx := range ex.Transactions {
+		if !tx.Equal(target.Transactions[i]) {
+			return false
 		}
 	}
 
 	if !ex.PreBlock.Equal(*target.PreBlock) {
-		return fmt.Errorf("pre block mismatch")
+		return false
 	}
 
 	if !ex.PostBlock.Equal(*target.PostBlock) {
-		return fmt.Errorf("post block mismatch")
+		return false
 	}
 
-	return nil
+	return true
 }
 
-func (tx *ExceptionTx) Equal(target ExceptionTx) error {
+// Equal checks if two ExceptionTx instances are equal
+func (tx *ExceptionTx) Equal(target ExceptionTx) bool {
 	if !tx.PreTransaction.Equal(*target.PreTransaction) {
-		return fmt.Errorf("pre transaction mismatch")
+		return false
 	}
 
 	if !tx.PostTransaction.Equal(*target.PostTransaction) {
-		return fmt.Errorf("post transaction mismatch")
+		return false
 	}
 
 	if tx.VmException != target.VmException {
-		return fmt.Errorf("VM exception mismatch: got %v, want %v", tx.VmException, target.VmException)
+		return false
 	}
 
-	return nil
+	return true
 }

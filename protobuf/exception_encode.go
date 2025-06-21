@@ -5,7 +5,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// EncodeExceptionBlock converts aida ExceptionBlock into protobuf-encoded ExceptionBlock
+// EncodeExceptionBlock converts ExceptionBlock struct into protobuf-encoded ExceptionBlock
 func EncodeExceptionBlock(s *substate.ExceptionBlock) ([]byte, error) {
 	data := make(map[int32]*ExceptionTx, len(s.Transactions))
 	for key, value := range s.Transactions {
@@ -33,7 +33,7 @@ func EncodeExceptionBlock(s *substate.ExceptionBlock) ([]byte, error) {
 	})
 }
 
-// EncodeExceptionTx converts aida ExceptionTx into protobuf-encoded ExceptionTx
+// EncodeExceptionTx converts ExceptionTx struct into protobuf-encoded ExceptionTx
 func EncodeExceptionTx(tx *substate.ExceptionTx) (*ExceptionTx, error) {
 	var pre *Alloc
 	if tx.PreTransaction != nil {
