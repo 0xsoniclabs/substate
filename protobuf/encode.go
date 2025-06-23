@@ -31,32 +31,32 @@ func toProtobufSubstate(ss *substate.Substate) *Substate {
 	}
 }
 
-// toProtobufAlloc converts substate.WorldState into protobuf-encoded Substate_Alloc
-func toProtobufAlloc(sw substate.WorldState) *Substate_Alloc {
-	world := make([]*Substate_AllocEntry, 0, len(sw))
+// toProtobufAlloc converts substate.WorldState into protobuf-encoded Alloc
+func toProtobufAlloc(sw substate.WorldState) *Alloc {
+	world := make([]*AllocEntry, 0, len(sw))
 	for addr, acct := range sw {
-		storage := make([]*Substate_Account_StorageEntry, 0, len(acct.Storage))
+		storage := make([]*Account_StorageEntry, 0, len(acct.Storage))
 		for key, value := range acct.Storage {
-			storage = append(storage, &Substate_Account_StorageEntry{
+			storage = append(storage, &Account_StorageEntry{
 				Key:   key.Bytes(),
 				Value: value.Bytes(),
 			})
 		}
 
-		world = append(world, &Substate_AllocEntry{
+		world = append(world, &AllocEntry{
 			Address: addr.Bytes(),
-			Account: &Substate_Account{
+			Account: &Account{
 				Nonce:   &acct.Nonce,
 				Balance: acct.Balance.Bytes(),
 				Storage: storage,
-				Contract: &Substate_Account_CodeHash{
+				Contract: &Account_CodeHash{
 					CodeHash: hash.Keccak256Hash(acct.Code).Bytes(),
 				},
 			},
 		})
 	}
 
-	return &Substate_Alloc{Alloc: world}
+	return &Alloc{Alloc: world}
 }
 
 // encode converts substate.Env into protobuf-encoded Substate_BlockEnv

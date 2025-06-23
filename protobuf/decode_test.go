@@ -19,26 +19,26 @@ func TestDecode_SuccessfulDecode(t *testing.T) {
 	}
 
 	s := &Substate{
-		InputAlloc: &Substate_Alloc{
-			Alloc: []*Substate_AllocEntry{
+		InputAlloc: &Alloc{
+			Alloc: []*AllocEntry{
 				{
 					Address: []byte{1},
-					Account: &Substate_Account{
+					Account: &Account{
 						Balance: big.NewInt(100).Bytes(),
 						Nonce:   uint64Ptr(1),
 					},
 				},
 			},
 		},
-		OutputAlloc: &Substate_Alloc{
-			Alloc: []*Substate_AllocEntry{
+		OutputAlloc: &Alloc{
+			Alloc: []*AllocEntry{
 				{
 					Address: []byte{2},
-					Account: &Substate_Account{
+					Account: &Account{
 						state:   protoimpl.MessageState{},
 						Nonce:   uint64Ptr(2),
 						Balance: big.NewInt(200).Bytes(),
-						Storage: []*Substate_Account_StorageEntry{
+						Storage: []*Account_StorageEntry{
 							{
 								Key:   []byte{1},
 								Value: []byte{1},
@@ -102,12 +102,12 @@ func TestDecode_InputAllocDecodeFails(t *testing.T) {
 	}
 
 	s := &Substate{
-		InputAlloc: &Substate_Alloc{
-			Alloc: []*Substate_AllocEntry{
+		InputAlloc: &Alloc{
+			Alloc: []*AllocEntry{
 				{
 					Address: []byte{1},
-					Account: &Substate_Account{
-						Contract: &Substate_Account_CodeHash{CodeHash: []byte{1}},
+					Account: &Account{
+						Contract: &Account_CodeHash{CodeHash: []byte{1}},
 					},
 				},
 			},
@@ -127,13 +127,13 @@ func TestDecode_OutputAllocDecodeFails(t *testing.T) {
 	}
 
 	s := &Substate{
-		InputAlloc: &Substate_Alloc{},
-		OutputAlloc: &Substate_Alloc{
-			Alloc: []*Substate_AllocEntry{
+		InputAlloc: &Alloc{},
+		OutputAlloc: &Alloc{
+			Alloc: []*AllocEntry{
 				{
 					Address: []byte{1},
-					Account: &Substate_Account{
-						Contract: &Substate_Account_CodeHash{CodeHash: []byte{1}},
+					Account: &Account{
+						Contract: &Account_CodeHash{CodeHash: []byte{1}},
 					},
 				},
 			},

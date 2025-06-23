@@ -7,30 +7,41 @@ import "google/protobuf/wrappers.proto";
 
 option go_package = "../protobuf";
 
+message Account {
+    required uint64 nonce = 1;
+    required bytes balance = 2;
+
+    message StorageEntry {
+        required bytes key = 1;
+        required bytes value = 2;
+    }
+    repeated StorageEntry storage = 3;
+
+    oneof contract {
+        bytes code = 4;
+        bytes code_hash = 5;
+    }
+}
+message AllocEntry {
+    required bytes address = 1;
+    required Account account = 2;
+}
+message Alloc {
+    repeated AllocEntry alloc = 1;
+}
+
+message ExceptionBlock {
+    map<int32, ExceptionTx> transactions = 1;
+    optional Alloc preBlock = 2;
+    optional Alloc postBlock = 3;
+}
+message ExceptionTx {
+    optional Alloc preTransaction = 1;
+    optional Alloc postTransaction = 2;
+    optional bool vmException = 3;
+}
+
 message Substate {
-
-    message Account {
-        required uint64 nonce = 1;
-        required bytes balance = 2;
-
-        message StorageEntry {
-            required bytes key = 1;
-            required bytes value = 2;
-        }
-        repeated StorageEntry storage = 3;
-
-        oneof contract {
-            bytes code = 4;
-            bytes code_hash = 5;
-        }
-    }
-    message AllocEntry {
-        required bytes address = 1;
-        required Account account = 2;
-    }
-    message Alloc {
-        repeated AllocEntry alloc = 1;
-    }
     required Alloc input_alloc = 1;
     required Alloc output_alloc = 2;
 

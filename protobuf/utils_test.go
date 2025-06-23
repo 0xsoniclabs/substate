@@ -245,22 +245,22 @@ func TestHashToBytes(t *testing.T) {
 
 func TestHashedCopy(t *testing.T) {
 	input := &Substate{
-		InputAlloc: &Substate_Alloc{
-			Alloc: []*Substate_AllocEntry{
+		InputAlloc: &Alloc{
+			Alloc: []*AllocEntry{
 				{
-					Account: &Substate_Account{
-						Contract: &Substate_Account_Code{
+					Account: &Account{
+						Contract: &Account_Code{
 							Code: []byte{0x01, 0x02, 0x03, 0x04},
 						},
 					},
 				},
 			},
 		},
-		OutputAlloc: &Substate_Alloc{
-			Alloc: []*Substate_AllocEntry{
+		OutputAlloc: &Alloc{
+			Alloc: []*AllocEntry{
 				{
-					Account: &Substate_Account{
-						Contract: &Substate_Account_Code{
+					Account: &Account{
+						Contract: &Account_Code{
 							Code: []byte{0x02, 0x03, 0x04, 0x05},
 						},
 					},

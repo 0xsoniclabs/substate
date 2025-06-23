@@ -7,12 +7,11 @@
 package protobuf
 
 import (
-	reflect "reflect"
-	sync "sync"
-
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
+	reflect "reflect"
+	sync "sync"
 )
 
 const (
@@ -88,7 +87,339 @@ func (x *Substate_TxMessage_TxType) UnmarshalJSON(b []byte) error {
 
 // Deprecated: Use Substate_TxMessage_TxType.Descriptor instead.
 func (Substate_TxMessage_TxType) EnumDescriptor() ([]byte, []int) {
-	return file_substate_proto_rawDescGZIP(), []int{0, 4, 0}
+	return file_substate_proto_rawDescGZIP(), []int{5, 1, 0}
+}
+
+type Account struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Nonce   *uint64                 `protobuf:"varint,1,req,name=nonce" json:"nonce,omitempty"`
+	Balance []byte                  `protobuf:"bytes,2,req,name=balance" json:"balance,omitempty"`
+	Storage []*Account_StorageEntry `protobuf:"bytes,3,rep,name=storage" json:"storage,omitempty"`
+	// Types that are assignable to Contract:
+	//	*Account_Code
+	//	*Account_CodeHash
+	Contract isAccount_Contract `protobuf_oneof:"contract"`
+}
+
+func (x *Account) Reset() {
+	*x = Account{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_substate_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Account) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Account) ProtoMessage() {}
+
+func (x *Account) ProtoReflect() protoreflect.Message {
+	mi := &file_substate_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Account.ProtoReflect.Descriptor instead.
+func (*Account) Descriptor() ([]byte, []int) {
+	return file_substate_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *Account) GetNonce() uint64 {
+	if x != nil && x.Nonce != nil {
+		return *x.Nonce
+	}
+	return 0
+}
+
+func (x *Account) GetBalance() []byte {
+	if x != nil {
+		return x.Balance
+	}
+	return nil
+}
+
+func (x *Account) GetStorage() []*Account_StorageEntry {
+	if x != nil {
+		return x.Storage
+	}
+	return nil
+}
+
+func (m *Account) GetContract() isAccount_Contract {
+	if m != nil {
+		return m.Contract
+	}
+	return nil
+}
+
+func (x *Account) GetCode() []byte {
+	if x, ok := x.GetContract().(*Account_Code); ok {
+		return x.Code
+	}
+	return nil
+}
+
+func (x *Account) GetCodeHash() []byte {
+	if x, ok := x.GetContract().(*Account_CodeHash); ok {
+		return x.CodeHash
+	}
+	return nil
+}
+
+type isAccount_Contract interface {
+	isAccount_Contract()
+}
+
+type Account_Code struct {
+	Code []byte `protobuf:"bytes,4,opt,name=code,oneof"`
+}
+
+type Account_CodeHash struct {
+	CodeHash []byte `protobuf:"bytes,5,opt,name=code_hash,json=codeHash,oneof"`
+}
+
+func (*Account_Code) isAccount_Contract() {}
+
+func (*Account_CodeHash) isAccount_Contract() {}
+
+type AllocEntry struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Address []byte   `protobuf:"bytes,1,req,name=address" json:"address,omitempty"`
+	Account *Account `protobuf:"bytes,2,req,name=account" json:"account,omitempty"`
+}
+
+func (x *AllocEntry) Reset() {
+	*x = AllocEntry{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_substate_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *AllocEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AllocEntry) ProtoMessage() {}
+
+func (x *AllocEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_substate_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AllocEntry.ProtoReflect.Descriptor instead.
+func (*AllocEntry) Descriptor() ([]byte, []int) {
+	return file_substate_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *AllocEntry) GetAddress() []byte {
+	if x != nil {
+		return x.Address
+	}
+	return nil
+}
+
+func (x *AllocEntry) GetAccount() *Account {
+	if x != nil {
+		return x.Account
+	}
+	return nil
+}
+
+type Alloc struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Alloc []*AllocEntry `protobuf:"bytes,1,rep,name=alloc" json:"alloc,omitempty"`
+}
+
+func (x *Alloc) Reset() {
+	*x = Alloc{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_substate_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Alloc) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Alloc) ProtoMessage() {}
+
+func (x *Alloc) ProtoReflect() protoreflect.Message {
+	mi := &file_substate_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Alloc.ProtoReflect.Descriptor instead.
+func (*Alloc) Descriptor() ([]byte, []int) {
+	return file_substate_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Alloc) GetAlloc() []*AllocEntry {
+	if x != nil {
+		return x.Alloc
+	}
+	return nil
+}
+
+type ExceptionBlock struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Transactions map[int32]*ExceptionTx `protobuf:"bytes,1,rep,name=transactions" json:"transactions,omitempty" protobuf_key:"varint,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	PreBlock     *Alloc                 `protobuf:"bytes,2,opt,name=preBlock" json:"preBlock,omitempty"`
+	PostBlock    *Alloc                 `protobuf:"bytes,3,opt,name=postBlock" json:"postBlock,omitempty"`
+}
+
+func (x *ExceptionBlock) Reset() {
+	*x = ExceptionBlock{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_substate_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ExceptionBlock) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExceptionBlock) ProtoMessage() {}
+
+func (x *ExceptionBlock) ProtoReflect() protoreflect.Message {
+	mi := &file_substate_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExceptionBlock.ProtoReflect.Descriptor instead.
+func (*ExceptionBlock) Descriptor() ([]byte, []int) {
+	return file_substate_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *ExceptionBlock) GetTransactions() map[int32]*ExceptionTx {
+	if x != nil {
+		return x.Transactions
+	}
+	return nil
+}
+
+func (x *ExceptionBlock) GetPreBlock() *Alloc {
+	if x != nil {
+		return x.PreBlock
+	}
+	return nil
+}
+
+func (x *ExceptionBlock) GetPostBlock() *Alloc {
+	if x != nil {
+		return x.PostBlock
+	}
+	return nil
+}
+
+type ExceptionTx struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	PreTransaction  *Alloc `protobuf:"bytes,1,opt,name=preTransaction" json:"preTransaction,omitempty"`
+	PostTransaction *Alloc `protobuf:"bytes,2,opt,name=postTransaction" json:"postTransaction,omitempty"`
+	VmException     *bool  `protobuf:"varint,3,opt,name=vmException" json:"vmException,omitempty"`
+}
+
+func (x *ExceptionTx) Reset() {
+	*x = ExceptionTx{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_substate_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ExceptionTx) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExceptionTx) ProtoMessage() {}
+
+func (x *ExceptionTx) ProtoReflect() protoreflect.Message {
+	mi := &file_substate_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExceptionTx.ProtoReflect.Descriptor instead.
+func (*ExceptionTx) Descriptor() ([]byte, []int) {
+	return file_substate_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *ExceptionTx) GetPreTransaction() *Alloc {
+	if x != nil {
+		return x.PreTransaction
+	}
+	return nil
+}
+
+func (x *ExceptionTx) GetPostTransaction() *Alloc {
+	if x != nil {
+		return x.PostTransaction
+	}
+	return nil
+}
+
+func (x *ExceptionTx) GetVmException() bool {
+	if x != nil && x.VmException != nil {
+		return *x.VmException
+	}
+	return false
 }
 
 type Substate struct {
@@ -96,8 +427,8 @@ type Substate struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	InputAlloc  *Substate_Alloc     `protobuf:"bytes,1,req,name=input_alloc,json=inputAlloc" json:"input_alloc,omitempty"`
-	OutputAlloc *Substate_Alloc     `protobuf:"bytes,2,req,name=output_alloc,json=outputAlloc" json:"output_alloc,omitempty"`
+	InputAlloc  *Alloc              `protobuf:"bytes,1,req,name=input_alloc,json=inputAlloc" json:"input_alloc,omitempty"`
+	OutputAlloc *Alloc              `protobuf:"bytes,2,req,name=output_alloc,json=outputAlloc" json:"output_alloc,omitempty"`
 	BlockEnv    *Substate_BlockEnv  `protobuf:"bytes,3,req,name=block_env,json=blockEnv" json:"block_env,omitempty"`
 	TxMessage   *Substate_TxMessage `protobuf:"bytes,4,req,name=tx_message,json=txMessage" json:"tx_message,omitempty"`
 	Result      *Substate_Result    `protobuf:"bytes,5,req,name=result" json:"result,omitempty"`
@@ -106,7 +437,7 @@ type Substate struct {
 func (x *Substate) Reset() {
 	*x = Substate{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_substate_proto_msgTypes[0]
+		mi := &file_substate_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -119,7 +450,7 @@ func (x *Substate) String() string {
 func (*Substate) ProtoMessage() {}
 
 func (x *Substate) ProtoReflect() protoreflect.Message {
-	mi := &file_substate_proto_msgTypes[0]
+	mi := &file_substate_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -132,17 +463,17 @@ func (x *Substate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Substate.ProtoReflect.Descriptor instead.
 func (*Substate) Descriptor() ([]byte, []int) {
-	return file_substate_proto_rawDescGZIP(), []int{0}
+	return file_substate_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *Substate) GetInputAlloc() *Substate_Alloc {
+func (x *Substate) GetInputAlloc() *Alloc {
 	if x != nil {
 		return x.InputAlloc
 	}
 	return nil
 }
 
-func (x *Substate) GetOutputAlloc() *Substate_Alloc {
+func (x *Substate) GetOutputAlloc() *Alloc {
 	if x != nil {
 		return x.OutputAlloc
 	}
@@ -170,37 +501,32 @@ func (x *Substate) GetResult() *Substate_Result {
 	return nil
 }
 
-type Substate_Account struct {
+type Account_StorageEntry struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Nonce   *uint64                          `protobuf:"varint,1,req,name=nonce" json:"nonce,omitempty"`
-	Balance []byte                           `protobuf:"bytes,2,req,name=balance" json:"balance,omitempty"`
-	Storage []*Substate_Account_StorageEntry `protobuf:"bytes,3,rep,name=storage" json:"storage,omitempty"`
-	// Types that are assignable to Contract:
-	//	*Substate_Account_Code
-	//	*Substate_Account_CodeHash
-	Contract isSubstate_Account_Contract `protobuf_oneof:"contract"`
+	Key   []byte `protobuf:"bytes,1,req,name=key" json:"key,omitempty"`
+	Value []byte `protobuf:"bytes,2,req,name=value" json:"value,omitempty"`
 }
 
-func (x *Substate_Account) Reset() {
-	*x = Substate_Account{}
+func (x *Account_StorageEntry) Reset() {
+	*x = Account_StorageEntry{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_substate_proto_msgTypes[1]
+		mi := &file_substate_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *Substate_Account) String() string {
+func (x *Account_StorageEntry) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Substate_Account) ProtoMessage() {}
+func (*Account_StorageEntry) ProtoMessage() {}
 
-func (x *Substate_Account) ProtoReflect() protoreflect.Message {
-	mi := &file_substate_proto_msgTypes[1]
+func (x *Account_StorageEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_substate_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -211,167 +537,21 @@ func (x *Substate_Account) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Substate_Account.ProtoReflect.Descriptor instead.
-func (*Substate_Account) Descriptor() ([]byte, []int) {
+// Deprecated: Use Account_StorageEntry.ProtoReflect.Descriptor instead.
+func (*Account_StorageEntry) Descriptor() ([]byte, []int) {
 	return file_substate_proto_rawDescGZIP(), []int{0, 0}
 }
 
-func (x *Substate_Account) GetNonce() uint64 {
-	if x != nil && x.Nonce != nil {
-		return *x.Nonce
-	}
-	return 0
-}
-
-func (x *Substate_Account) GetBalance() []byte {
+func (x *Account_StorageEntry) GetKey() []byte {
 	if x != nil {
-		return x.Balance
+		return x.Key
 	}
 	return nil
 }
 
-func (x *Substate_Account) GetStorage() []*Substate_Account_StorageEntry {
+func (x *Account_StorageEntry) GetValue() []byte {
 	if x != nil {
-		return x.Storage
-	}
-	return nil
-}
-
-func (m *Substate_Account) GetContract() isSubstate_Account_Contract {
-	if m != nil {
-		return m.Contract
-	}
-	return nil
-}
-
-func (x *Substate_Account) GetCode() []byte {
-	if x, ok := x.GetContract().(*Substate_Account_Code); ok {
-		return x.Code
-	}
-	return nil
-}
-
-func (x *Substate_Account) GetCodeHash() []byte {
-	if x, ok := x.GetContract().(*Substate_Account_CodeHash); ok {
-		return x.CodeHash
-	}
-	return nil
-}
-
-type isSubstate_Account_Contract interface {
-	isSubstate_Account_Contract()
-}
-
-type Substate_Account_Code struct {
-	Code []byte `protobuf:"bytes,4,opt,name=code,oneof"`
-}
-
-type Substate_Account_CodeHash struct {
-	CodeHash []byte `protobuf:"bytes,5,opt,name=code_hash,json=codeHash,oneof"`
-}
-
-func (*Substate_Account_Code) isSubstate_Account_Contract() {}
-
-func (*Substate_Account_CodeHash) isSubstate_Account_Contract() {}
-
-type Substate_AllocEntry struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Address []byte            `protobuf:"bytes,1,req,name=address" json:"address,omitempty"`
-	Account *Substate_Account `protobuf:"bytes,2,req,name=account" json:"account,omitempty"`
-}
-
-func (x *Substate_AllocEntry) Reset() {
-	*x = Substate_AllocEntry{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_substate_proto_msgTypes[2]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Substate_AllocEntry) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Substate_AllocEntry) ProtoMessage() {}
-
-func (x *Substate_AllocEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_substate_proto_msgTypes[2]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Substate_AllocEntry.ProtoReflect.Descriptor instead.
-func (*Substate_AllocEntry) Descriptor() ([]byte, []int) {
-	return file_substate_proto_rawDescGZIP(), []int{0, 1}
-}
-
-func (x *Substate_AllocEntry) GetAddress() []byte {
-	if x != nil {
-		return x.Address
-	}
-	return nil
-}
-
-func (x *Substate_AllocEntry) GetAccount() *Substate_Account {
-	if x != nil {
-		return x.Account
-	}
-	return nil
-}
-
-type Substate_Alloc struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Alloc []*Substate_AllocEntry `protobuf:"bytes,1,rep,name=alloc" json:"alloc,omitempty"`
-}
-
-func (x *Substate_Alloc) Reset() {
-	*x = Substate_Alloc{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_substate_proto_msgTypes[3]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Substate_Alloc) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Substate_Alloc) ProtoMessage() {}
-
-func (x *Substate_Alloc) ProtoReflect() protoreflect.Message {
-	mi := &file_substate_proto_msgTypes[3]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Substate_Alloc.ProtoReflect.Descriptor instead.
-func (*Substate_Alloc) Descriptor() ([]byte, []int) {
-	return file_substate_proto_rawDescGZIP(), []int{0, 2}
-}
-
-func (x *Substate_Alloc) GetAlloc() []*Substate_AllocEntry {
-	if x != nil {
-		return x.Alloc
+		return x.Value
 	}
 	return nil
 }
@@ -398,7 +578,7 @@ type Substate_BlockEnv struct {
 func (x *Substate_BlockEnv) Reset() {
 	*x = Substate_BlockEnv{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_substate_proto_msgTypes[4]
+		mi := &file_substate_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -411,7 +591,7 @@ func (x *Substate_BlockEnv) String() string {
 func (*Substate_BlockEnv) ProtoMessage() {}
 
 func (x *Substate_BlockEnv) ProtoReflect() protoreflect.Message {
-	mi := &file_substate_proto_msgTypes[4]
+	mi := &file_substate_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -424,7 +604,7 @@ func (x *Substate_BlockEnv) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Substate_BlockEnv.ProtoReflect.Descriptor instead.
 func (*Substate_BlockEnv) Descriptor() ([]byte, []int) {
-	return file_substate_proto_rawDescGZIP(), []int{0, 3}
+	return file_substate_proto_rawDescGZIP(), []int{5, 0}
 }
 
 func (x *Substate_BlockEnv) GetCoinbase() []byte {
@@ -522,7 +702,7 @@ type Substate_TxMessage struct {
 func (x *Substate_TxMessage) Reset() {
 	*x = Substate_TxMessage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_substate_proto_msgTypes[5]
+		mi := &file_substate_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -535,7 +715,7 @@ func (x *Substate_TxMessage) String() string {
 func (*Substate_TxMessage) ProtoMessage() {}
 
 func (x *Substate_TxMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_substate_proto_msgTypes[5]
+	mi := &file_substate_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -548,7 +728,7 @@ func (x *Substate_TxMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Substate_TxMessage.ProtoReflect.Descriptor instead.
 func (*Substate_TxMessage) Descriptor() ([]byte, []int) {
-	return file_substate_proto_rawDescGZIP(), []int{0, 4}
+	return file_substate_proto_rawDescGZIP(), []int{5, 1}
 }
 
 func (x *Substate_TxMessage) GetNonce() uint64 {
@@ -693,7 +873,7 @@ type Substate_Result struct {
 func (x *Substate_Result) Reset() {
 	*x = Substate_Result{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_substate_proto_msgTypes[6]
+		mi := &file_substate_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -706,7 +886,7 @@ func (x *Substate_Result) String() string {
 func (*Substate_Result) ProtoMessage() {}
 
 func (x *Substate_Result) ProtoReflect() protoreflect.Message {
-	mi := &file_substate_proto_msgTypes[6]
+	mi := &file_substate_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -719,7 +899,7 @@ func (x *Substate_Result) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Substate_Result.ProtoReflect.Descriptor instead.
 func (*Substate_Result) Descriptor() ([]byte, []int) {
-	return file_substate_proto_rawDescGZIP(), []int{0, 5}
+	return file_substate_proto_rawDescGZIP(), []int{5, 2}
 }
 
 func (x *Substate_Result) GetStatus() uint64 {
@@ -750,61 +930,6 @@ func (x *Substate_Result) GetGasUsed() uint64 {
 	return 0
 }
 
-type Substate_Account_StorageEntry struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Key   []byte `protobuf:"bytes,1,req,name=key" json:"key,omitempty"`
-	Value []byte `protobuf:"bytes,2,req,name=value" json:"value,omitempty"`
-}
-
-func (x *Substate_Account_StorageEntry) Reset() {
-	*x = Substate_Account_StorageEntry{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_substate_proto_msgTypes[7]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Substate_Account_StorageEntry) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Substate_Account_StorageEntry) ProtoMessage() {}
-
-func (x *Substate_Account_StorageEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_substate_proto_msgTypes[7]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Substate_Account_StorageEntry.ProtoReflect.Descriptor instead.
-func (*Substate_Account_StorageEntry) Descriptor() ([]byte, []int) {
-	return file_substate_proto_rawDescGZIP(), []int{0, 0, 0}
-}
-
-func (x *Substate_Account_StorageEntry) GetKey() []byte {
-	if x != nil {
-		return x.Key
-	}
-	return nil
-}
-
-func (x *Substate_Account_StorageEntry) GetValue() []byte {
-	if x != nil {
-		return x.Value
-	}
-	return nil
-}
-
 type Substate_BlockEnv_BlockHashEntry struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -817,7 +942,7 @@ type Substate_BlockEnv_BlockHashEntry struct {
 func (x *Substate_BlockEnv_BlockHashEntry) Reset() {
 	*x = Substate_BlockEnv_BlockHashEntry{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_substate_proto_msgTypes[8]
+		mi := &file_substate_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -830,7 +955,7 @@ func (x *Substate_BlockEnv_BlockHashEntry) String() string {
 func (*Substate_BlockEnv_BlockHashEntry) ProtoMessage() {}
 
 func (x *Substate_BlockEnv_BlockHashEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_substate_proto_msgTypes[8]
+	mi := &file_substate_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -843,7 +968,7 @@ func (x *Substate_BlockEnv_BlockHashEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Substate_BlockEnv_BlockHashEntry.ProtoReflect.Descriptor instead.
 func (*Substate_BlockEnv_BlockHashEntry) Descriptor() ([]byte, []int) {
-	return file_substate_proto_rawDescGZIP(), []int{0, 3, 0}
+	return file_substate_proto_rawDescGZIP(), []int{5, 0, 0}
 }
 
 func (x *Substate_BlockEnv_BlockHashEntry) GetKey() uint64 {
@@ -874,7 +999,7 @@ type Substate_TxMessage_AccessListEntry struct {
 func (x *Substate_TxMessage_AccessListEntry) Reset() {
 	*x = Substate_TxMessage_AccessListEntry{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_substate_proto_msgTypes[9]
+		mi := &file_substate_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -887,7 +1012,7 @@ func (x *Substate_TxMessage_AccessListEntry) String() string {
 func (*Substate_TxMessage_AccessListEntry) ProtoMessage() {}
 
 func (x *Substate_TxMessage_AccessListEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_substate_proto_msgTypes[9]
+	mi := &file_substate_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -900,7 +1025,7 @@ func (x *Substate_TxMessage_AccessListEntry) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use Substate_TxMessage_AccessListEntry.ProtoReflect.Descriptor instead.
 func (*Substate_TxMessage_AccessListEntry) Descriptor() ([]byte, []int) {
-	return file_substate_proto_rawDescGZIP(), []int{0, 4, 0}
+	return file_substate_proto_rawDescGZIP(), []int{5, 1, 0}
 }
 
 func (x *Substate_TxMessage_AccessListEntry) GetAddress() []byte {
@@ -933,7 +1058,7 @@ type Substate_TxMessage_SetCodeAuthorization struct {
 func (x *Substate_TxMessage_SetCodeAuthorization) Reset() {
 	*x = Substate_TxMessage_SetCodeAuthorization{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_substate_proto_msgTypes[10]
+		mi := &file_substate_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -946,7 +1071,7 @@ func (x *Substate_TxMessage_SetCodeAuthorization) String() string {
 func (*Substate_TxMessage_SetCodeAuthorization) ProtoMessage() {}
 
 func (x *Substate_TxMessage_SetCodeAuthorization) ProtoReflect() protoreflect.Message {
-	mi := &file_substate_proto_msgTypes[10]
+	mi := &file_substate_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -959,7 +1084,7 @@ func (x *Substate_TxMessage_SetCodeAuthorization) ProtoReflect() protoreflect.Me
 
 // Deprecated: Use Substate_TxMessage_SetCodeAuthorization.ProtoReflect.Descriptor instead.
 func (*Substate_TxMessage_SetCodeAuthorization) Descriptor() ([]byte, []int) {
-	return file_substate_proto_rawDescGZIP(), []int{0, 4, 1}
+	return file_substate_proto_rawDescGZIP(), []int{5, 1, 1}
 }
 
 func (x *Substate_TxMessage_SetCodeAuthorization) GetChainId() []byte {
@@ -1017,7 +1142,7 @@ type Substate_Result_Log struct {
 func (x *Substate_Result_Log) Reset() {
 	*x = Substate_Result_Log{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_substate_proto_msgTypes[11]
+		mi := &file_substate_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1030,7 +1155,7 @@ func (x *Substate_Result_Log) String() string {
 func (*Substate_Result_Log) ProtoMessage() {}
 
 func (x *Substate_Result_Log) ProtoReflect() protoreflect.Message {
-	mi := &file_substate_proto_msgTypes[11]
+	mi := &file_substate_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1043,7 +1168,7 @@ func (x *Substate_Result_Log) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Substate_Result_Log.ProtoReflect.Descriptor instead.
 func (*Substate_Result_Log) Descriptor() ([]byte, []int) {
-	return file_substate_proto_rawDescGZIP(), []int{0, 5, 0}
+	return file_substate_proto_rawDescGZIP(), []int{5, 2, 0}
 }
 
 func (x *Substate_Result_Log) GetAddress() []byte {
@@ -1073,51 +1198,76 @@ var file_substate_proto_rawDesc = []byte{
 	0x0a, 0x0e, 0x73, 0x75, 0x62, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x12, 0x08, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x1a, 0x1e, 0x67, 0x6f, 0x6f, 0x67,
 	0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x77, 0x72, 0x61, 0x70,
-	0x70, 0x65, 0x72, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xff, 0x12, 0x0a, 0x08, 0x53,
-	0x75, 0x62, 0x73, 0x74, 0x61, 0x74, 0x65, 0x12, 0x39, 0x0a, 0x0b, 0x69, 0x6e, 0x70, 0x75, 0x74,
-	0x5f, 0x61, 0x6c, 0x6c, 0x6f, 0x63, 0x18, 0x01, 0x20, 0x02, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53, 0x75, 0x62, 0x73, 0x74, 0x61, 0x74, 0x65,
-	0x2e, 0x41, 0x6c, 0x6c, 0x6f, 0x63, 0x52, 0x0a, 0x69, 0x6e, 0x70, 0x75, 0x74, 0x41, 0x6c, 0x6c,
-	0x6f, 0x63, 0x12, 0x3b, 0x0a, 0x0c, 0x6f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x5f, 0x61, 0x6c, 0x6c,
-	0x6f, 0x63, 0x18, 0x02, 0x20, 0x02, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x62, 0x75, 0x66, 0x2e, 0x53, 0x75, 0x62, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x41, 0x6c, 0x6c,
-	0x6f, 0x63, 0x52, 0x0b, 0x6f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x41, 0x6c, 0x6c, 0x6f, 0x63, 0x12,
-	0x38, 0x0a, 0x09, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x65, 0x6e, 0x76, 0x18, 0x03, 0x20, 0x02,
-	0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53, 0x75,
-	0x62, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x45, 0x6e, 0x76, 0x52,
-	0x08, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x45, 0x6e, 0x76, 0x12, 0x3b, 0x0a, 0x0a, 0x74, 0x78, 0x5f,
-	0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x04, 0x20, 0x02, 0x28, 0x0b, 0x32, 0x1c, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53, 0x75, 0x62, 0x73, 0x74, 0x61, 0x74,
-	0x65, 0x2e, 0x54, 0x78, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x09, 0x74, 0x78, 0x4d,
-	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x31, 0x0a, 0x06, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74,
-	0x18, 0x05, 0x20, 0x02, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
-	0x66, 0x2e, 0x53, 0x75, 0x62, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x52, 0x65, 0x73, 0x75, 0x6c,
-	0x74, 0x52, 0x06, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x1a, 0xf5, 0x01, 0x0a, 0x07, 0x41, 0x63,
-	0x63, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18, 0x01,
-	0x20, 0x02, 0x28, 0x04, 0x52, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x62,
-	0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x18, 0x02, 0x20, 0x02, 0x28, 0x0c, 0x52, 0x07, 0x62, 0x61,
-	0x6c, 0x61, 0x6e, 0x63, 0x65, 0x12, 0x41, 0x0a, 0x07, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65,
-	0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
-	0x66, 0x2e, 0x53, 0x75, 0x62, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x75,
-	0x6e, 0x74, 0x2e, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52,
-	0x07, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x12, 0x14, 0x0a, 0x04, 0x63, 0x6f, 0x64, 0x65,
-	0x18, 0x04, 0x20, 0x01, 0x28, 0x0c, 0x48, 0x00, 0x52, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x12, 0x1d,
-	0x0a, 0x09, 0x63, 0x6f, 0x64, 0x65, 0x5f, 0x68, 0x61, 0x73, 0x68, 0x18, 0x05, 0x20, 0x01, 0x28,
-	0x0c, 0x48, 0x00, 0x52, 0x08, 0x63, 0x6f, 0x64, 0x65, 0x48, 0x61, 0x73, 0x68, 0x1a, 0x36, 0x0a,
-	0x0c, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a,
-	0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x02, 0x28, 0x0c, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12,
-	0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x02, 0x28, 0x0c, 0x52, 0x05,
-	0x76, 0x61, 0x6c, 0x75, 0x65, 0x42, 0x0a, 0x0a, 0x08, 0x63, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63,
-	0x74, 0x1a, 0x5c, 0x0a, 0x0a, 0x41, 0x6c, 0x6c, 0x6f, 0x63, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12,
-	0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x02, 0x28, 0x0c,
-	0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x12, 0x34, 0x0a, 0x07, 0x61, 0x63, 0x63,
-	0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x02, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53, 0x75, 0x62, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x41,
-	0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x52, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x1a,
-	0x3c, 0x0a, 0x05, 0x41, 0x6c, 0x6c, 0x6f, 0x63, 0x12, 0x33, 0x0a, 0x05, 0x61, 0x6c, 0x6c, 0x6f,
-	0x63, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
-	0x75, 0x66, 0x2e, 0x53, 0x75, 0x62, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x41, 0x6c, 0x6c, 0x6f,
-	0x63, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x05, 0x61, 0x6c, 0x6c, 0x6f, 0x63, 0x1a, 0xd0, 0x03,
+	0x70, 0x65, 0x72, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xec, 0x01, 0x0a, 0x07, 0x41,
+	0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x18,
+	0x01, 0x20, 0x02, 0x28, 0x04, 0x52, 0x05, 0x6e, 0x6f, 0x6e, 0x63, 0x65, 0x12, 0x18, 0x0a, 0x07,
+	0x62, 0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x18, 0x02, 0x20, 0x02, 0x28, 0x0c, 0x52, 0x07, 0x62,
+	0x61, 0x6c, 0x61, 0x6e, 0x63, 0x65, 0x12, 0x38, 0x0a, 0x07, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67,
+	0x65, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
+	0x75, 0x66, 0x2e, 0x41, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x2e, 0x53, 0x74, 0x6f, 0x72, 0x61,
+	0x67, 0x65, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x07, 0x73, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65,
+	0x12, 0x14, 0x0a, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0c, 0x48, 0x00,
+	0x52, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x12, 0x1d, 0x0a, 0x09, 0x63, 0x6f, 0x64, 0x65, 0x5f, 0x68,
+	0x61, 0x73, 0x68, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0c, 0x48, 0x00, 0x52, 0x08, 0x63, 0x6f, 0x64,
+	0x65, 0x48, 0x61, 0x73, 0x68, 0x1a, 0x36, 0x0a, 0x0c, 0x53, 0x74, 0x6f, 0x72, 0x61, 0x67, 0x65,
+	0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x02,
+	0x28, 0x0c, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65,
+	0x18, 0x02, 0x20, 0x02, 0x28, 0x0c, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x42, 0x0a, 0x0a,
+	0x08, 0x63, 0x6f, 0x6e, 0x74, 0x72, 0x61, 0x63, 0x74, 0x22, 0x53, 0x0a, 0x0a, 0x41, 0x6c, 0x6c,
+	0x6f, 0x63, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x18, 0x0a, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65,
+	0x73, 0x73, 0x18, 0x01, 0x20, 0x02, 0x28, 0x0c, 0x52, 0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73,
+	0x73, 0x12, 0x2b, 0x0a, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x02,
+	0x28, 0x0b, 0x32, 0x11, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x63,
+	0x63, 0x6f, 0x75, 0x6e, 0x74, 0x52, 0x07, 0x61, 0x63, 0x63, 0x6f, 0x75, 0x6e, 0x74, 0x22, 0x33,
+	0x0a, 0x05, 0x41, 0x6c, 0x6c, 0x6f, 0x63, 0x12, 0x2a, 0x0a, 0x05, 0x61, 0x6c, 0x6c, 0x6f, 0x63,
+	0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
+	0x66, 0x2e, 0x41, 0x6c, 0x6c, 0x6f, 0x63, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x05, 0x61, 0x6c,
+	0x6c, 0x6f, 0x63, 0x22, 0x94, 0x02, 0x0a, 0x0e, 0x45, 0x78, 0x63, 0x65, 0x70, 0x74, 0x69, 0x6f,
+	0x6e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x12, 0x4e, 0x0a, 0x0c, 0x74, 0x72, 0x61, 0x6e, 0x73, 0x61,
+	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x2a, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x78, 0x63, 0x65, 0x70, 0x74, 0x69, 0x6f,
+	0x6e, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x2e, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69,
+	0x6f, 0x6e, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x0c, 0x74, 0x72, 0x61, 0x6e, 0x73, 0x61,
+	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x2b, 0x0a, 0x08, 0x70, 0x72, 0x65, 0x42, 0x6c, 0x6f,
+	0x63, 0x6b, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x62, 0x75, 0x66, 0x2e, 0x41, 0x6c, 0x6c, 0x6f, 0x63, 0x52, 0x08, 0x70, 0x72, 0x65, 0x42, 0x6c,
+	0x6f, 0x63, 0x6b, 0x12, 0x2d, 0x0a, 0x09, 0x70, 0x6f, 0x73, 0x74, 0x42, 0x6c, 0x6f, 0x63, 0x6b,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
+	0x66, 0x2e, 0x41, 0x6c, 0x6c, 0x6f, 0x63, 0x52, 0x09, 0x70, 0x6f, 0x73, 0x74, 0x42, 0x6c, 0x6f,
+	0x63, 0x6b, 0x1a, 0x56, 0x0a, 0x11, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f,
+	0x6e, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x05, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x2b, 0x0a, 0x05, 0x76, 0x61, 0x6c,
+	0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x62, 0x75, 0x66, 0x2e, 0x45, 0x78, 0x63, 0x65, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x78, 0x52,
+	0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0xa3, 0x01, 0x0a, 0x0b, 0x45,
+	0x78, 0x63, 0x65, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x78, 0x12, 0x37, 0x0a, 0x0e, 0x70, 0x72,
+	0x65, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x6c,
+	0x6c, 0x6f, 0x63, 0x52, 0x0e, 0x70, 0x72, 0x65, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74,
+	0x69, 0x6f, 0x6e, 0x12, 0x39, 0x0a, 0x0f, 0x70, 0x6f, 0x73, 0x74, 0x54, 0x72, 0x61, 0x6e, 0x73,
+	0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x6c, 0x6c, 0x6f, 0x63, 0x52, 0x0f, 0x70,
+	0x6f, 0x73, 0x74, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x20,
+	0x0a, 0x0b, 0x76, 0x6d, 0x45, 0x78, 0x63, 0x65, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x03, 0x20,
+	0x01, 0x28, 0x08, 0x52, 0x0b, 0x76, 0x6d, 0x45, 0x78, 0x63, 0x65, 0x70, 0x74, 0x69, 0x6f, 0x6e,
+	0x22, 0xd9, 0x0f, 0x0a, 0x08, 0x53, 0x75, 0x62, 0x73, 0x74, 0x61, 0x74, 0x65, 0x12, 0x30, 0x0a,
+	0x0b, 0x69, 0x6e, 0x70, 0x75, 0x74, 0x5f, 0x61, 0x6c, 0x6c, 0x6f, 0x63, 0x18, 0x01, 0x20, 0x02,
+	0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x6c,
+	0x6c, 0x6f, 0x63, 0x52, 0x0a, 0x69, 0x6e, 0x70, 0x75, 0x74, 0x41, 0x6c, 0x6c, 0x6f, 0x63, 0x12,
+	0x32, 0x0a, 0x0c, 0x6f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x5f, 0x61, 0x6c, 0x6c, 0x6f, 0x63, 0x18,
+	0x02, 0x20, 0x02, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
+	0x2e, 0x41, 0x6c, 0x6c, 0x6f, 0x63, 0x52, 0x0b, 0x6f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x41, 0x6c,
+	0x6c, 0x6f, 0x63, 0x12, 0x38, 0x0a, 0x09, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x5f, 0x65, 0x6e, 0x76,
+	0x18, 0x03, 0x20, 0x02, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
+	0x66, 0x2e, 0x53, 0x75, 0x62, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x42, 0x6c, 0x6f, 0x63, 0x6b,
+	0x45, 0x6e, 0x76, 0x52, 0x08, 0x62, 0x6c, 0x6f, 0x63, 0x6b, 0x45, 0x6e, 0x76, 0x12, 0x3b, 0x0a,
+	0x0a, 0x74, 0x78, 0x5f, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x18, 0x04, 0x20, 0x02, 0x28,
+	0x0b, 0x32, 0x1c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53, 0x75, 0x62,
+	0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x54, 0x78, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52,
+	0x09, 0x74, 0x78, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x12, 0x31, 0x0a, 0x06, 0x72, 0x65,
+	0x73, 0x75, 0x6c, 0x74, 0x18, 0x05, 0x20, 0x02, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53, 0x75, 0x62, 0x73, 0x74, 0x61, 0x74, 0x65, 0x2e, 0x52,
+	0x65, 0x73, 0x75, 0x6c, 0x74, 0x52, 0x06, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x1a, 0xd0, 0x03,
 	0x0a, 0x08, 0x42, 0x6c, 0x6f, 0x63, 0x6b, 0x45, 0x6e, 0x76, 0x12, 0x1a, 0x0a, 0x08, 0x63, 0x6f,
 	0x69, 0x6e, 0x62, 0x61, 0x73, 0x65, 0x18, 0x01, 0x20, 0x02, 0x28, 0x0c, 0x52, 0x08, 0x63, 0x6f,
 	0x69, 0x6e, 0x62, 0x61, 0x73, 0x65, 0x12, 0x1e, 0x0a, 0x0a, 0x64, 0x69, 0x66, 0x66, 0x69, 0x63,
@@ -1242,49 +1392,58 @@ func file_substate_proto_rawDescGZIP() []byte {
 }
 
 var file_substate_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_substate_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_substate_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_substate_proto_goTypes = []interface{}{
 	(Substate_TxMessage_TxType)(0),                  // 0: protobuf.Substate.TxMessage.TxType
-	(*Substate)(nil),                                // 1: protobuf.Substate
-	(*Substate_Account)(nil),                        // 2: protobuf.Substate.Account
-	(*Substate_AllocEntry)(nil),                     // 3: protobuf.Substate.AllocEntry
-	(*Substate_Alloc)(nil),                          // 4: protobuf.Substate.Alloc
-	(*Substate_BlockEnv)(nil),                       // 5: protobuf.Substate.BlockEnv
-	(*Substate_TxMessage)(nil),                      // 6: protobuf.Substate.TxMessage
-	(*Substate_Result)(nil),                         // 7: protobuf.Substate.Result
-	(*Substate_Account_StorageEntry)(nil),           // 8: protobuf.Substate.Account.StorageEntry
-	(*Substate_BlockEnv_BlockHashEntry)(nil),        // 9: protobuf.Substate.BlockEnv.BlockHashEntry
-	(*Substate_TxMessage_AccessListEntry)(nil),      // 10: protobuf.Substate.TxMessage.AccessListEntry
-	(*Substate_TxMessage_SetCodeAuthorization)(nil), // 11: protobuf.Substate.TxMessage.SetCodeAuthorization
-	(*Substate_Result_Log)(nil),                     // 12: protobuf.Substate.Result.Log
-	(*wrapperspb.BytesValue)(nil),                   // 13: google.protobuf.BytesValue
+	(*Account)(nil),                                 // 1: protobuf.Account
+	(*AllocEntry)(nil),                              // 2: protobuf.AllocEntry
+	(*Alloc)(nil),                                   // 3: protobuf.Alloc
+	(*ExceptionBlock)(nil),                          // 4: protobuf.ExceptionBlock
+	(*ExceptionTx)(nil),                             // 5: protobuf.ExceptionTx
+	(*Substate)(nil),                                // 6: protobuf.Substate
+	(*Account_StorageEntry)(nil),                    // 7: protobuf.Account.StorageEntry
+	nil,                                             // 8: protobuf.ExceptionBlock.TransactionsEntry
+	(*Substate_BlockEnv)(nil),                       // 9: protobuf.Substate.BlockEnv
+	(*Substate_TxMessage)(nil),                      // 10: protobuf.Substate.TxMessage
+	(*Substate_Result)(nil),                         // 11: protobuf.Substate.Result
+	(*Substate_BlockEnv_BlockHashEntry)(nil),        // 12: protobuf.Substate.BlockEnv.BlockHashEntry
+	(*Substate_TxMessage_AccessListEntry)(nil),      // 13: protobuf.Substate.TxMessage.AccessListEntry
+	(*Substate_TxMessage_SetCodeAuthorization)(nil), // 14: protobuf.Substate.TxMessage.SetCodeAuthorization
+	(*Substate_Result_Log)(nil),                     // 15: protobuf.Substate.Result.Log
+	(*wrapperspb.BytesValue)(nil),                   // 16: google.protobuf.BytesValue
 }
 var file_substate_proto_depIdxs = []int32{
-	4,  // 0: protobuf.Substate.input_alloc:type_name -> protobuf.Substate.Alloc
-	4,  // 1: protobuf.Substate.output_alloc:type_name -> protobuf.Substate.Alloc
-	5,  // 2: protobuf.Substate.block_env:type_name -> protobuf.Substate.BlockEnv
-	6,  // 3: protobuf.Substate.tx_message:type_name -> protobuf.Substate.TxMessage
-	7,  // 4: protobuf.Substate.result:type_name -> protobuf.Substate.Result
-	8,  // 5: protobuf.Substate.Account.storage:type_name -> protobuf.Substate.Account.StorageEntry
-	2,  // 6: protobuf.Substate.AllocEntry.account:type_name -> protobuf.Substate.Account
-	3,  // 7: protobuf.Substate.Alloc.alloc:type_name -> protobuf.Substate.AllocEntry
-	9,  // 8: protobuf.Substate.BlockEnv.block_hashes:type_name -> protobuf.Substate.BlockEnv.BlockHashEntry
-	13, // 9: protobuf.Substate.BlockEnv.base_fee:type_name -> google.protobuf.BytesValue
-	13, // 10: protobuf.Substate.BlockEnv.random:type_name -> google.protobuf.BytesValue
-	13, // 11: protobuf.Substate.BlockEnv.blob_base_fee:type_name -> google.protobuf.BytesValue
-	13, // 12: protobuf.Substate.TxMessage.to:type_name -> google.protobuf.BytesValue
-	0,  // 13: protobuf.Substate.TxMessage.tx_type:type_name -> protobuf.Substate.TxMessage.TxType
-	10, // 14: protobuf.Substate.TxMessage.access_list:type_name -> protobuf.Substate.TxMessage.AccessListEntry
-	13, // 15: protobuf.Substate.TxMessage.gas_fee_cap:type_name -> google.protobuf.BytesValue
-	13, // 16: protobuf.Substate.TxMessage.gas_tip_cap:type_name -> google.protobuf.BytesValue
-	13, // 17: protobuf.Substate.TxMessage.blob_gas_fee_cap:type_name -> google.protobuf.BytesValue
-	11, // 18: protobuf.Substate.TxMessage.set_code_authorizations:type_name -> protobuf.Substate.TxMessage.SetCodeAuthorization
-	12, // 19: protobuf.Substate.Result.logs:type_name -> protobuf.Substate.Result.Log
-	20, // [20:20] is the sub-list for method output_type
-	20, // [20:20] is the sub-list for method input_type
-	20, // [20:20] is the sub-list for extension type_name
-	20, // [20:20] is the sub-list for extension extendee
-	0,  // [0:20] is the sub-list for field type_name
+	7,  // 0: protobuf.Account.storage:type_name -> protobuf.Account.StorageEntry
+	1,  // 1: protobuf.AllocEntry.account:type_name -> protobuf.Account
+	2,  // 2: protobuf.Alloc.alloc:type_name -> protobuf.AllocEntry
+	8,  // 3: protobuf.ExceptionBlock.transactions:type_name -> protobuf.ExceptionBlock.TransactionsEntry
+	3,  // 4: protobuf.ExceptionBlock.preBlock:type_name -> protobuf.Alloc
+	3,  // 5: protobuf.ExceptionBlock.postBlock:type_name -> protobuf.Alloc
+	3,  // 6: protobuf.ExceptionTx.preTransaction:type_name -> protobuf.Alloc
+	3,  // 7: protobuf.ExceptionTx.postTransaction:type_name -> protobuf.Alloc
+	3,  // 8: protobuf.Substate.input_alloc:type_name -> protobuf.Alloc
+	3,  // 9: protobuf.Substate.output_alloc:type_name -> protobuf.Alloc
+	9,  // 10: protobuf.Substate.block_env:type_name -> protobuf.Substate.BlockEnv
+	10, // 11: protobuf.Substate.tx_message:type_name -> protobuf.Substate.TxMessage
+	11, // 12: protobuf.Substate.result:type_name -> protobuf.Substate.Result
+	5,  // 13: protobuf.ExceptionBlock.TransactionsEntry.value:type_name -> protobuf.ExceptionTx
+	12, // 14: protobuf.Substate.BlockEnv.block_hashes:type_name -> protobuf.Substate.BlockEnv.BlockHashEntry
+	16, // 15: protobuf.Substate.BlockEnv.base_fee:type_name -> google.protobuf.BytesValue
+	16, // 16: protobuf.Substate.BlockEnv.random:type_name -> google.protobuf.BytesValue
+	16, // 17: protobuf.Substate.BlockEnv.blob_base_fee:type_name -> google.protobuf.BytesValue
+	16, // 18: protobuf.Substate.TxMessage.to:type_name -> google.protobuf.BytesValue
+	0,  // 19: protobuf.Substate.TxMessage.tx_type:type_name -> protobuf.Substate.TxMessage.TxType
+	13, // 20: protobuf.Substate.TxMessage.access_list:type_name -> protobuf.Substate.TxMessage.AccessListEntry
+	16, // 21: protobuf.Substate.TxMessage.gas_fee_cap:type_name -> google.protobuf.BytesValue
+	16, // 22: protobuf.Substate.TxMessage.gas_tip_cap:type_name -> google.protobuf.BytesValue
+	16, // 23: protobuf.Substate.TxMessage.blob_gas_fee_cap:type_name -> google.protobuf.BytesValue
+	14, // 24: protobuf.Substate.TxMessage.set_code_authorizations:type_name -> protobuf.Substate.TxMessage.SetCodeAuthorization
+	15, // 25: protobuf.Substate.Result.logs:type_name -> protobuf.Substate.Result.Log
+	26, // [26:26] is the sub-list for method output_type
+	26, // [26:26] is the sub-list for method input_type
+	26, // [26:26] is the sub-list for extension type_name
+	26, // [26:26] is the sub-list for extension extendee
+	0,  // [0:26] is the sub-list for field type_name
 }
 
 func init() { file_substate_proto_init() }
@@ -1294,7 +1453,7 @@ func file_substate_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_substate_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Substate); i {
+			switch v := v.(*Account); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1306,7 +1465,7 @@ func file_substate_proto_init() {
 			}
 		}
 		file_substate_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Substate_Account); i {
+			switch v := v.(*AllocEntry); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1318,7 +1477,7 @@ func file_substate_proto_init() {
 			}
 		}
 		file_substate_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Substate_AllocEntry); i {
+			switch v := v.(*Alloc); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1330,7 +1489,7 @@ func file_substate_proto_init() {
 			}
 		}
 		file_substate_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Substate_Alloc); i {
+			switch v := v.(*ExceptionBlock); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1342,7 +1501,7 @@ func file_substate_proto_init() {
 			}
 		}
 		file_substate_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Substate_BlockEnv); i {
+			switch v := v.(*ExceptionTx); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1354,7 +1513,7 @@ func file_substate_proto_init() {
 			}
 		}
 		file_substate_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Substate_TxMessage); i {
+			switch v := v.(*Substate); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1366,19 +1525,7 @@ func file_substate_proto_init() {
 			}
 		}
 		file_substate_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Substate_Result); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_substate_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Substate_Account_StorageEntry); i {
+			switch v := v.(*Account_StorageEntry); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1390,7 +1537,7 @@ func file_substate_proto_init() {
 			}
 		}
 		file_substate_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Substate_BlockEnv_BlockHashEntry); i {
+			switch v := v.(*Substate_BlockEnv); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1402,7 +1549,7 @@ func file_substate_proto_init() {
 			}
 		}
 		file_substate_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Substate_TxMessage_AccessListEntry); i {
+			switch v := v.(*Substate_TxMessage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1414,7 +1561,7 @@ func file_substate_proto_init() {
 			}
 		}
 		file_substate_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Substate_TxMessage_SetCodeAuthorization); i {
+			switch v := v.(*Substate_Result); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1426,6 +1573,42 @@ func file_substate_proto_init() {
 			}
 		}
 		file_substate_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Substate_BlockEnv_BlockHashEntry); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_substate_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Substate_TxMessage_AccessListEntry); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_substate_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Substate_TxMessage_SetCodeAuthorization); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_substate_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Substate_Result_Log); i {
 			case 0:
 				return &v.state
@@ -1438,11 +1621,11 @@ func file_substate_proto_init() {
 			}
 		}
 	}
-	file_substate_proto_msgTypes[1].OneofWrappers = []interface{}{
-		(*Substate_Account_Code)(nil),
-		(*Substate_Account_CodeHash)(nil),
+	file_substate_proto_msgTypes[0].OneofWrappers = []interface{}{
+		(*Account_Code)(nil),
+		(*Account_CodeHash)(nil),
 	}
-	file_substate_proto_msgTypes[5].OneofWrappers = []interface{}{
+	file_substate_proto_msgTypes[9].OneofWrappers = []interface{}{
 		(*Substate_TxMessage_Data)(nil),
 		(*Substate_TxMessage_InitCodeHash)(nil),
 	}
@@ -1452,7 +1635,7 @@ func file_substate_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_substate_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   12,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
