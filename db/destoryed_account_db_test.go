@@ -56,7 +56,7 @@ func TestDestroyedAccountDB_SetDestroyedAccountsSuccess(t *testing.T) {
 	destroyed := []types.Address{{1}, {2}}
 	resurrected := []types.Address{{3}}
 
-	baseDb.EXPECT().Put(encodeDestroyedAccountKey(block, tx), gomock.Any()).Return(nil)
+	baseDb.EXPECT().Put(EncodeDestroyedAccountKey(block, tx), gomock.Any()).Return(nil)
 	err := db.SetDestroyedAccounts(block, tx, destroyed, resurrected)
 	assert.Nil(t, err)
 }
@@ -76,7 +76,7 @@ func TestDestroyedAccountDB_SetDestroyedAccountsFail(t *testing.T) {
 	resurrected := []types.Address{{3}}
 
 	mockErr := errors.New("mock error")
-	baseDb.EXPECT().Put(encodeDestroyedAccountKey(block, tx), gomock.Any()).Return(mockErr)
+	baseDb.EXPECT().Put(EncodeDestroyedAccountKey(block, tx), gomock.Any()).Return(mockErr)
 	err := db.SetDestroyedAccounts(block, tx, destroyed, resurrected)
 	assert.Equal(t, mockErr, err)
 }
@@ -98,7 +98,7 @@ func TestDestroyedAccountDB_GetDestroyedAccountsSuccess(t *testing.T) {
 	list := SuicidedAccountLists{DestroyedAccounts: expectedDestroyed, ResurrectedAccounts: expectedResurrected}
 	value, _ := rlp.EncodeToBytes(list)
 
-	baseDb.EXPECT().Get(encodeDestroyedAccountKey(block, tx)).Return(value, nil)
+	baseDb.EXPECT().Get(EncodeDestroyedAccountKey(block, tx)).Return(value, nil)
 	destroyed, resurrected, err := db.GetDestroyedAccounts(block, tx)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedDestroyed, destroyed)
@@ -118,13 +118,13 @@ func TestDestroyedAccountDB_GetDestroyedAccountsFail(t *testing.T) {
 	tx := 2
 	mockErr := errors.New("mock error")
 
-	baseDb.EXPECT().Get(encodeDestroyedAccountKey(block, tx)).Return(nil, nil)
+	baseDb.EXPECT().Get(EncodeDestroyedAccountKey(block, tx)).Return(nil, nil)
 	destroyed, resurrected, err := db.GetDestroyedAccounts(block, tx)
 	assert.Nil(t, err)
 	assert.Nil(t, destroyed)
 	assert.Nil(t, resurrected)
 
-	baseDb.EXPECT().Get(encodeDestroyedAccountKey(block, tx)).Return([]byte{}, mockErr)
+	baseDb.EXPECT().Get(EncodeDestroyedAccountKey(block, tx)).Return([]byte{}, mockErr)
 	destroyed, resurrected, err = db.GetDestroyedAccounts(block, tx)
 	assert.Equal(t, mockErr, err)
 	assert.Nil(t, destroyed)
@@ -138,7 +138,7 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeSuccess(t *testing.T) {
 	baseDb := NewMockBaseDB(ctrl)
 	kv := &testutil.KeyValue{}
 	// First key
-	key1 := encodeDestroyedAccountKey(5, 0)
+	key1 := EncodeDestroyedAccountKey(5, 0)
 	list1 := SuicidedAccountLists{
 		DestroyedAccounts:   []types.Address{{1}, {2}},
 		ResurrectedAccounts: []types.Address{},
@@ -146,7 +146,7 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeSuccess(t *testing.T) {
 	value1, _ := rlp.EncodeToBytes(list1)
 
 	// Second key
-	key2 := encodeDestroyedAccountKey(7, 0)
+	key2 := EncodeDestroyedAccountKey(7, 0)
 	list2 := SuicidedAccountLists{
 		DestroyedAccounts:   []types.Address{{3}},
 		ResurrectedAccounts: []types.Address{{1}},
@@ -154,7 +154,7 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeSuccess(t *testing.T) {
 	value2, _ := rlp.EncodeToBytes(list2)
 
 	// Third key
-	key3 := encodeDestroyedAccountKey(99, 0)
+	key3 := EncodeDestroyedAccountKey(99, 0)
 	list3 := SuicidedAccountLists{
 		DestroyedAccounts:   []types.Address{{3}},
 		ResurrectedAccounts: []types.Address{{1}},
@@ -213,7 +213,7 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeDecodeValueFail(t *testin
 
 	baseDb := NewMockBaseDB(ctrl)
 	kv := &testutil.KeyValue{}
-	key := encodeDestroyedAccountKey(5, 0)
+	key := EncodeDestroyedAccountKey(5, 0)
 	kv.PutU(key, []byte("invalid_key"))
 	iter := iterator.NewArrayIterator(kv)
 	db := &DestroyedAccountDB{
@@ -240,8 +240,8 @@ func TestDestroyedAccountDB_GetFirstKeySuccess(t *testing.T) {
 	baseDb := NewMockBaseDB(ctrl)
 
 	kv := &testutil.KeyValue{}
-	kv.PutU(encodeDestroyedAccountKey(5, 0), []byte("value0"))
-	kv.PutU(encodeDestroyedAccountKey(6, 1), []byte("value1"))
+	kv.PutU(EncodeDestroyedAccountKey(5, 0), []byte("value0"))
+	kv.PutU(EncodeDestroyedAccountKey(6, 1), []byte("value1"))
 	iter := iterator.NewArrayIterator(kv)
 	db := &DestroyedAccountDB{
 		backend: baseDb,
@@ -305,8 +305,8 @@ func TestDestroyedAccountDB_GetLastKeySuccess(t *testing.T) {
 
 	baseDb := NewMockBaseDB(ctrl)
 	kv := &testutil.KeyValue{}
-	kv.PutU(encodeDestroyedAccountKey(5, 0), []byte("value0"))
-	kv.PutU(encodeDestroyedAccountKey(10, 1), []byte("value1"))
+	kv.PutU(EncodeDestroyedAccountKey(5, 0), []byte("value0"))
+	kv.PutU(EncodeDestroyedAccountKey(10, 1), []byte("value1"))
 	iter := iterator.NewArrayIterator(kv)
 
 	db := &DestroyedAccountDB{
@@ -351,7 +351,7 @@ func TestDestroyedAccountDB_GetLastKeyFail(t *testing.T) {
 func TestDestroyedAccountDB_encodeDestroyedAccountKey(t *testing.T) {
 	block := uint64(123456789)
 	tx := 42
-	key := encodeDestroyedAccountKey(block, tx)
+	key := EncodeDestroyedAccountKey(block, tx)
 
 	expected := append([]byte(DestroyedAccountPrefix), make([]byte, 12)...)
 	binary.BigEndian.PutUint64(expected[len(DestroyedAccountPrefix):], block)
@@ -363,7 +363,7 @@ func TestDestroyedAccountDB_encodeDestroyedAccountKey(t *testing.T) {
 func TestDestroyedAccountDB_DecodeDestroyedAccountKeySuccess(t *testing.T) {
 	block := uint64(123456789)
 	tx := 42
-	key := encodeDestroyedAccountKey(block, tx)
+	key := EncodeDestroyedAccountKey(block, tx)
 
 	decodedBlock, decodedTx, err := DecodeDestroyedAccountKey(key)
 	assert.Nil(t, err)
