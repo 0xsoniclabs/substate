@@ -51,11 +51,11 @@ func (db *DestroyedAccountDB) SetDestroyedAccounts(block uint64, tx int, des []t
 	if err != nil {
 		return err
 	}
-	return db.backend.Put(encodeDestroyedAccountKey(block, tx), value)
+	return db.backend.Put(EncodeDestroyedAccountKey(block, tx), value)
 }
 
 func (db *DestroyedAccountDB) GetDestroyedAccounts(block uint64, tx int) ([]types.Address, []types.Address, error) {
-	data, err := db.backend.Get(encodeDestroyedAccountKey(block, tx))
+	data, err := db.backend.Get(EncodeDestroyedAccountKey(block, tx))
 	if data == nil {
 		return nil, nil, nil
 	}
@@ -107,7 +107,7 @@ const (
 	DestroyedAccountPrefix = "da" // DestroyedAccountPrefix + block (64-bit) -> SuicidedAccountLists
 )
 
-func encodeDestroyedAccountKey(block uint64, tx int) []byte {
+func EncodeDestroyedAccountKey(block uint64, tx int) []byte {
 	prefix := []byte(DestroyedAccountPrefix)
 	key := make([]byte, len(prefix)+12)
 	copy(key[0:], prefix)
