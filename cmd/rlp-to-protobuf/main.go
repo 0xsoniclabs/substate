@@ -28,18 +28,3 @@ func main() {
 		log.Fatal(err)
 	}
 }
-
-func generateBinarySearchInList(list []int, target int) int {
-	low, high := 0, len(list)-1
-	for low <= high {
-		mid := (low + high) / 2
-		if list[mid] < target {
-			low = mid + 1
-		} else if list[mid] > target {
-			high = mid - 1
-		} else {
-			return mid // found the target
-		}
-	}
-	return -1 // target not found
-}

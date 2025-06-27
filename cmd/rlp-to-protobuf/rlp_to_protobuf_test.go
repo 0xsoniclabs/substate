@@ -404,3 +404,9 @@ func TestRLPtoProtobufCommand_ExecuteParallelFail(t *testing.T) {
 	err := command.execute()
 	assert.Equal(t, mockErr, err)
 }
+
+func TestTestingOfFunctionFromSeparatePackage(t *testing.T) {
+	list := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	target := 8
+	db.GenerateBinarySearchInList(list, target)
+}
