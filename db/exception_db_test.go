@@ -143,6 +143,20 @@ func TestExceptionDb_GetFirstKeySuccess(t *testing.T) {
 	assert.Equal(t, uint64(1), result)
 }
 
+func TestExceptionDb_DecodeExceptionDBKeyInvalidPrefix(t *testing.T) {
+	validSize := len(ExceptionDBPrefix) + 8
+	key := make([]byte, validSize)
+	// fill key with invalid data
+	for i := 0; i < validSize; i++ {
+		key[i] = byte(i + 1)
+	}
+
+	errWant := "invalid prefix of exception key: 0x0102"
+	_, err := DecodeExceptionDBKey(key)
+	assert.NotNil(t, err)
+	assert.Equal(t, errWant, err.Error())
+}
+
 func TestExceptionDb_GetFirstKeyFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
