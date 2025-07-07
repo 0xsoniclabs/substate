@@ -193,11 +193,11 @@ func ExceptionDBBlockPrefix(block uint64) []byte {
 func DecodeExceptionDBKey(key []byte) (block uint64, err error) {
 	prefix := ExceptionDBPrefix
 	if len(key) != len(prefix)+8 {
-		err = fmt.Errorf("invalid length of updateset key: %v", len(key))
+		err = fmt.Errorf("invalid length of exception key: %v", len(key))
 		return
 	}
 	if p := string(key[:len(prefix)]); p != prefix {
-		err = fmt.Errorf("invalid prefix of updateset key: %#x", p)
+		err = fmt.Errorf("invalid prefix of exception key: %#x", p)
 		return
 	}
 	blockTx := key[len(prefix):]
