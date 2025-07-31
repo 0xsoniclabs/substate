@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/syndtr/goleveldb/leveldb/util"
@@ -19,7 +20,23 @@ func newSubstateIterator(db SubstateDB, start []byte) *substateIterator {
 
 type substateIterator struct {
 	genericIterator[*substate.Substate]
-	db SubstateDB
+	db                SubstateDB
+	hasReturnedValued bool
+}
+
+// Next returns false if genericIterator is at its end. Otherwise, it returns true.
+// Note: False does not stop the genericIterator. Release() should be called.
+func (i *substateIterator) Next() bool {
+	if i.err != nil {
+		return false
+	}
+	i.cur = <-i.resultCh
+	res := i.cur != nil
+	if !res && i.hasReturnedValued {
+		log.Println("Iterator returned no value: Did you set correct encoding?")
+	}
+	i.hasReturnedValued = true
+	return res
 }
 
 func (i *substateIterator) decode(data rawEntry) (*substate.Substate, error) {
