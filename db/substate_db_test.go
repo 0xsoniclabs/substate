@@ -937,3 +937,11 @@ func TestSubstateDB_setEncoding(t *testing.T) {
 		})
 	}
 }
+
+func TestSubstateDB_setEncoding_Error(t *testing.T) {
+	allSubstateEncodings = []SubstateEncodingSchema{
+		"wrong",
+	}
+	_, err := NewDefaultSubstateDB(t.TempDir())
+	require.Error(t, err)
+}
