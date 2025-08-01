@@ -347,5 +347,4 @@ func TestDecodeProtobuf_Success(t *testing.T) {
 	value, err := decodeProtobuf([]byte{1, 2, 3}, nil, 1, 1)
 	assert.NotNil(t, err)
 	assert.Nil(t, value)
-
 }
