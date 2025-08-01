@@ -3,6 +3,7 @@ package db
 import (
 	"encoding/binary"
 	"fmt"
+	"log"
 
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/syndtr/goleveldb/leveldb"
@@ -67,7 +68,7 @@ func NewSubstateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.Re
 
 func MakeDefaultSubstateDB(db *leveldb.DB) SubstateDB {
 	sdb := &substateDB{&codeDB{&baseDB{backend: db}}, nil}
-	err := sdb.SetSubstateEncoding("default")
+	err := sdb.findAndSetEncoding()
 	if err != nil {
 		panic(fmt.Sprintf("failed to set substate encoding: %v", err))
 	}
@@ -76,7 +77,7 @@ func MakeDefaultSubstateDB(db *leveldb.DB) SubstateDB {
 
 func MakeDefaultSubstateDBFromBaseDB(db BaseDB) SubstateDB {
 	sdb := &substateDB{&codeDB{&baseDB{backend: db.GetBackend()}}, nil}
-	err := sdb.SetSubstateEncoding("default")
+	err := sdb.findAndSetEncoding()
 	if err != nil {
 		panic(fmt.Sprintf("failed to set substate encoding: %v", err))
 	}
@@ -90,7 +91,7 @@ func NewReadOnlySubstateDB(path string) (SubstateDB, error) {
 
 func MakeSubstateDB(db *leveldb.DB, wo *opt.WriteOptions, ro *opt.ReadOptions) SubstateDB {
 	sdb := &substateDB{&codeDB{&baseDB{backend: db, wo: wo, ro: ro}}, nil}
-	err := sdb.SetSubstateEncoding("default")
+	err := sdb.findAndSetEncoding()
 	if err != nil {
 		panic(fmt.Sprintf("failed to set substate encoding: %v", err))
 	}
@@ -104,9 +105,9 @@ func newSubstateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.Re
 	}
 
 	sdb := &substateDB{base, nil}
-	err = sdb.SetSubstateEncoding("default")
+	err = sdb.findAndSetEncoding()
 	if err != nil {
-		return nil, fmt.Errorf("failed to set substate encoding: %v", err)
+		return nil, fmt.Errorf("failed to set substate encoding: %w", err)
 	}
 	return sdb, nil
 }
@@ -114,6 +115,22 @@ func newSubstateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.Re
 type substateDB struct {
 	CodeDB
 	encoding *substateEncoding
+}
+
+// findAndSetEncoding finds the encoding of the substateDB and sets it.
+func (db *substateDB) findAndSetEncoding() error {
+	for _, encoding := range allSubstateEncodings {
+		if err := db.SetSubstateEncoding(encoding); err != nil {
+			return err
+		}
+		if sub := db.GetFirstSubstate(); sub != nil {
+			// Encoding was found. Exit the loop early
+			return nil
+		}
+	}
+	// Nothing is found, set default and inform the user
+	log.Println("substate encoding not found - setting to default - please choose encoding yourself using substateDb.SetSubstateEncoding()")
+	return db.SetSubstateEncoding(DefaultEncodingSchema)
 }
 
 func (db *substateDB) GetFirstSubstate() *substate.Substate {

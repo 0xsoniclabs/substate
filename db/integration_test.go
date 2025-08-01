@@ -282,8 +282,6 @@ func TestSubstateDB_MakeDefaultSubstateDB(t *testing.T) {
 	backend := db.GetBackend().(*leveldb.DB)
 	db2 := MakeDefaultSubstateDB(backend)
 	assert.NotNil(t, db2)
-
-	_ = MakeDefaultSubstateDB(nil)
 }
 
 func TestSubstateDB_MakeSubstateDB(t *testing.T) {
@@ -297,6 +295,4 @@ func TestSubstateDB_MakeSubstateDB(t *testing.T) {
 	backend := db.GetBackend().(*leveldb.DB)
 	db2 := MakeSubstateDB(backend, nil, nil)
 	assert.NotNil(t, db2)
-
-	_ = MakeSubstateDB(nil, nil, nil)
 }

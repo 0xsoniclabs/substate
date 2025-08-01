@@ -20,6 +20,12 @@ const (
 	LegacyProtobufEncodingAlias SubstateEncodingSchema = "pb"
 )
 
+var allSubstateEncodings = []SubstateEncodingSchema{
+	ProtobufEncodingSchema,
+	LegacyProtobufEncodingAlias,
+	RLPEncodingSchema,
+}
+
 // SetSubstateEncoding sets the runtime encoding/decoding behavior of substateDB
 // intended usage:
 //

@@ -3,6 +3,7 @@ package db
 import (
 	"errors"
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"math/big"
 	"testing"
 
@@ -893,4 +894,57 @@ func TestDecodeSubstateDBKey_Error(t *testing.T) {
 	assert.Contains(t, err.Error(), "invalid prefix")
 	assert.Equal(t, uint64(0), block)
 	assert.Equal(t, 0, trans)
+}
+
+func TestSubstateDB_setEncoding(t *testing.T) {
+	tests := []struct {
+		name     string
+		encoding SubstateEncodingSchema
+	}{
+		{
+			name:     "ProtobufEncodingSchema",
+			encoding: ProtobufEncodingSchema,
+		},
+		{
+			name:     "RLPEncodingSchema",
+			encoding: RLPEncodingSchema,
+		},
+		{
+			name:     "LegacyProtobufEncodingSchema",
+			encoding: LegacyProtobufEncodingAlias,
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			path := t.TempDir()
+			ss := getTestSubstate(test.encoding)
+			sdb, err := NewDefaultSubstateDB(path)
+			require.NoError(t, err)
+			err = sdb.SetSubstateEncoding(test.encoding)
+			require.NoError(t, err)
+			err = sdb.PutSubstate(ss)
+			require.NoError(t, err)
+			require.NoError(t, sdb.Close())
+			cdb, err := NewDefaultCodeDB(path)
+			require.NoError(t, err)
+			db := &substateDB{CodeDB: cdb}
+			require.NoError(t, err)
+			err = db.findAndSetEncoding()
+			require.NoError(t, err)
+			got := db.GetFirstSubstate()
+			require.Equal(t, ss.Block, got.Block)
+			require.Equal(t, ss.Transaction, got.Transaction)
+		})
+	}
+}
+
+func TestSubstateDB_setEncoding_Error(t *testing.T) {
+	backup := make([]SubstateEncodingSchema, len(allSubstateEncodings))
+	copy(backup, allSubstateEncodings)
+	allSubstateEncodings = []SubstateEncodingSchema{
+		"wrong",
+	}
+	_, err := NewDefaultSubstateDB(t.TempDir())
+	require.Error(t, err)
+	allSubstateEncodings = backup
 }
