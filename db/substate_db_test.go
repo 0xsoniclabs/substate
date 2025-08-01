@@ -939,9 +939,12 @@ func TestSubstateDB_setEncoding(t *testing.T) {
 }
 
 func TestSubstateDB_setEncoding_Error(t *testing.T) {
+	backup := make([]SubstateEncodingSchema, len(allSubstateEncodings))
+	copy(backup, allSubstateEncodings)
 	allSubstateEncodings = []SubstateEncodingSchema{
 		"wrong",
 	}
 	_, err := NewDefaultSubstateDB(t.TempDir())
 	require.Error(t, err)
+	allSubstateEncodings = backup
 }
