@@ -213,7 +213,7 @@ func TestSubstateDB_MakeDefaultDestroyedAccountDBFromBaseDB(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	db2 := MakeDefaultDestroyedAccountDBFromBaseDB(db.backend)
+	db2 := MakeDefaultDestroyedAccountDBFromBaseDB(db)
 	assert.NotNil(t, db2)
 	assert.Equal(t, db, db2)
 }

@@ -12,23 +12,43 @@ import (
 	"github.com/0xsoniclabs/substate/types/rlp"
 )
 
-type DestroyedAccountDB struct {
-	backend BaseDB
+const (
+	DestroyedAccountPrefix = "da" // DestroyedAccountPrefix + block (64-bit) -> SuicidedAccountLists
+)
+
+//go:generate mockgen -source=destroyed_account_db.go -destination=./destroyed_account_db_mock.go -package=db
+type DestroyedAccountDB interface {
+	BaseDB
+
+	// Set the accounts that were destroyed in a specific block and transaction
+	SetDestroyedAccounts(block uint64, tx int, destroyed []types.Address, resurrected []types.Address) error
+
+	// Get the accounts that were destroyed in a specific block and transaction
+	GetDestroyedAccounts(block uint64, tx int) ([]types.Address, []types.Address, error)
+
+	// Get the accounts that were destroyed in a specific block range
+	GetAccountsDestroyedInRange(from, to uint64) ([]types.Address, error)
+
+	// Get the first destroyed account key
+	GetFirstKey() (uint64, error)
+
+	// Get the last destroyed account key
+	GetLastKey() (uint64, error)
 }
 
-func NewDefaultDestroyedAccountDB(destroyedAccountDir string) (*DestroyedAccountDB, error) {
+func NewDefaultDestroyedAccountDB(destroyedAccountDir string) (DestroyedAccountDB, error) {
 	return newDestroyedAccountDB(destroyedAccountDir, nil, nil, nil)
 }
 
-func MakeDefaultDestroyedAccountDBFromBaseDB(backend BaseDB) *DestroyedAccountDB {
-	return &DestroyedAccountDB{backend: backend}
+func MakeDefaultDestroyedAccountDBFromBaseDB(db BaseDB) DestroyedAccountDB {
+	return &destroyedAccountDB{&baseDB{backend: db.GetBackend()}}
 }
 
-func NewReadOnlyDestroyedAccountDB(destroyedAccountDir string) (*DestroyedAccountDB, error) {
+func NewReadOnlyDestroyedAccountDB(destroyedAccountDir string) (DestroyedAccountDB, error) {
 	return newDestroyedAccountDB(destroyedAccountDir, &opt.Options{ReadOnly: true}, nil, nil)
 }
 
-func newDestroyedAccountDB(destroyedAccountDir string, o *opt.Options, wo *opt.WriteOptions, ro *opt.ReadOptions) (*DestroyedAccountDB, error) {
+func newDestroyedAccountDB(destroyedAccountDir string, o *opt.Options, wo *opt.WriteOptions, ro *opt.ReadOptions) (DestroyedAccountDB, error) {
 	backend, err := newBaseDB(destroyedAccountDir, o, wo, ro)
 	if err != nil {
 		return nil, fmt.Errorf("error opening deletion-db %s: %w", destroyedAccountDir, err)
@@ -36,26 +56,28 @@ func newDestroyedAccountDB(destroyedAccountDir string, o *opt.Options, wo *opt.W
 	return MakeDefaultDestroyedAccountDBFromBaseDB(backend), nil
 }
 
-func (db *DestroyedAccountDB) Close() error {
-	return db.backend.Close()
+type destroyedAccountDB struct {
+	BaseDB
 }
 
+// SuicidedAccountLists is value structure which represents the list of accounts
+// that were either suicided and resurrected.
 type SuicidedAccountLists struct {
 	DestroyedAccounts   []types.Address
 	ResurrectedAccounts []types.Address
 }
 
-func (db *DestroyedAccountDB) SetDestroyedAccounts(block uint64, tx int, des []types.Address, res []types.Address) error {
+func (db *destroyedAccountDB) SetDestroyedAccounts(block uint64, tx int, des []types.Address, res []types.Address) error {
 	accountList := SuicidedAccountLists{DestroyedAccounts: des, ResurrectedAccounts: res}
 	value, err := rlp.EncodeToBytes(accountList)
 	if err != nil {
 		return err
 	}
-	return db.backend.Put(EncodeDestroyedAccountKey(block, tx), value)
+	return db.Put(EncodeDestroyedAccountKey(block, tx), value)
 }
 
-func (db *DestroyedAccountDB) GetDestroyedAccounts(block uint64, tx int) ([]types.Address, []types.Address, error) {
-	data, err := db.backend.Get(EncodeDestroyedAccountKey(block, tx))
+func (db *destroyedAccountDB) GetDestroyedAccounts(block uint64, tx int) ([]types.Address, []types.Address, error) {
+	data, err := db.Get(EncodeDestroyedAccountKey(block, tx))
 	if data == nil {
 		return nil, nil, nil
 	}
@@ -67,11 +89,11 @@ func (db *DestroyedAccountDB) GetDestroyedAccounts(block uint64, tx int) ([]type
 }
 
 // GetAccountsDestroyedInRange get list of all accounts between block from and to (including from and to).
-func (db *DestroyedAccountDB) GetAccountsDestroyedInRange(from, to uint64) ([]types.Address, error) {
+func (db *destroyedAccountDB) GetAccountsDestroyedInRange(from, to uint64) ([]types.Address, error) {
 	startingBlockBytes := make([]byte, 8)
 	binary.BigEndian.PutUint64(startingBlockBytes, from)
 
-	iter := db.backend.NewIterator([]byte(DestroyedAccountPrefix), startingBlockBytes)
+	iter := db.NewIterator([]byte(DestroyedAccountPrefix), startingBlockBytes)
 	defer iter.Release()
 	isDestroyed := make(map[types.Address]bool)
 	for iter.Next() {
@@ -103,9 +125,40 @@ func (db *DestroyedAccountDB) GetAccountsDestroyedInRange(from, to uint64) ([]ty
 	return accountList, nil
 }
 
-const (
-	DestroyedAccountPrefix = "da" // DestroyedAccountPrefix + block (64-bit) -> SuicidedAccountLists
-)
+// GetFirstKey returns the first block number in the database.
+func (db *destroyedAccountDB) GetFirstKey() (uint64, error) {
+	iter := db.NewIterator([]byte(DestroyedAccountPrefix), nil)
+	defer iter.Release()
+
+	exist := iter.Next()
+	if exist {
+		firstBlock, _, err := DecodeDestroyedAccountKey(iter.Key())
+		if err != nil {
+			return 0, fmt.Errorf("cannot decode updateset key; %w", err)
+		}
+		return firstBlock, nil
+	}
+	return 0, leveldb.ErrNotFound
+}
+
+// GetLastKey returns the last block number in the database.
+// if not found then returns 0
+func (db *destroyedAccountDB) GetLastKey() (uint64, error) {
+	var block uint64
+	var err error
+	iter := db.NewIterator([]byte(DestroyedAccountPrefix), nil)
+	defer iter.Release()
+
+	exist := iter.Last()
+	if exist {
+		block, _, err = DecodeDestroyedAccountKey(iter.Key())
+		if err != nil {
+			return 0, fmt.Errorf("cannot decode updateset key; %w", err)
+		}
+		return block, nil
+	}
+	return 0, leveldb.ErrNotFound
+}
 
 func EncodeDestroyedAccountKey(block uint64, tx int) []byte {
 	prefix := []byte(DestroyedAccountPrefix)
@@ -132,39 +185,4 @@ func DecodeAddressList(data []byte) (SuicidedAccountLists, error) {
 	list := SuicidedAccountLists{}
 	err := rlp.DecodeBytes(data, &list)
 	return list, err
-}
-
-// GetFirstKey returns the first block number in the database.
-func (db *DestroyedAccountDB) GetFirstKey() (uint64, error) {
-	iter := db.backend.NewIterator([]byte(DestroyedAccountPrefix), nil)
-	defer iter.Release()
-
-	exist := iter.Next()
-	if exist {
-		firstBlock, _, err := DecodeDestroyedAccountKey(iter.Key())
-		if err != nil {
-			return 0, fmt.Errorf("cannot decode updateset key; %w", err)
-		}
-		return firstBlock, nil
-	}
-	return 0, leveldb.ErrNotFound
-}
-
-// GetLastKey returns the last block number in the database.
-// if not found then returns 0
-func (db *DestroyedAccountDB) GetLastKey() (uint64, error) {
-	var block uint64
-	var err error
-	iter := db.backend.NewIterator([]byte(DestroyedAccountPrefix), nil)
-	defer iter.Release()
-
-	exist := iter.Last()
-	if exist {
-		block, _, err = DecodeDestroyedAccountKey(iter.Key())
-		if err != nil {
-			return 0, fmt.Errorf("cannot decode updateset key; %w", err)
-		}
-		return block, nil
-	}
-	return 0, leveldb.ErrNotFound
 }
