@@ -15,41 +15,12 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestDestroyedAccountDB_CloseSuccess(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	baseDb := NewMockBaseDB(ctrl)
-	db := &DestroyedAccountDB{
-		backend: baseDb,
-	}
-
-	baseDb.EXPECT().Close().Return(nil)
-	err := db.Close()
-	assert.Nil(t, err)
-}
-
-func TestDestroyedAccountDB_CloseFail(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	baseDb := NewMockBaseDB(ctrl)
-	db := &DestroyedAccountDB{
-		backend: baseDb,
-	}
-	mockErr := errors.New("mock error")
-	baseDb.EXPECT().Close().Return(mockErr)
-	err := db.Close()
-	assert.Equal(t, mockErr, err)
-}
 func TestDestroyedAccountDB_SetDestroyedAccountsSuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	baseDb := NewMockBaseDB(ctrl)
-	db := &DestroyedAccountDB{
-		backend: baseDb,
-	}
+	db := &destroyedAccountDB{baseDb}
 
 	block := uint64(1)
 	tx := 2
@@ -66,9 +37,7 @@ func TestDestroyedAccountDB_SetDestroyedAccountsFail(t *testing.T) {
 	defer ctrl.Finish()
 
 	baseDb := NewMockBaseDB(ctrl)
-	db := &DestroyedAccountDB{
-		backend: baseDb,
-	}
+	db := &destroyedAccountDB{baseDb}
 
 	block := uint64(1)
 	tx := 2
@@ -86,9 +55,7 @@ func TestDestroyedAccountDB_GetDestroyedAccountsSuccess(t *testing.T) {
 	defer ctrl.Finish()
 
 	baseDb := NewMockBaseDB(ctrl)
-	db := &DestroyedAccountDB{
-		backend: baseDb,
-	}
+	db := &destroyedAccountDB{baseDb}
 
 	block := uint64(1)
 	tx := 2
@@ -110,9 +77,7 @@ func TestDestroyedAccountDB_GetDestroyedAccountsFail(t *testing.T) {
 	defer ctrl.Finish()
 
 	baseDb := NewMockBaseDB(ctrl)
-	db := &DestroyedAccountDB{
-		backend: baseDb,
-	}
+	db := &destroyedAccountDB{baseDb}
 
 	block := uint64(1)
 	tx := 2
@@ -165,9 +130,7 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeSuccess(t *testing.T) {
 	kv.PutU(key2, value2)
 	kv.PutU(key3, value3)
 	iter := iterator.NewArrayIterator(kv)
-	db := &DestroyedAccountDB{
-		backend: baseDb,
-	}
+	db := &destroyedAccountDB{baseDb}
 
 	from := uint64(1)
 	to := uint64(10)
@@ -190,9 +153,7 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeDecodeKeyFail(t *testing.
 	kv := &testutil.KeyValue{}
 	kv.PutU([]byte{1}, []byte("invalid_key"))
 	iter := iterator.NewArrayIterator(kv)
-	db := &DestroyedAccountDB{
-		backend: baseDb,
-	}
+	db := &destroyedAccountDB{baseDb}
 
 	from := uint64(1)
 	to := uint64(10)
@@ -216,9 +177,7 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeDecodeValueFail(t *testin
 	key := EncodeDestroyedAccountKey(5, 0)
 	kv.PutU(key, []byte("invalid_key"))
 	iter := iterator.NewArrayIterator(kv)
-	db := &DestroyedAccountDB{
-		backend: baseDb,
-	}
+	db := &destroyedAccountDB{baseDb}
 
 	from := uint64(1)
 	to := uint64(10)
@@ -243,9 +202,7 @@ func TestDestroyedAccountDB_GetFirstKeySuccess(t *testing.T) {
 	kv.PutU(EncodeDestroyedAccountKey(5, 0), []byte("value0"))
 	kv.PutU(EncodeDestroyedAccountKey(6, 1), []byte("value1"))
 	iter := iterator.NewArrayIterator(kv)
-	db := &DestroyedAccountDB{
-		backend: baseDb,
-	}
+	db := &destroyedAccountDB{baseDb}
 
 	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
 
@@ -264,9 +221,7 @@ func TestDestroyedAccountDB_GetFirstKeyDecodeFail(t *testing.T) {
 	kv := &testutil.KeyValue{}
 	kv.PutU([]byte{1}, []byte("value"))
 	iter := iterator.NewArrayIterator(kv)
-	db := &DestroyedAccountDB{
-		backend: baseDb,
-	}
+	db := &destroyedAccountDB{baseDb}
 	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
 	block, err := db.GetFirstKey()
 	assert.NotNil(t, err)
@@ -288,9 +243,7 @@ func TestDestroyedAccountDB_GetFirstKeyNoUpdateSetFail(t *testing.T) {
 	baseDb := NewMockBaseDB(ctrl)
 	kv := &testutil.KeyValue{}
 	iter := iterator.NewArrayIterator(kv)
-	db := &DestroyedAccountDB{
-		backend: baseDb,
-	}
+	db := &destroyedAccountDB{baseDb}
 
 	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
 
@@ -309,9 +262,7 @@ func TestDestroyedAccountDB_GetLastKeySuccess(t *testing.T) {
 	kv.PutU(EncodeDestroyedAccountKey(10, 1), []byte("value1"))
 	iter := iterator.NewArrayIterator(kv)
 
-	db := &DestroyedAccountDB{
-		backend: baseDb,
-	}
+	db := &destroyedAccountDB{baseDb}
 
 	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
 
@@ -330,9 +281,7 @@ func TestDestroyedAccountDB_GetLastKeyFail(t *testing.T) {
 	kv := &testutil.KeyValue{}
 	kv.PutU([]byte{1}, []byte("invalid_key"))
 	iter := iterator.NewArrayIterator(kv)
-	db := &DestroyedAccountDB{
-		backend: baseDb,
-	}
+	db := &destroyedAccountDB{baseDb}
 	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
 
 	block, err := db.GetLastKey()
