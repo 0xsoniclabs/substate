@@ -16,7 +16,7 @@ func (db *destroyedAccountDB) GetSubstateEncoding() SubstateEncodingSchema {
 func (db *destroyedAccountDB) SetSubstateEncoding(schema SubstateEncodingSchema) error {
 	encoding, err := newDestroyedAccountEncoding(schema)
 	if err != nil {
-		return fmt.Errorf("failed to set decodeFunc; %w", err)
+		return fmt.Errorf("failed to set decoder; %w", err)
 	}
 
 	db.encoding = *encoding

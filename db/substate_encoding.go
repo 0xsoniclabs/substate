@@ -35,7 +35,7 @@ var allSubstateEncodings = []SubstateEncodingSchema{
 func (db *substateDB) SetSubstateEncoding(schema SubstateEncodingSchema) error {
 	encoding, err := newSubstateEncoding(schema, db.GetCode)
 	if err != nil {
-		return fmt.Errorf("failed to set decodeFunc; %w", err)
+		return fmt.Errorf("failed to set decoder; %w", err)
 	}
 
 	db.encoding = encoding
