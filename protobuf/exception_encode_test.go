@@ -30,14 +30,14 @@ func TestEncodeDecodeExceptionBlock(t *testing.T) {
 		t.Fatalf("EncodeExceptionBlock failed: %v", err)
 	}
 
-	// Decode
+	// decode
 	var pb ExceptionBlock
 	if err := proto.Unmarshal(encoded, &pb); err != nil {
 		t.Fatalf("proto.Unmarshal failed: %v", err)
 	}
 	decoded, err := pb.Decode(nil)
 	if err != nil {
-		t.Fatalf("Decode failed: %v", err)
+		t.Fatalf("decode failed: %v", err)
 	}
 
 	// Compare

@@ -1,16 +1,13 @@
 package db
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/0xsoniclabs/substate/protobuf"
 	"github.com/0xsoniclabs/substate/rlp"
-	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
 	trlp "github.com/0xsoniclabs/substate/types/rlp"
 	"github.com/0xsoniclabs/substate/updateset"
-	"github.com/syndtr/goleveldb/leveldb"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -56,13 +53,13 @@ func newUpdateSetEncoding(encoding SubstateEncodingSchema) (*updateSetEncoding, 
 }
 
 func encodeUpdateSetPB(updateSet updateset.UpdateSet, deletedAccounts []types.Address) ([]byte, error) {
-	s := protobuf.NewUpdateSetPB(updateSet.WorldState, deletedAccounts)
-	addrs := make([][]byte, 0, len(s.DeletedAccounts))
-	for _, addr := range s.DeletedAccounts {
+	up := protobuf.NewUpdateSetPB(updateSet.WorldState, deletedAccounts)
+	addrs := make([][]byte, 0, len(up.DeletedAccounts))
+	for _, addr := range up.DeletedAccounts {
 		addrs = append(addrs, addr.Bytes())
 	}
 	obj := &protobuf.UpdateSet{
-		WorldState:      s.WorldState,
+		WorldState:      up.WorldState,
 		DeletedAccounts: addrs,
 	}
 	return proto.Marshal(obj)
@@ -82,28 +79,15 @@ func decodeUpdateSetPB(block uint64, getCode func(codeHash types.Hash) ([]byte, 
 		WorldState:      obj.WorldState,
 		DeletedAccounts: addrs,
 	}
-	worldState, err := up.WorldState.Decode(getCode)
+	ws, err := up.ToWorldState(getCode)
 	if err != nil {
 		return nil, err
 	}
-	return updateset.NewUpdateSet(*worldState, block), nil
+	return updateset.NewUpdateSet(*ws, block), nil
 }
 
 func encodeUpdateSetRLP(updateSet updateset.UpdateSet, deletedAccounts []types.Address) ([]byte, error) {
-	ws := rlp.WorldState{
-		Addresses: []types.Address{},
-		Accounts:  []*rlp.SubstateAccountRLP{},
-	}
-
-	for addr, acc := range updateSet.WorldState {
-		ws.Addresses = append(ws.Addresses, addr)
-		ws.Accounts = append(ws.Accounts, rlp.NewRLPAccount(acc))
-	}
-
-	up := rlp.UpdateSetRLP{
-		WorldState:      ws,
-		DeletedAccounts: deletedAccounts,
-	}
+	up := rlp.NewUpdateSetRLP(updateSet.WorldState, deletedAccounts)
 	value, err := trlp.EncodeToBytes(up)
 	if err != nil {
 		return nil, err
@@ -116,27 +100,9 @@ func decodeUpdateSetRLP(block uint64, getCode func(codeHash types.Hash) ([]byte,
 	if err := trlp.DecodeBytes(data, &up); err != nil {
 		return nil, err
 	}
-	worldState := make(substate.WorldState)
-	for i, addr := range up.WorldState.Addresses {
-		worldStateAcc := up.WorldState.Accounts[i]
-
-		code, err := getCode(worldStateAcc.CodeHash)
-		if err != nil && !errors.Is(err, leveldb.ErrNotFound) {
-			return nil, err
-		}
-
-		acc := substate.Account{
-			Nonce:   worldStateAcc.Nonce,
-			Balance: worldStateAcc.Balance,
-			Storage: make(map[types.Hash]types.Hash),
-			Code:    code,
-		}
-
-		for j := range worldStateAcc.Storage {
-			acc.Storage[worldStateAcc.Storage[j][0]] = worldStateAcc.Storage[j][1]
-		}
-		worldState[addr] = &acc
+	ws, err := up.ToWorldState(getCode)
+	if err != nil {
+		return nil, err
 	}
-
-	return updateset.NewUpdateSet(worldState, block), nil
+	return updateset.NewUpdateSet(*ws, block), nil
 }

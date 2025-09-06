@@ -66,7 +66,7 @@ func (i *updateSetIterator) start(_ int) {
 			key := make([]byte, len(i.iter.Key()))
 			copy(key, i.iter.Key())
 
-			// Decode key, if past the end block, stop here.
+			// decode key, if past the end block, stop here.
 			// This avoids filling channels which huge data objects that are not consumed.
 			block, err := DecodeUpdateSetKey(key)
 			if err != nil {

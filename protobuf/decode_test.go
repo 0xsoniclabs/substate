@@ -98,7 +98,7 @@ func TestDecode_SuccessfulDecode(t *testing.T) {
 
 func TestDecode_InputAllocDecodeFails(t *testing.T) {
 	lookup := func(hash types.Hash) ([]byte, error) {
-		return nil, errors.New("input Decode error")
+		return nil, errors.New("input decode error")
 	}
 
 	s := &Substate{
@@ -123,7 +123,7 @@ func TestDecode_InputAllocDecodeFails(t *testing.T) {
 
 func TestDecode_OutputAllocDecodeFails(t *testing.T) {
 	lookup := func(hash types.Hash) ([]byte, error) {
-		return nil, errors.New("input Decode error")
+		return nil, errors.New("input decode error")
 	}
 
 	s := &Substate{
@@ -353,7 +353,7 @@ func TestDecode_TxMessageLookupError(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, result)
-	assert.Contains(t, err.Error(), "failed to Decode tx message")
+	assert.Contains(t, err.Error(), "failed to decode tx message")
 }
 
 func TestDecode_TxMessageLookupNotFound(t *testing.T) {

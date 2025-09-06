@@ -5,11 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/holiman/uint256"
-
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
 	"github.com/0xsoniclabs/substate/types/hash"
+	"github.com/holiman/uint256"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
@@ -17,12 +16,12 @@ type getCodeFunc = func(types.Hash) ([]byte, error)
 
 // Decode converts protobuf-encoded bytes into aida substate
 func (s *Substate) Decode(lookup getCodeFunc, block uint64, tx int) (*substate.Substate, error) {
-	input, err := s.GetInputAlloc().Decode(lookup)
+	input, err := s.GetInputAlloc().decode(lookup)
 	if err != nil {
 		return nil, err
 	}
 
-	output, err := s.GetOutputAlloc().Decode(lookup)
+	output, err := s.GetOutputAlloc().decode(lookup)
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +47,8 @@ func (s *Substate) Decode(lookup getCodeFunc, block uint64, tx int) (*substate.S
 	}, nil
 }
 
-// Decode converts protobuf-encoded Alloc into aida-comprehensible WorldState
-func (alloc *Alloc) Decode(lookup getCodeFunc) (*substate.WorldState, error) {
+// decode converts protobuf-encoded Alloc into aida-comprehensible WorldState
+func (alloc *Alloc) decode(lookup getCodeFunc) (*substate.WorldState, error) {
 	world := make(substate.WorldState, len(alloc.GetAlloc()))
 
 	for _, entry := range alloc.GetAlloc() {
@@ -132,7 +131,7 @@ func (msg *Substate_TxMessage) decode(lookup getCodeFunc) (*substate.Message, er
 	if pTo == nil {
 		code, err := lookup(types.BytesToHash(msg.GetInitCodeHash()))
 		if err != nil && !errors.Is(err, leveldb.ErrNotFound) {
-			return nil, fmt.Errorf("failed to Decode tx message; %w", err)
+			return nil, fmt.Errorf("failed to decode tx message; %w", err)
 		}
 		data = code
 	}

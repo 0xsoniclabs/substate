@@ -46,8 +46,8 @@ var (
 	errNotInList     = errors.New("rlp: call of ListEnd outside of any list")
 	errNotAtEOL      = errors.New("rlp: call of ListEnd not positioned at ErrEOL")
 	errUintOverflow  = errors.New("rlp: uint overflow")
-	errNoPointer     = errors.New("rlp: interface given to Decode must be a pointer")
-	errDecodeIntoNil = errors.New("rlp: pointer given to Decode must not be nil")
+	errNoPointer     = errors.New("rlp: interface given to decode must be a pointer")
+	errDecodeIntoNil = errors.New("rlp: pointer given to decode must not be nil")
 
 	streamPool = sync.Pool{
 		New: func() interface{} { return new(Stream) },
@@ -83,7 +83,7 @@ func (k Kind) String() string {
 // Note that Decode does not set an input limit for all readers and may be vulnerable to
 // panics cause by huge value sizes. If you need an input limit, use
 //
-//	NewStream(r, limit).Decode(val)
+//	NewStream(r, limit).decode(val)
 func Decode(r io.Reader, val interface{}) error {
 	stream := streamPool.Get().(*Stream)
 	defer streamPool.Put(stream)

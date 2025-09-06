@@ -6,12 +6,12 @@ import (
 
 // Decode decodes protobuf-encoded bytes into ExceptionBlock struct
 func (s *ExceptionBlock) Decode(lookup getCodeFunc) (*substate.ExceptionBlock, error) {
-	input, err := s.GetPreBlock().Decode(lookup)
+	input, err := s.GetPreBlock().decode(lookup)
 	if err != nil {
 		return nil, err
 	}
 
-	output, err := s.GetPostBlock().Decode(lookup)
+	output, err := s.GetPostBlock().decode(lookup)
 	if err != nil {
 		return nil, err
 	}
@@ -31,12 +31,12 @@ func (s *ExceptionBlock) Decode(lookup getCodeFunc) (*substate.ExceptionBlock, e
 
 // decode decodes protobuf-encoded ExceptionTx into ExceptionTx struct
 func (tx *ExceptionTx) decode(lookup getCodeFunc) substate.ExceptionTx {
-	preTransaction, err := tx.GetPreTransaction().Decode(lookup)
+	preTransaction, err := tx.GetPreTransaction().decode(lookup)
 	if err != nil {
 		return substate.ExceptionTx{}
 	}
 
-	postTransaction, err := tx.GetPostTransaction().Decode(lookup)
+	postTransaction, err := tx.GetPostTransaction().decode(lookup)
 	if err != nil {
 		return substate.ExceptionTx{}
 	}

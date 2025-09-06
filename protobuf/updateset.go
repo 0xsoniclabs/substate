@@ -16,3 +16,7 @@ func NewUpdateSetPB(ws substate.WorldState, deletedAccounts []types.Address) *Up
 		DeletedAccounts: deletedAccounts,
 	}
 }
+
+func (up *UpdateSetPB) ToWorldState(lookup func(codeHash types.Hash) ([]byte, error)) (*substate.WorldState, error) {
+	return up.WorldState.decode(lookup)
+}
