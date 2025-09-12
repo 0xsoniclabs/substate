@@ -275,25 +275,25 @@ func TestDecodeErrors(t *testing.T) {
 	r := bytes.NewReader(nil)
 
 	if err := Decode(r, nil); err != errDecodeIntoNil {
-		t.Errorf("decode(r, nil) error mismatch, got %q, want %q", err, errDecodeIntoNil)
+		t.Errorf("Decode(r, nil) error mismatch, got %q, want %q", err, errDecodeIntoNil)
 	}
 
 	var nilptr *struct{}
 	if err := Decode(r, nilptr); err != errDecodeIntoNil {
-		t.Errorf("decode(r, nilptr) error mismatch, got %q, want %q", err, errDecodeIntoNil)
+		t.Errorf("Decode(r, nilptr) error mismatch, got %q, want %q", err, errDecodeIntoNil)
 	}
 
 	if err := Decode(r, struct{}{}); err != errNoPointer {
-		t.Errorf("decode(r, struct{}{}) error mismatch, got %q, want %q", err, errNoPointer)
+		t.Errorf("Decode(r, struct{}{}) error mismatch, got %q, want %q", err, errNoPointer)
 	}
 
 	expectErr := "rlp: type chan bool is not RLP-serializable"
 	if err := Decode(r, new(chan bool)); err == nil || err.Error() != expectErr {
-		t.Errorf("decode(r, new(chan bool)) error mismatch, got %q, want %q", err, expectErr)
+		t.Errorf("Decode(r, new(chan bool)) error mismatch, got %q, want %q", err, expectErr)
 	}
 
 	if err := Decode(r, new(uint)); err != io.EOF {
-		t.Errorf("decode(r, new(int)) error mismatch, got %q, want %q", err, io.EOF)
+		t.Errorf("Decode(r, new(int)) error mismatch, got %q, want %q", err, io.EOF)
 	}
 }
 
@@ -785,12 +785,12 @@ func runTests(t *testing.T, decode func([]byte, interface{}) error) {
 		}
 		err = decode(input, test.ptr)
 		if err != nil && test.error == "" {
-			t.Errorf("test %d: unexpected decode error: %v\ndecoding into %T\ninput %q",
+			t.Errorf("test %d: unexpected Decode error: %v\ndecoding into %T\ninput %q",
 				i, err, test.ptr, test.input)
 			continue
 		}
 		if test.error != "" && fmt.Sprint(err) != test.error {
-			t.Errorf("test %d: decode error mismatch\ngot  %v\nwant %v\ndecoding into %T\ninput %q",
+			t.Errorf("test %d: Decode error mismatch\ngot  %v\nwant %v\ndecoding into %T\ninput %q",
 				i, err, test.error, test.ptr, test.input)
 			continue
 		}
@@ -817,7 +817,7 @@ func testDecodeWithEncReader(t *testing.T, n int) {
 		t.Errorf("Unexpected decode error with n=%v: %v", n, err)
 	}
 	if decoded != s {
-		t.Errorf("decode mismatch with n=%v", n)
+		t.Errorf("Decode mismatch with n=%v", n)
 	}
 }
 
@@ -878,7 +878,7 @@ func TestDecodeDecoder(t *testing.T) {
 		T3 **testDecoder
 	}
 	if err := Decode(bytes.NewReader(unhex("C3010203")), &s); err != nil {
-		t.Fatalf("decode error: %v", err)
+		t.Fatalf("Decode error: %v", err)
 	}
 
 	if !s.T1.called {
@@ -904,7 +904,7 @@ func TestDecodeDecoderNilPointer(t *testing.T) {
 		T2 *testDecoder
 	}
 	if err := Decode(bytes.NewReader(unhex("C2C002")), &s); err != nil {
-		t.Fatalf("decode error: %v", err)
+		t.Fatalf("Decode error: %v", err)
 	}
 	if s.T1 != nil {
 		t.Errorf("decoder T1 allocated for empty input (called: %v)", s.T1.called)
@@ -931,14 +931,14 @@ func (bd byteDecoder) called() bool {
 func TestDecoderInByteSlice(t *testing.T) {
 	var slice []byteDecoder
 	if err := Decode(bytes.NewReader(unhex("C101")), &slice); err != nil {
-		t.Errorf("unexpected decode error %v", err)
+		t.Errorf("unexpected Decode error %v", err)
 	} else if !slice[0].called() {
 		t.Errorf("DecodeRLP not called for slice element")
 	}
 
 	var array [1]byteDecoder
 	if err := Decode(bytes.NewReader(unhex("C101")), &array); err != nil {
-		t.Errorf("unexpected decode error %v", err)
+		t.Errorf("unexpected Decode error %v", err)
 	} else if !array[0].called() {
 		t.Errorf("DecodeRLP not called for array element")
 	}
@@ -1031,7 +1031,7 @@ func ExampleDecode_structTagNil() {
 	}
 	err := Decode(bytes.NewReader(input), &normalRules)
 	if err != nil {
-		fmt.Printf("decode error: %v", err)
+		fmt.Printf("Decode error: %v", err)
 		return
 	}
 	fmt.Printf("normal: String = %q\n", *normalRules.String)
@@ -1043,7 +1043,7 @@ func ExampleDecode_structTagNil() {
 	}
 	err = Decode(bytes.NewReader(input), &withEmptyOK)
 	if err != nil {
-		fmt.Printf("decode error: %v", err)
+		fmt.Printf("Decode error: %v", err)
 		return
 	}
 	fmt.Printf("with nil tag: String = %v\n", withEmptyOK.String)
@@ -1067,7 +1067,7 @@ func ExampleStream() {
 		return
 	}
 
-	// decode elements
+	// Decode elements
 	fmt.Println(s.Uint())
 	fmt.Println(s.Uint())
 	fmt.Println(s.Bytes())
@@ -1093,7 +1093,7 @@ func BenchmarkDecodeUints(b *testing.B) {
 		var s []uint
 		r := bytes.NewReader(enc)
 		if err := Decode(r, &s); err != nil {
-			b.Fatalf("decode error: %v", err)
+			b.Fatalf("Decode error: %v", err)
 		}
 	}
 }
@@ -1108,7 +1108,7 @@ func BenchmarkDecodeUintsReused(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		r := bytes.NewReader(enc)
 		if err := Decode(r, &s); err != nil {
-			b.Fatalf("decode error: %v", err)
+			b.Fatalf("Decode error: %v", err)
 		}
 	}
 }

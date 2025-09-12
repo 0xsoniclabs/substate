@@ -585,7 +585,7 @@ func TestUpdateDBKey(t *testing.T) {
 	assert.Equal(t, len(UpdateDBPrefix)+8, len(result))
 	assert.Equal(t, []byte(UpdateDBPrefix), result[:len(UpdateDBPrefix)])
 
-	// decode to verify
+	// Decode to verify
 	decoded, err := DecodeUpdateSetKey(result)
 	assert.Nil(t, err)
 	assert.Equal(t, blockNum, decoded)
