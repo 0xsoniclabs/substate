@@ -269,14 +269,35 @@ func (msg *Substate_TxMessage) getContractAddress() types.Address {
 // createAddress creates an address given the bytes and the nonce
 // mimics crypto.CreateAddress, to avoid cyclical dependency.
 func createAddress(addr types.Address, nonce uint64) types.Address {
+	// This is equivalent to the RLP encoding of []interface{}{addr, nonce}
+	// Old code using trlp:
+	// data, _ := trlp.EncodeToBytes([]interface{}{addr, nonce})
+
+	// Create a new buffer to build the RLP-like encoding for address creation
 	buffer := bytes.NewBuffer([]byte{})
+
+	// Encode the nonce as a byte slice using custom encoding
 	nonceBytes := encodeUint(nonce)
+
+	// Calculate the total size of the encoded data:
+	// 0xc0 is the RLP list prefix, plus the lengths of nonceBytes, addr, and 1 for the address type
 	size := 0xc0 + len(nonceBytes) + len(addr) + 1
+
+	// Write the size byte to the buffer
 	buffer.Write([]byte{byte(size)})
+
+	// Write the address type prefix (0x94 for 20-byte address) to the buffer
 	buffer.Write([]byte{0x94})
+
+	// Write the address bytes to the buffer
 	buffer.Write(addr.Bytes())
+
+	// Write the encoded nonce bytes to the buffer
 	buffer.Write(nonceBytes)
+
+	// Get the final byte slice representing the encoded data
 	data := buffer.Bytes()
+
 	return types.BytesToAddress(hash.Keccak256Hash(data).Bytes()[12:])
 }
 
