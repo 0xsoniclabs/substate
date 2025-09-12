@@ -130,11 +130,19 @@ func TestUpdateDB_MakeDefaultUpdateDBFromBaseDBWithEncoding(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	db2, err := MakeDefaultUpdateDBFromBaseDBWithEncoding(db, DefaultEncodingSchema)
-	assert.NoError(t, err)
-	assert.NotNil(t, db2)
-	assert.Equal(t, db.GetSubstateEncoding(), db2.GetSubstateEncoding())
-	assert.Equal(t, db2.GetBackend(), db.GetBackend())
+	t.Run("success", func(t *testing.T) {
+		db2, err := MakeDefaultUpdateDBFromBaseDBWithEncoding(db, DefaultEncodingSchema)
+		assert.NoError(t, err)
+		assert.NotNil(t, db2)
+		assert.Equal(t, db.GetSubstateEncoding(), db2.GetSubstateEncoding())
+		assert.Equal(t, db2.GetBackend(), db.GetBackend())
+	})
+
+	t.Run("error", func(t *testing.T) {
+		db2, err := MakeDefaultUpdateDBFromBaseDBWithEncoding(db, "invalid-schema")
+		assert.Error(t, err)
+		assert.Nil(t, db2)
+	})
 }
 
 func TestCodeDB_ConstructorSuccess(t *testing.T) {
@@ -241,11 +249,19 @@ func TestSubstateDB_MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(t *testi
 		t.Fatal(err)
 	}
 
-	db2, err := MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(db, DefaultEncodingSchema)
-	assert.NoError(t, err)
-	assert.NotNil(t, db2)
-	assert.Equal(t, db2.GetSubstateEncoding(), db.GetSubstateEncoding())
-	assert.Equal(t, db2.GetBackend(), db.GetBackend())
+	t.Run("success", func(t *testing.T) {
+		db2, err := MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(db, DefaultEncodingSchema)
+		assert.NoError(t, err)
+		assert.NotNil(t, db2)
+		assert.Equal(t, db2.GetSubstateEncoding(), db.GetSubstateEncoding())
+		assert.Equal(t, db2.GetBackend(), db.GetBackend())
+	})
+
+	t.Run("error", func(t *testing.T) {
+		db2, err := MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(db, "invalid-schema")
+		assert.Error(t, err)
+		assert.Nil(t, db2)
+	})
 }
 
 func TestSubstateDB_ConstructorSuccess(t *testing.T) {
