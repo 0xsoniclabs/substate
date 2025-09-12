@@ -396,7 +396,7 @@ func TestUpdateDB_GetUpdateSetFail(t *testing.T) {
 	assert.Nil(t, result)
 	assert.Contains(t, err.Error(), expectedErr.Error())
 
-	// Case 2: decode error
+	// Case 2: Decode error
 	mockDB.EXPECT().Get(key).Return([]byte{1, 2, 3}, nil) // Invalid RLP data
 
 	result, err = db.GetUpdateSet(blockNum)

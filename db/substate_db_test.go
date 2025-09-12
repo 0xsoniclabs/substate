@@ -400,7 +400,7 @@ func TestSubstateDB_GetSubstateFail(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Nil(t, result)
 
-	// Case 2: decode error
+	// Case 2: Decode error
 	err = db.SetSubstateEncoding(ProtobufEncodingSchema)
 	if err != nil {
 		t.Fatal(err)
@@ -482,7 +482,7 @@ func TestSubstateDB_GetBlockSubstatesFail(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Nil(t, substates)
 
-	// Case 3: decode error
+	// Case 3: Decode error
 	kv = &testutil.KeyValue{}
 	kv.PutU(SubstateDBKey(1, 1), []byte{1, 2, 3})
 	mockIter = iterator.NewArrayIterator(kv)
