@@ -220,6 +220,20 @@ func TestSubstateDB_MakeDefaultDestroyedAccountDBFromBaseDB(t *testing.T) {
 	assert.Equal(t, db2.GetBackend(), db.GetBackend())
 }
 
+func TestSubstateDB_MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(t *testing.T) {
+	dbPath := t.TempDir() + "test-db"
+	db, err := NewDefaultDestroyedAccountDB(dbPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	db2, err := MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(db, DefaultEncodingSchema)
+	assert.NoError(t, err)
+	assert.NotNil(t, db2)
+	assert.Equal(t, db2.GetSubstateEncoding(), db.GetSubstateEncoding())
+	assert.Equal(t, db2.GetBackend(), db.GetBackend())
+}
+
 func TestSubstateDB_ConstructorSuccess(t *testing.T) {
 	dbPath := t.TempDir() + "test-db"
 	db, err := NewDefaultSubstateDB(dbPath)

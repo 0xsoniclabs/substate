@@ -43,6 +43,7 @@ func NewDefaultDestroyedAccountDB(destroyedAccountDir string) (DestroyedAccountD
 	return newDestroyedAccountDB(destroyedAccountDir, nil, nil, nil)
 }
 
+// Deprecated: use MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding instead
 func MakeDefaultDestroyedAccountDBFromBaseDB(db BaseDB) DestroyedAccountDB {
 	encoding, err := newDestroyedAccountEncoding(DefaultEncodingSchema)
 	if err != nil {
@@ -55,6 +56,17 @@ func MakeDefaultDestroyedAccountDBFromBaseDB(db BaseDB) DestroyedAccountDB {
 	}
 }
 
+func MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(db BaseDB, schema SubstateEncodingSchema) (DestroyedAccountDB, error) {
+	encoding, err := newDestroyedAccountEncoding(schema)
+	if err != nil {
+		return nil, err
+	}
+	return &destroyedAccountDB{
+		&baseDB{backend: db.GetBackend()},
+		*encoding,
+	}, nil
+}
+
 func NewReadOnlyDestroyedAccountDB(destroyedAccountDir string) (DestroyedAccountDB, error) {
 	return newDestroyedAccountDB(destroyedAccountDir, &opt.Options{ReadOnly: true}, nil, nil)
 }
@@ -64,7 +76,7 @@ func newDestroyedAccountDB(destroyedAccountDir string, o *opt.Options, wo *opt.W
 	if err != nil {
 		return nil, fmt.Errorf("error opening deletion-db %s: %w", destroyedAccountDir, err)
 	}
-	return MakeDefaultDestroyedAccountDBFromBaseDB(backend), nil
+	return MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(backend, DefaultEncodingSchema)
 }
 
 type destroyedAccountDB struct {
