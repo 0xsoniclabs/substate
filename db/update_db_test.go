@@ -43,43 +43,34 @@ func newTestUpdateDB(t *testing.T, db *MockCodeDB, schema SubstateEncodingSchema
 }
 
 func TestUpdateDB_PutUpdateSet(t *testing.T) {
-	t.Run("RLP", func(t *testing.T) {
-		dbPath := t.TempDir() + "test-db"
-		db, err := createDbAndPutUpdateSet(dbPath, RLPEncodingSchema)
-		if err != nil {
-			t.Fatal(err)
-		}
+	testCases := []struct {
+		name   string
+		schema SubstateEncodingSchema
+	}{
+		{"RLP", RLPEncodingSchema},
+		{"PB", ProtobufEncodingSchema},
+	}
 
-		s := new(leveldb.DBStats)
-		err = db.stats(s)
-		if err != nil {
-			t.Fatalf("cannot get db stats; %v", err)
-		}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			dbPath := t.TempDir() + "test-db"
+			db, err := createDbAndPutUpdateSet(dbPath, tc.schema)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		// 54 is the base write when creating levelDB
-		if s.IOWrite <= 54 {
-			t.Fatal("db file should have something inside")
-		}
-	})
+			s := new(leveldb.DBStats)
+			err = db.stats(s)
+			if err != nil {
+				t.Fatalf("cannot get db stats; %v", err)
+			}
 
-	t.Run("PB", func(t *testing.T) {
-		dbPath := t.TempDir() + "test-db"
-		db, err := createDbAndPutUpdateSet(dbPath, ProtobufEncodingSchema)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		s := new(leveldb.DBStats)
-		err = db.stats(s)
-		if err != nil {
-			t.Fatalf("cannot get db stats; %v", err)
-		}
-
-		// 54 is the base write when creating levelDB
-		if s.IOWrite <= 54 {
-			t.Fatal("db file should have something inside")
-		}
-	})
+			// 54 is the base write when creating levelDB
+			if s.IOWrite <= 54 {
+				t.Fatal("db file should have something inside")
+			}
+		})
+	}
 }
 
 func TestUpdateDB_HasUpdateSet(t *testing.T) {
@@ -100,47 +91,36 @@ func TestUpdateDB_HasUpdateSet(t *testing.T) {
 }
 
 func TestUpdateDB_GetUpdateSet(t *testing.T) {
-	t.Run("RLP", func(t *testing.T) {
-		dbPath := t.TempDir() + "test-db"
-		db, err := createDbAndPutUpdateSet(dbPath, RLPEncodingSchema)
-		if err != nil {
-			t.Fatal(err)
-		}
+	testCases := []struct {
+		name   string
+		schema SubstateEncodingSchema
+	}{
+		{"RLP", RLPEncodingSchema},
+		{"PB", ProtobufEncodingSchema},
+	}
 
-		us, err := db.GetUpdateSet(testUpdateSet.Block)
-		if err != nil {
-			t.Fatalf("get update-set returned error; %v", err)
-		}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			dbPath := t.TempDir() + "test-db"
+			db, err := createDbAndPutUpdateSet(dbPath, tc.schema)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		if us == nil {
-			t.Fatal("update-set is nil")
-		}
+			us, err := db.GetUpdateSet(testUpdateSet.Block)
+			if err != nil {
+				t.Fatalf("get update-set returned error; %v", err)
+			}
 
-		if !us.Equal(testUpdateSet) {
-			t.Fatal("substates are different")
-		}
-	})
+			if us == nil {
+				t.Fatal("update-set is nil")
+			}
 
-	t.Run("PB", func(t *testing.T) {
-		dbPath := t.TempDir() + "test-db"
-		db, err := createDbAndPutUpdateSet(dbPath, ProtobufEncodingSchema)
-		if err != nil {
-			t.Fatal(err)
-		}
-		us, err := db.GetUpdateSet(testUpdateSet.Block)
-		if err != nil {
-			t.Fatalf("get update-set returned error; %v", err)
-		}
-
-		if us == nil {
-			t.Fatal("update-set is nil")
-		}
-
-		if !us.Equal(testUpdateSet) {
-			t.Fatal("substates are different")
-		}
-	})
-
+			if !us.Equal(testUpdateSet) {
+				t.Fatal("substates are different")
+			}
+		})
+	}
 }
 
 func TestUpdateDB_DeleteUpdateSet(t *testing.T) {
