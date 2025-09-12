@@ -61,6 +61,7 @@ func NewUpdateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.Read
 	return newUpdateDB(path, o, wo, ro)
 }
 
+// Deprecated: use MakeDefaultUpdateDBFromBaseDBWithEncoding instead
 func MakeDefaultUpdateDBFromBaseDB(db BaseDB) UpdateDB {
 	encoding, err := newUpdateSetEncoding(DefaultEncodingSchema)
 	if err != nil {
@@ -71,6 +72,17 @@ func MakeDefaultUpdateDBFromBaseDB(db BaseDB) UpdateDB {
 		&codeDB{&baseDB{backend: db.GetBackend()}},
 		*encoding,
 	}
+}
+
+func MakeDefaultUpdateDBFromBaseDBWithEncoding(db BaseDB, schema SubstateEncodingSchema) (UpdateDB, error) {
+	encoding, err := newUpdateSetEncoding(schema)
+	if err != nil {
+		return nil, err
+	}
+	return &updateDB{
+		&codeDB{&baseDB{backend: db.GetBackend()}},
+		*encoding,
+	}, nil
 }
 
 // NewReadOnlyUpdateDB creates a new instance of read-only UpdateDB.

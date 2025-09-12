@@ -123,6 +123,20 @@ func TestUpdateDB_MakeDefaultUpdateDBFromBaseDB(t *testing.T) {
 	assert.Equal(t, db2.GetBackend(), db.GetBackend())
 }
 
+func TestUpdateDB_MakeDefaultUpdateDBFromBaseDBWithEncoding(t *testing.T) {
+	dbPath := t.TempDir() + "test-db"
+	db, err := NewDefaultUpdateDB(dbPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	db2, err := MakeDefaultUpdateDBFromBaseDBWithEncoding(db, DefaultEncodingSchema)
+	assert.NoError(t, err)
+	assert.NotNil(t, db2)
+	assert.Equal(t, db.GetSubstateEncoding(), db2.GetSubstateEncoding())
+	assert.Equal(t, db2.GetBackend(), db.GetBackend())
+}
+
 func TestCodeDB_ConstructorSuccess(t *testing.T) {
 	dbPath := t.TempDir() + "test-db"
 
