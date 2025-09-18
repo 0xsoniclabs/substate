@@ -50,6 +50,7 @@ type rawEntry struct {
 
 type genericIterator[T comparable] struct {
 	err      error
+	errMu    sync.Mutex
 	iter     ldbiterator.Iterator
 	resultCh chan T
 	wg       *sync.WaitGroup
@@ -66,10 +67,22 @@ func newIterator[T comparable](iter ldbiterator.Iterator) genericIterator[T] {
 	}
 }
 
+func (i *genericIterator[T]) setError(err error) {
+	i.errMu.Lock()
+	i.err = err
+	i.errMu.Unlock()
+}
+
+func (i *genericIterator[T]) getError() error {
+	i.errMu.Lock()
+	defer i.errMu.Unlock()
+	return i.err
+}
+
 // Next returns false if genericIterator is at its end. Otherwise, it returns true.
 // Note: False does not stop the genericIterator. Release() should be called.
 func (i *genericIterator[T]) Next() bool {
-	if i.err != nil {
+	if err := i.getError(); err != nil {
 		return false
 	}
 	i.cur = <-i.resultCh
@@ -79,7 +92,7 @@ func (i *genericIterator[T]) Next() bool {
 
 // Error returns iterators error if any.
 func (i *genericIterator[T]) Error() error {
-	return errors.Join(i.err, i.iter.Error())
+	return errors.Join(i.getError(), i.iter.Error())
 }
 
 // Value returns current value hold by the genericIterator.

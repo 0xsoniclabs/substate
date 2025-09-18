@@ -78,7 +78,7 @@ func (i *updateSetIterator) start(_ int) {
 			// This avoids filling channels which huge data objects that are not consumed.
 			block, err := DecodeUpdateSetKey(key)
 			if err != nil {
-				i.err = err
+				i.setError(err)
 				return
 			}
 			if block > i.endBlock {
@@ -92,7 +92,7 @@ func (i *updateSetIterator) start(_ int) {
 
 			us, err := i.decode(raw)
 			if err != nil {
-				i.err = err
+				i.setError(err)
 				return
 			}
 
