@@ -94,7 +94,7 @@ func (i *substateIterator) start(numWorkers int) {
 					}
 					transaction, err := i.decode(raw)
 					if err != nil {
-						i.err = err
+						i.setError(err)
 						errCh <- err
 						return
 					}

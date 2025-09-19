@@ -37,7 +37,7 @@ pipeline {
         stage('Run go tests') {
             steps {
                 sh 'go mod tidy'
-                sh 'go test ./... -timeout 30m'
+                sh 'go test -race ./... -timeout 30m'
             }
         }
     }
