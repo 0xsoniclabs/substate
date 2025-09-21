@@ -387,6 +387,126 @@ func TestDecode_GetContractAddressWithTo(t *testing.T) {
 	assert.Equal(t, types.Address{}, address)
 }
 
+func TestDecode_GetContractAddress(t *testing.T) {
+	msg := &Substate_TxMessage{
+		From:  []byte{1},
+		Nonce: uint64Ptr(9),
+	}
+
+	address := msg.getContractAddress()
+
+	assert.Equal(t, types.Address{0x94, 0xed, 0xc3, 0x20, 0x46, 0x6d, 0x68, 0xc0, 0xe8, 0xc, 0x3e, 0x6f, 0x45, 0x43, 0x75, 0xfb, 0x95, 0x7e, 0x10, 0x38}, address)
+
+	msg = &Substate_TxMessage{
+		From:  []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+		Nonce: nil,
+	}
+
+	address = msg.getContractAddress()
+
+	assert.Equal(t, types.Address{0x43, 0x33, 0xeb, 0x62, 0x7, 0x26, 0xc2, 0xfa, 0x9, 0xf4, 0x4, 0xe5, 0x42, 0x4c, 0x6b, 0x54, 0x85, 0x2, 0x3, 0xbf}, address)
+}
+
+func TestDecode_createAddress2(t *testing.T) {
+	addr := types.Address{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
+	nonce := uint64(18446744073709551615)
+	assert.Equal(t, types.Address{0x9a, 0x53, 0x6c, 0xde, 0xb1, 0x3e, 0xc1, 0xa0, 0xc9, 0x3e, 0xcc, 0x66, 0xc9, 0xe2, 0x53, 0x47, 0x9d, 0x85, 0xde, 0x29}, createAddress(addr, nonce))
+
+	addr = types.Address{1, 2, 3, 4}
+	nonce = uint64(0)
+	assert.Equal(t, types.Address{0xc7, 0x68, 0x3a, 0x8a, 0x54, 0xb2, 0x1d, 0x7e, 0x5b, 0x96, 0x24, 0xa8, 0xaf, 0xe6, 0x1c, 0x2d, 0x9b, 0x25, 0x96, 0x7c}, createAddress(addr, nonce))
+
+	addr = types.Address{1, 2, 3, 4}
+	nonce = uint64(1)
+	assert.Equal(t, types.Address{0x29, 0xdb, 0x64, 0xcb, 0xeb, 0x87, 0xc2, 0xde, 0x17, 0x4, 0x5b, 0x6f, 0x67, 0xe4, 0x1e, 0x88, 0xab, 0xba, 0x6b, 0x1}, createAddress(addr, nonce))
+
+	addr = types.Address{1, 2, 3, 4}
+	nonce = uint64(65535)
+	assert.Equal(t, types.Address{0x3d, 0x92, 0xa2, 0xfc, 0xc7, 0x37, 0xac, 0x3c, 0xce, 0xd4, 0x1, 0x1b, 0x81, 0x38, 0xf, 0xcc, 0xc5, 0x1e, 0x21, 0x7a}, createAddress(addr, nonce))
+
+	addr = types.Address{1, 2, 3, 4}
+	nonce = uint64(32767)
+	assert.Equal(t, types.Address{0x5e, 0xb5, 0xeb, 0x5e, 0xf, 0x41, 0xd8, 0xdd, 0x9a, 0x4f, 0x24, 0xf3, 0x5d, 0x36, 0xed, 0x6b, 0x8f, 0x5d, 0xd1, 0xa9}, createAddress(addr, nonce))
+}
+
+func TestDecode_putInt(t *testing.T) {
+	testCases := []struct {
+		name          string
+		input         uint64
+		expectedSize  int
+		expectedBytes []byte
+	}{
+		{
+			name:          "single byte (< 1<<8)",
+			input:         0x7F,
+			expectedSize:  1,
+			expectedBytes: []byte{0x7F},
+		},
+		{
+			name:          "two bytes (< 1<<16)",
+			input:         0x1234,
+			expectedSize:  2,
+			expectedBytes: []byte{0x12, 0x34},
+		},
+		{
+			name:          "three bytes (< 1<<24)",
+			input:         0x123456,
+			expectedSize:  3,
+			expectedBytes: []byte{0x12, 0x34, 0x56},
+		},
+		{
+			name:          "four bytes (< 1<<32)",
+			input:         0x12345678,
+			expectedSize:  4,
+			expectedBytes: []byte{0x12, 0x34, 0x56, 0x78},
+		},
+		{
+			name:          "five bytes (< 1<<40)",
+			input:         0x1234567890,
+			expectedSize:  5,
+			expectedBytes: []byte{0x12, 0x34, 0x56, 0x78, 0x90},
+		},
+		{
+			name:          "six bytes (< 1<<48)",
+			input:         0x123456789012,
+			expectedSize:  6,
+			expectedBytes: []byte{0x12, 0x34, 0x56, 0x78, 0x90, 0x12},
+		},
+		{
+			name:          "seven bytes (< 1<<56)",
+			input:         0x12345678901234,
+			expectedSize:  7,
+			expectedBytes: []byte{0x12, 0x34, 0x56, 0x78, 0x90, 0x12, 0x34},
+		},
+		{
+			name:          "eight bytes (>= 1<<56)",
+			input:         0x1234567890123456,
+			expectedSize:  8,
+			expectedBytes: []byte{0x12, 0x34, 0x56, 0x78, 0x90, 0x12, 0x34, 0x56},
+		},
+		{
+			name:          "max uint64",
+			input:         0xFFFFFFFFFFFFFFFF,
+			expectedSize:  8,
+			expectedBytes: []byte{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
+		},
+	}
+
+	for _, tc := range testCases {
+		// Create a buffer large enough for any size
+		buf := make([]byte, 8)
+
+		// Call the function
+		size := putInt(buf, tc.input)
+
+		// Check the returned size
+		assert.Equal(t, tc.expectedSize, size)
+
+		// Check the bytes written to the buffer
+		assert.Equal(t, tc.expectedBytes, buf[:size])
+	}
+}
+
 // Helper function to create uint64 pointer
 func uint64Ptr(v uint64) *uint64 {
 	return &v

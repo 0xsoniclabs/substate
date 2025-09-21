@@ -119,7 +119,30 @@ func TestUpdateDB_MakeDefaultUpdateDBFromBaseDB(t *testing.T) {
 
 	db2 := MakeDefaultUpdateDBFromBaseDB(db)
 	assert.NotNil(t, db2)
-	assert.Equal(t, db, db2)
+	assert.Equal(t, db.GetSubstateEncoding(), db2.GetSubstateEncoding())
+	assert.Equal(t, db2.GetBackend(), db.GetBackend())
+}
+
+func TestUpdateDB_MakeDefaultUpdateDBFromBaseDBWithEncoding(t *testing.T) {
+	dbPath := t.TempDir() + "test-db"
+	db, err := NewDefaultUpdateDB(dbPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Run("success", func(t *testing.T) {
+		db2, err := MakeDefaultUpdateDBFromBaseDBWithEncoding(db, DefaultEncodingSchema)
+		assert.NoError(t, err)
+		assert.NotNil(t, db2)
+		assert.Equal(t, db.GetSubstateEncoding(), db2.GetSubstateEncoding())
+		assert.Equal(t, db2.GetBackend(), db.GetBackend())
+	})
+
+	t.Run("error", func(t *testing.T) {
+		db2, err := MakeDefaultUpdateDBFromBaseDBWithEncoding(db, "invalid-schema")
+		assert.Error(t, err)
+		assert.Nil(t, db2)
+	})
 }
 
 func TestCodeDB_ConstructorSuccess(t *testing.T) {
@@ -215,7 +238,30 @@ func TestSubstateDB_MakeDefaultDestroyedAccountDBFromBaseDB(t *testing.T) {
 
 	db2 := MakeDefaultDestroyedAccountDBFromBaseDB(db)
 	assert.NotNil(t, db2)
-	assert.Equal(t, db, db2)
+	assert.Equal(t, db2.GetSubstateEncoding(), db.GetSubstateEncoding())
+	assert.Equal(t, db2.GetBackend(), db.GetBackend())
+}
+
+func TestSubstateDB_MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(t *testing.T) {
+	dbPath := t.TempDir() + "test-db"
+	db, err := NewDefaultDestroyedAccountDB(dbPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Run("success", func(t *testing.T) {
+		db2, err := MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(db, DefaultEncodingSchema)
+		assert.NoError(t, err)
+		assert.NotNil(t, db2)
+		assert.Equal(t, db2.GetSubstateEncoding(), db.GetSubstateEncoding())
+		assert.Equal(t, db2.GetBackend(), db.GetBackend())
+	})
+
+	t.Run("error", func(t *testing.T) {
+		db2, err := MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(db, "invalid-schema")
+		assert.Error(t, err)
+		assert.Nil(t, db2)
+	})
 }
 
 func TestSubstateDB_ConstructorSuccess(t *testing.T) {

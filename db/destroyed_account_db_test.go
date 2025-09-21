@@ -5,22 +5,30 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/syndtr/goleveldb/leveldb"
-
 	"github.com/0xsoniclabs/substate/types"
-	"github.com/0xsoniclabs/substate/types/rlp"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/iterator"
 	"github.com/syndtr/goleveldb/leveldb/testutil"
 	"go.uber.org/mock/gomock"
 )
+
+func newTestDestroyedAccountDB(t *testing.T, db BaseDB, schema SubstateEncodingSchema) *destroyedAccountDB {
+	encoding, err := newDestroyedAccountEncoding(schema)
+	require.NoError(t, err)
+	return &destroyedAccountDB{
+		db,
+		*encoding,
+	}
+}
 
 func TestDestroyedAccountDB_SetDestroyedAccountsSuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	baseDb := NewMockBaseDB(ctrl)
-	db := &destroyedAccountDB{baseDb}
+	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 
 	block := uint64(1)
 	tx := 2
@@ -37,7 +45,7 @@ func TestDestroyedAccountDB_SetDestroyedAccountsFail(t *testing.T) {
 	defer ctrl.Finish()
 
 	baseDb := NewMockBaseDB(ctrl)
-	db := &destroyedAccountDB{baseDb}
+	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 
 	block := uint64(1)
 	tx := 2
@@ -54,22 +62,43 @@ func TestDestroyedAccountDB_GetDestroyedAccountsSuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
-	db := &destroyedAccountDB{baseDb}
+	testCases := []struct {
+		name     string
+		schema   SubstateEncodingSchema
+		encodeFn func(SuicidedAccountLists) ([]byte, error)
+	}{
+		{
+			name:     "RLP Encoding",
+			schema:   RLPEncodingSchema,
+			encodeFn: encodeSuicidedAccountListRLP,
+		},
+		{
+			name:     "PB Encoding",
+			schema:   ProtobufEncodingSchema,
+			encodeFn: encodeSuicidedAccountListPB,
+		},
+	}
 
-	block := uint64(1)
-	tx := 2
-	expectedDestroyed := []types.Address{{1}, {2}}
-	expectedResurrected := []types.Address{{3}}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			baseDb := NewMockBaseDB(ctrl)
+			db := newTestDestroyedAccountDB(t, baseDb, tc.schema)
 
-	list := SuicidedAccountLists{DestroyedAccounts: expectedDestroyed, ResurrectedAccounts: expectedResurrected}
-	value, _ := rlp.EncodeToBytes(list)
+			block := uint64(1)
+			tx := 2
+			expectedDestroyed := []types.Address{{1}, {2}}
+			expectedResurrected := []types.Address{{3}}
 
-	baseDb.EXPECT().Get(EncodeDestroyedAccountKey(block, tx)).Return(value, nil)
-	destroyed, resurrected, err := db.GetDestroyedAccounts(block, tx)
-	assert.Nil(t, err)
-	assert.Equal(t, expectedDestroyed, destroyed)
-	assert.Equal(t, expectedResurrected, resurrected)
+			list := SuicidedAccountLists{DestroyedAccounts: expectedDestroyed, ResurrectedAccounts: expectedResurrected}
+			value, _ := tc.encodeFn(list)
+
+			baseDb.EXPECT().Get(EncodeDestroyedAccountKey(block, tx)).Return(value, nil)
+			destroyed, resurrected, err := db.GetDestroyedAccounts(block, tx)
+			assert.Nil(t, err)
+			assert.Equal(t, expectedDestroyed, destroyed)
+			assert.Equal(t, expectedResurrected, resurrected)
+		})
+	}
 }
 
 func TestDestroyedAccountDB_GetDestroyedAccountsFail(t *testing.T) {
@@ -77,7 +106,7 @@ func TestDestroyedAccountDB_GetDestroyedAccountsFail(t *testing.T) {
 	defer ctrl.Finish()
 
 	baseDb := NewMockBaseDB(ctrl)
-	db := &destroyedAccountDB{baseDb}
+	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 
 	block := uint64(1)
 	tx := 2
@@ -100,49 +129,65 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeSuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
-	kv := &testutil.KeyValue{}
-	// First key
-	key1 := EncodeDestroyedAccountKey(5, 0)
-	list1 := SuicidedAccountLists{
-		DestroyedAccounts:   []types.Address{{1}, {2}},
-		ResurrectedAccounts: []types.Address{},
+	testCases := []struct {
+		name     string
+		schema   SubstateEncodingSchema
+		encodeFn func(SuicidedAccountLists) ([]byte, error)
+	}{
+		{
+			name:     "RLP Encoding",
+			schema:   RLPEncodingSchema,
+			encodeFn: encodeSuicidedAccountListRLP,
+		},
+		{
+			name:     "PB Encoding",
+			schema:   ProtobufEncodingSchema,
+			encodeFn: encodeSuicidedAccountListPB,
+		},
 	}
-	value1, _ := rlp.EncodeToBytes(list1)
 
-	// Second key
-	key2 := EncodeDestroyedAccountKey(7, 0)
-	list2 := SuicidedAccountLists{
-		DestroyedAccounts:   []types.Address{{3}},
-		ResurrectedAccounts: []types.Address{{1}},
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			baseDb := NewMockBaseDB(ctrl)
+			kv := &testutil.KeyValue{}
+			key1 := EncodeDestroyedAccountKey(5, 0)
+			list1 := SuicidedAccountLists{
+				DestroyedAccounts:   []types.Address{{1}, {2}},
+				ResurrectedAccounts: []types.Address{},
+			}
+			value1, _ := tc.encodeFn(list1)
+			key2 := EncodeDestroyedAccountKey(7, 0)
+			list2 := SuicidedAccountLists{
+				DestroyedAccounts:   []types.Address{{3}},
+				ResurrectedAccounts: []types.Address{{1}},
+			}
+			value2, _ := tc.encodeFn(list2)
+			key3 := EncodeDestroyedAccountKey(99, 0)
+			list3 := SuicidedAccountLists{
+				DestroyedAccounts:   []types.Address{{3}},
+				ResurrectedAccounts: []types.Address{{1}},
+			}
+			value3, _ := tc.encodeFn(list3)
+			kv.PutU(key1, value1)
+			kv.PutU(key2, value2)
+			kv.PutU(key3, value3)
+
+			iter := iterator.NewArrayIterator(kv)
+			db := newTestDestroyedAccountDB(t, baseDb, tc.schema)
+
+			from := uint64(1)
+			to := uint64(10)
+
+			startingBlockBytes := make([]byte, 8)
+			binary.BigEndian.PutUint64(startingBlockBytes, from)
+
+			baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), startingBlockBytes).Return(iter)
+
+			accounts, err := db.GetAccountsDestroyedInRange(from, to)
+			assert.NoError(t, err)
+			assert.ElementsMatch(t, []types.Address{{2}, {3}}, accounts)
+		})
 	}
-	value2, _ := rlp.EncodeToBytes(list2)
-
-	// Third key
-	key3 := EncodeDestroyedAccountKey(99, 0)
-	list3 := SuicidedAccountLists{
-		DestroyedAccounts:   []types.Address{{3}},
-		ResurrectedAccounts: []types.Address{{1}},
-	}
-	value3, _ := rlp.EncodeToBytes(list3)
-
-	kv.PutU(key1, value1)
-	kv.PutU(key2, value2)
-	kv.PutU(key3, value3)
-	iter := iterator.NewArrayIterator(kv)
-	db := &destroyedAccountDB{baseDb}
-
-	from := uint64(1)
-	to := uint64(10)
-
-	startingBlockBytes := make([]byte, 8)
-	binary.BigEndian.PutUint64(startingBlockBytes, from)
-
-	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), startingBlockBytes).Return(iter)
-
-	accounts, err := db.GetAccountsDestroyedInRange(from, to)
-	assert.Nil(t, err)
-	assert.ElementsMatch(t, []types.Address{{2}, {3}}, accounts)
 }
 
 func TestDestroyedAccountDB_GetAccountsDestroyedInRangeDecodeKeyFail(t *testing.T) {
@@ -153,7 +198,7 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeDecodeKeyFail(t *testing.
 	kv := &testutil.KeyValue{}
 	kv.PutU([]byte{1}, []byte("invalid_key"))
 	iter := iterator.NewArrayIterator(kv)
-	db := &destroyedAccountDB{baseDb}
+	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 
 	from := uint64(1)
 	to := uint64(10)
@@ -177,7 +222,7 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeDecodeValueFail(t *testin
 	key := EncodeDestroyedAccountKey(5, 0)
 	kv.PutU(key, []byte("invalid_key"))
 	iter := iterator.NewArrayIterator(kv)
-	db := &destroyedAccountDB{baseDb}
+	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 
 	from := uint64(1)
 	to := uint64(10)
@@ -202,7 +247,7 @@ func TestDestroyedAccountDB_GetFirstKeySuccess(t *testing.T) {
 	kv.PutU(EncodeDestroyedAccountKey(5, 0), []byte("value0"))
 	kv.PutU(EncodeDestroyedAccountKey(6, 1), []byte("value1"))
 	iter := iterator.NewArrayIterator(kv)
-	db := &destroyedAccountDB{baseDb}
+	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 
 	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
 
@@ -221,7 +266,7 @@ func TestDestroyedAccountDB_GetFirstKeyDecodeFail(t *testing.T) {
 	kv := &testutil.KeyValue{}
 	kv.PutU([]byte{1}, []byte("value"))
 	iter := iterator.NewArrayIterator(kv)
-	db := &destroyedAccountDB{baseDb}
+	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
 	block, err := db.GetFirstKey()
 	assert.NotNil(t, err)
@@ -243,7 +288,7 @@ func TestDestroyedAccountDB_GetFirstKeyNoUpdateSetFail(t *testing.T) {
 	baseDb := NewMockBaseDB(ctrl)
 	kv := &testutil.KeyValue{}
 	iter := iterator.NewArrayIterator(kv)
-	db := &destroyedAccountDB{baseDb}
+	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 
 	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
 
@@ -262,7 +307,7 @@ func TestDestroyedAccountDB_GetLastKeySuccess(t *testing.T) {
 	kv.PutU(EncodeDestroyedAccountKey(10, 1), []byte("value1"))
 	iter := iterator.NewArrayIterator(kv)
 
-	db := &destroyedAccountDB{baseDb}
+	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 
 	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
 
@@ -281,7 +326,7 @@ func TestDestroyedAccountDB_GetLastKeyFail(t *testing.T) {
 	kv := &testutil.KeyValue{}
 	kv.PutU([]byte{1}, []byte("invalid_key"))
 	iter := iterator.NewArrayIterator(kv)
-	db := &destroyedAccountDB{baseDb}
+	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
 
 	block, err := db.GetLastKey()
@@ -329,27 +374,5 @@ func TestDestroyedAccountDB_DecodeDestroyedAccountKeyFail(t *testing.T) {
 	invalidPrefix := make([]byte, len(DestroyedAccountPrefix)+12)
 	copy(invalidPrefix, "xx")
 	_, _, err = DecodeDestroyedAccountKey(invalidPrefix)
-	assert.NotNil(t, err)
-}
-
-func TestDestroyedAccountDB_DecodeAddressListSuccess(t *testing.T) {
-	expectedDestroyed := []types.Address{{1}, {2}}
-	expectedResurrected := []types.Address{{3}}
-
-	list := SuicidedAccountLists{
-		DestroyedAccounts:   expectedDestroyed,
-		ResurrectedAccounts: expectedResurrected,
-	}
-	encoded, _ := rlp.EncodeToBytes(list)
-
-	decoded, err := DecodeAddressList(encoded)
-	assert.Nil(t, err)
-	assert.Equal(t, expectedDestroyed, decoded.DestroyedAccounts)
-	assert.Equal(t, expectedResurrected, decoded.ResurrectedAccounts)
-}
-
-func TestDestroyedAccountDB_DecodeAddressListFail(t *testing.T) {
-	// Invalid RLP data
-	_, err := DecodeAddressList([]byte{1, 2, 3})
 	assert.NotNil(t, err)
 }

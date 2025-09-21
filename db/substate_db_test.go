@@ -3,9 +3,10 @@ package db
 import (
 	"errors"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"math/big"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/holiman/uint256"
 

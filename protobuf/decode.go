@@ -1,15 +1,14 @@
 package protobuf
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
-
-	"github.com/holiman/uint256"
 
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
 	"github.com/0xsoniclabs/substate/types/hash"
-	trlp "github.com/0xsoniclabs/substate/types/rlp"
+	"github.com/holiman/uint256"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
@@ -270,8 +269,111 @@ func (msg *Substate_TxMessage) getContractAddress() types.Address {
 // createAddress creates an address given the bytes and the nonce
 // mimics crypto.CreateAddress, to avoid cyclical dependency.
 func createAddress(addr types.Address, nonce uint64) types.Address {
-	data, _ := trlp.EncodeToBytes([]interface{}{addr, nonce})
+	// This is equivalent to the RLP encoding of []interface{}{addr, nonce}
+	// Old code using trlp:
+	// data, _ := trlp.EncodeToBytes([]interface{}{addr, nonce})
+
+	// Create a new buffer to build the RLP-like encoding for address creation
+	buffer := bytes.NewBuffer([]byte{})
+
+	// Encode the nonce as a byte slice using custom encoding
+	nonceBytes := encodeUint(nonce)
+
+	// Calculate the total size of the encoded data:
+	// 0xc0 is the RLP list prefix, plus the lengths of nonceBytes, addr, and 1 for the address type
+	size := 0xc0 + len(nonceBytes) + len(addr) + 1
+
+	// Write the size byte to the buffer
+	buffer.Write([]byte{byte(size)})
+
+	// Write the address type prefix (0x94 for 20-byte address) to the buffer
+	buffer.Write([]byte{0x94})
+
+	// Write the address bytes to the buffer
+	buffer.Write(addr.Bytes())
+
+	// Write the encoded nonce bytes to the buffer
+	buffer.Write(nonceBytes)
+
+	// Get the final byte slice representing the encoded data
+	data := buffer.Bytes()
+
 	return types.BytesToAddress(hash.Keccak256Hash(data).Bytes()[12:])
+}
+
+// encodeUint encodes a uint64 into a byte array.
+func encodeUint(i uint64) []byte {
+	if i == 0 {
+		return []byte{0x80}
+	} else if i < 128 {
+		// fits single byte
+		return []byte{byte(i)}
+	} else {
+		// 1 byte header + maximum 8 bytes for uint64
+		buf := make([]byte, 9)
+		s := putInt(buf[1:], i)
+		buf[0] = 0x80 + byte(s)
+		return buf[:s+1]
+	}
+}
+
+// putInt writes i to the beginning of b in big endian byte
+// order, using the least number of bytes needed to represent i.
+func putInt(b []byte, i uint64) (size int) {
+	switch {
+	case i < (1 << 8):
+		b[0] = byte(i)
+		return 1
+	case i < (1 << 16):
+		b[0] = byte(i >> 8)
+		b[1] = byte(i)
+		return 2
+	case i < (1 << 24):
+		b[0] = byte(i >> 16)
+		b[1] = byte(i >> 8)
+		b[2] = byte(i)
+		return 3
+	case i < (1 << 32):
+		b[0] = byte(i >> 24)
+		b[1] = byte(i >> 16)
+		b[2] = byte(i >> 8)
+		b[3] = byte(i)
+		return 4
+	case i < (1 << 40):
+		b[0] = byte(i >> 32)
+		b[1] = byte(i >> 24)
+		b[2] = byte(i >> 16)
+		b[3] = byte(i >> 8)
+		b[4] = byte(i)
+		return 5
+	case i < (1 << 48):
+		b[0] = byte(i >> 40)
+		b[1] = byte(i >> 32)
+		b[2] = byte(i >> 24)
+		b[3] = byte(i >> 16)
+		b[4] = byte(i >> 8)
+		b[5] = byte(i)
+		return 6
+	case i < (1 << 56):
+		b[0] = byte(i >> 48)
+		b[1] = byte(i >> 40)
+		b[2] = byte(i >> 32)
+		b[3] = byte(i >> 24)
+		b[4] = byte(i >> 16)
+		b[5] = byte(i >> 8)
+		b[6] = byte(i)
+		return 7
+	default:
+		b[0] = byte(i >> 56)
+		b[1] = byte(i >> 48)
+		b[2] = byte(i >> 40)
+		b[3] = byte(i >> 32)
+		b[4] = byte(i >> 24)
+		b[5] = byte(i >> 16)
+		b[6] = byte(i >> 8)
+		b[7] = byte(i)
+		return 8
+	}
 }
 
 // decode converts protobuf-encoded Substate_Result into aida-comprehensible Result

@@ -4,12 +4,9 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/syndtr/goleveldb/leveldb"
-
-	"github.com/syndtr/goleveldb/leveldb/opt"
-
 	"github.com/0xsoniclabs/substate/types"
-	"github.com/0xsoniclabs/substate/types/rlp"
+	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/syndtr/goleveldb/leveldb/opt"
 )
 
 const (
@@ -19,6 +16,12 @@ const (
 //go:generate mockgen -source=destroyed_account_db.go -destination=./destroyed_account_db_mock.go -package=db
 type DestroyedAccountDB interface {
 	BaseDB
+
+	// SetSubstateEncoding sets the runtime encoding/decoding
+	SetSubstateEncoding(schema SubstateEncodingSchema) error
+
+	// GetSubstateEncoding returns the encoding schema in use.
+	GetSubstateEncoding() SubstateEncodingSchema
 
 	// Set the accounts that were destroyed in a specific block and transaction
 	SetDestroyedAccounts(block uint64, tx int, destroyed []types.Address, resurrected []types.Address) error
@@ -40,8 +43,28 @@ func NewDefaultDestroyedAccountDB(destroyedAccountDir string) (DestroyedAccountD
 	return newDestroyedAccountDB(destroyedAccountDir, nil, nil, nil)
 }
 
+// Deprecated: use MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding instead
 func MakeDefaultDestroyedAccountDBFromBaseDB(db BaseDB) DestroyedAccountDB {
-	return &destroyedAccountDB{&baseDB{backend: db.GetBackend()}}
+	encoding, err := newDestroyedAccountEncoding(DefaultEncodingSchema)
+	if err != nil {
+		// This should not happen
+		panic(fmt.Sprintf("failed to create default destroyed account encoding: %v", err))
+	}
+	return &destroyedAccountDB{
+		&baseDB{backend: db.GetBackend()},
+		*encoding,
+	}
+}
+
+func MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(db BaseDB, schema SubstateEncodingSchema) (DestroyedAccountDB, error) {
+	encoding, err := newDestroyedAccountEncoding(schema)
+	if err != nil {
+		return nil, err
+	}
+	return &destroyedAccountDB{
+		&baseDB{backend: db.GetBackend()},
+		*encoding,
+	}, nil
 }
 
 func NewReadOnlyDestroyedAccountDB(destroyedAccountDir string) (DestroyedAccountDB, error) {
@@ -53,11 +76,12 @@ func newDestroyedAccountDB(destroyedAccountDir string, o *opt.Options, wo *opt.W
 	if err != nil {
 		return nil, fmt.Errorf("error opening deletion-db %s: %w", destroyedAccountDir, err)
 	}
-	return MakeDefaultDestroyedAccountDBFromBaseDB(backend), nil
+	return MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(backend, DefaultEncodingSchema)
 }
 
 type destroyedAccountDB struct {
 	BaseDB
+	encoding destroyedAccountEncoding
 }
 
 // SuicidedAccountLists is value structure which represents the list of accounts
@@ -69,7 +93,7 @@ type SuicidedAccountLists struct {
 
 func (db *destroyedAccountDB) SetDestroyedAccounts(block uint64, tx int, des []types.Address, res []types.Address) error {
 	accountList := SuicidedAccountLists{DestroyedAccounts: des, ResurrectedAccounts: res}
-	value, err := rlp.EncodeToBytes(accountList)
+	value, err := db.encoding.encode(accountList)
 	if err != nil {
 		return err
 	}
@@ -84,7 +108,10 @@ func (db *destroyedAccountDB) GetDestroyedAccounts(block uint64, tx int) ([]type
 	if err != nil {
 		return nil, nil, err
 	}
-	list, err := DecodeAddressList(data)
+	list, err := db.encoding.decode(data)
+	if err != nil {
+		return nil, nil, err
+	}
 	return list.DestroyedAccounts, list.ResurrectedAccounts, err
 }
 
@@ -104,7 +131,7 @@ func (db *destroyedAccountDB) GetAccountsDestroyedInRange(from, to uint64) ([]ty
 		if block > to {
 			break
 		}
-		list, err := DecodeAddressList(iter.Value())
+		list, err := db.encoding.decode(iter.Value())
 		if err != nil {
 			return nil, err
 		}
@@ -179,10 +206,4 @@ func DecodeDestroyedAccountKey(data []byte) (uint64, int, error) {
 	block := binary.BigEndian.Uint64(data[len(DestroyedAccountPrefix):])
 	tx := binary.BigEndian.Uint32(data[len(DestroyedAccountPrefix)+8:])
 	return block, int(tx), nil
-}
-
-func DecodeAddressList(data []byte) (SuicidedAccountLists, error) {
-	list := SuicidedAccountLists{}
-	err := rlp.DecodeBytes(data, &list)
-	return list, err
 }

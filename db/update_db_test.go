@@ -5,18 +5,16 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/0xsoniclabs/substate/substate"
+	"github.com/0xsoniclabs/substate/types"
+	"github.com/0xsoniclabs/substate/updateset"
 	"github.com/holiman/uint256"
-
-	trlp "github.com/0xsoniclabs/substate/types/rlp"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/iterator"
 	"github.com/syndtr/goleveldb/leveldb/testutil"
 	"go.uber.org/mock/gomock"
-
-	"github.com/0xsoniclabs/substate/substate"
-	"github.com/0xsoniclabs/substate/types"
-	"github.com/0xsoniclabs/substate/updateset"
 )
 
 var testUpdateSet = &updateset.UpdateSet{
@@ -35,28 +33,49 @@ var testUpdateSet = &updateset.UpdateSet{
 
 var testDeletedAccounts = []types.Address{{3}, {4}}
 
+func newTestUpdateDB(t *testing.T, db *MockCodeDB, schema SubstateEncodingSchema) *updateDB {
+	encoding, err := newUpdateSetEncoding(schema)
+	require.NoError(t, err)
+	return &updateDB{
+		db,
+		*encoding,
+	}
+}
+
 func TestUpdateDB_PutUpdateSet(t *testing.T) {
-	dbPath := t.TempDir() + "test-db"
-	db, err := createDbAndPutUpdateSet(dbPath)
-	if err != nil {
-		t.Fatal(err)
+	testCases := []struct {
+		name   string
+		schema SubstateEncodingSchema
+	}{
+		{"RLP", RLPEncodingSchema},
+		{"PB", ProtobufEncodingSchema},
 	}
 
-	s := new(leveldb.DBStats)
-	err = db.stats(s)
-	if err != nil {
-		t.Fatalf("cannot get db stats; %v", err)
-	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			dbPath := t.TempDir() + "test-db"
+			db, err := createDbAndPutUpdateSet(dbPath, tc.schema)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	// 54 is the base write when creating levelDB
-	if s.IOWrite <= 54 {
-		t.Fatal("db file should have something inside")
+			s := new(leveldb.DBStats)
+			err = db.stats(s)
+			if err != nil {
+				t.Fatalf("cannot get db stats; %v", err)
+			}
+
+			// 54 is the base write when creating levelDB
+			if s.IOWrite <= 54 {
+				t.Fatal("db file should have something inside")
+			}
+		})
 	}
 }
 
 func TestUpdateDB_HasUpdateSet(t *testing.T) {
 	dbPath := t.TempDir() + "test-db"
-	db, err := createDbAndPutUpdateSet(dbPath)
+	db, err := createDbAndPutUpdateSet(dbPath, DefaultEncodingSchema)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,29 +91,41 @@ func TestUpdateDB_HasUpdateSet(t *testing.T) {
 }
 
 func TestUpdateDB_GetUpdateSet(t *testing.T) {
-	dbPath := t.TempDir() + "test-db"
-	db, err := createDbAndPutUpdateSet(dbPath)
-	if err != nil {
-		t.Fatal(err)
+	testCases := []struct {
+		name   string
+		schema SubstateEncodingSchema
+	}{
+		{"RLP", RLPEncodingSchema},
+		{"PB", ProtobufEncodingSchema},
 	}
 
-	us, err := db.GetUpdateSet(testUpdateSet.Block)
-	if err != nil {
-		t.Fatalf("get update-set returned error; %v", err)
-	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			dbPath := t.TempDir() + "test-db"
+			db, err := createDbAndPutUpdateSet(dbPath, tc.schema)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-	if us == nil {
-		t.Fatal("update-set is nil")
-	}
+			us, err := db.GetUpdateSet(testUpdateSet.Block)
+			if err != nil {
+				t.Fatalf("get update-set returned error; %v", err)
+			}
 
-	if !us.Equal(testUpdateSet) {
-		t.Fatal("substates are different")
+			if us == nil {
+				t.Fatal("update-set is nil")
+			}
+
+			if !us.Equal(testUpdateSet) {
+				t.Fatal("substates are different")
+			}
+		})
 	}
 }
 
 func TestUpdateDB_DeleteUpdateSet(t *testing.T) {
 	dbPath := t.TempDir() + "test-db"
-	db, err := createDbAndPutUpdateSet(dbPath)
+	db, err := createDbAndPutUpdateSet(dbPath, DefaultEncodingSchema)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -120,7 +151,7 @@ func TestUpdateDB_DeleteUpdateSet(t *testing.T) {
 
 func TestUpdateDB_GetFirstKey(t *testing.T) {
 	dbPath := t.TempDir() + "test-db"
-	db, err := createDbAndPutUpdateSet(dbPath)
+	db, err := createDbAndPutUpdateSet(dbPath, DefaultEncodingSchema)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -139,7 +170,7 @@ func TestUpdateDB_GetFirstKey(t *testing.T) {
 
 func TestUpdateDB_GetLastKey(t *testing.T) {
 	dbPath := t.TempDir() + "test-db"
-	db, err := createDbAndPutUpdateSet(dbPath)
+	db, err := createDbAndPutUpdateSet(dbPath, DefaultEncodingSchema)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -156,12 +187,15 @@ func TestUpdateDB_GetLastKey(t *testing.T) {
 	}
 }
 
-func createDbAndPutUpdateSet(dbPath string) (*updateDB, error) {
+func createDbAndPutUpdateSet(dbPath string, encoding SubstateEncodingSchema) (*updateDB, error) {
 	db, err := newUpdateDB(dbPath, nil, nil, nil)
 	if err != nil {
 		return nil, fmt.Errorf("cannot open db; %v", err)
 	}
-
+	err = db.SetSubstateEncoding(encoding)
+	if err != nil {
+		return nil, fmt.Errorf("cannot set encoding; %v", err)
+	}
 	err = db.PutUpdateSet(testUpdateSet, testDeletedAccounts)
 	if err != nil {
 		return nil, err
@@ -182,7 +216,7 @@ func TestUpdateDB_GetFirstKeySuccess(t *testing.T) {
 
 	mockDB.EXPECT().newIterator(gomock.Any()).Return(mockIter)
 
-	db := &updateDB{mockDB}
+	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
 
 	result, err := db.GetFirstKey()
 
@@ -199,7 +233,7 @@ func TestUpdateDB_GetFirstKeyFail(t *testing.T) {
 	// case 1 not found
 	kv := &testutil.KeyValue{}
 	mockIter := iterator.NewArrayIterator(kv)
-	db := &updateDB{mockDB}
+	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
 
 	mockDB.EXPECT().newIterator(gomock.Any()).Return(mockIter)
 
@@ -233,7 +267,7 @@ func TestUpdateDB_GetLastKeySuccess(t *testing.T) {
 
 	mockDB.EXPECT().newIterator(gomock.Any()).Return(mockIter)
 
-	db := &updateDB{mockDB}
+	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
 
 	result, err := db.GetLastKey()
 
@@ -250,7 +284,7 @@ func TestUpdateDB_GetLastKeyFail(t *testing.T) {
 	// case 1: no updateset found
 	kv := &testutil.KeyValue{}
 	mockIter := iterator.NewArrayIterator(kv)
-	db := &updateDB{mockDB}
+	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
 
 	mockDB.EXPECT().newIterator(gomock.Any()).Return(mockIter)
 
@@ -283,7 +317,7 @@ func TestUpdateDB_HasUpdateSetSuccess(t *testing.T) {
 
 	mockDB.EXPECT().Has(key).Return(true, nil)
 
-	db := &updateDB{mockDB}
+	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
 	result, err := db.HasUpdateSet(blockNum)
 
 	assert.Nil(t, err)
@@ -301,7 +335,7 @@ func TestUpdateDB_HasUpdateSetFail(t *testing.T) {
 
 	mockDB.EXPECT().Has(key).Return(false, expectedErr)
 
-	db := &updateDB{mockDB}
+	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
 	result, err := db.HasUpdateSet(blockNum)
 
 	assert.Equal(t, expectedErr, err)
@@ -316,16 +350,14 @@ func TestUpdateDB_GetUpdateSetSuccess(t *testing.T) {
 	blockNum := uint64(10)
 	key := UpdateDBKey(blockNum)
 
-	encodedData, _ := trlp.EncodeToBytes(updateset.UpdateSetRLP{
-		WorldState: updateset.UpdateSet{
-			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
-			Block:           0,
-			DeletedAccounts: []types.Address{},
-		}.ToWorldStateRLP(),
+	updateSet := &updateset.UpdateSet{
+		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
+		Block:           0,
 		DeletedAccounts: []types.Address{},
-	})
+	}
+	encodedData, _ := encodeUpdateSetPB(*updateSet, []types.Address{{}})
 
-	db := &updateDB{mockDB}
+	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
 
 	// case 1: Get success
 	mockDB.EXPECT().Get(key).Return(encodedData, nil)
@@ -357,7 +389,7 @@ func TestUpdateDB_GetUpdateSetFail(t *testing.T) {
 	expectedErr := errors.New("database error")
 	mockDB.EXPECT().Get(key).Return(nil, expectedErr)
 
-	db := &updateDB{mockDB}
+	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
 	result, err := db.GetUpdateSet(blockNum)
 
 	assert.Error(t, err)
@@ -371,7 +403,7 @@ func TestUpdateDB_GetUpdateSetFail(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, result)
-	assert.Contains(t, err.Error(), "cannot decode update-set rlp")
+	assert.Contains(t, err.Error(), "cannot decode update-set")
 }
 func TestUpdateDB_PutUpdateSetSuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -397,7 +429,7 @@ func TestUpdateDB_PutUpdateSetSuccess(t *testing.T) {
 	mockDB.EXPECT().PutCode(gomock.Any()).Return(nil)
 	mockDB.EXPECT().Put(key, gomock.Any()).Return(nil)
 
-	db := &updateDB{mockDB}
+	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
 	err := db.PutUpdateSet(updateSet, deletedAccounts)
 
 	assert.Nil(t, err)
@@ -426,7 +458,7 @@ func TestUpdateDB_PutUpdateSetFail(t *testing.T) {
 	// Case 1: PutCode error
 	mockDB.EXPECT().PutCode(gomock.Any()).Return(expectedErr)
 
-	db := &updateDB{mockDB}
+	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
 	err := db.PutUpdateSet(updateSet, deletedAccounts)
 
 	assert.Equal(t, expectedErr, err)
@@ -449,7 +481,7 @@ func TestUpdateDB_DeleteUpdateSetSuccess(t *testing.T) {
 
 	mockDB.EXPECT().Delete(key).Return(nil)
 
-	db := &updateDB{mockDB}
+	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
 	err := db.DeleteUpdateSet(blockNum)
 
 	assert.Nil(t, err)
@@ -466,7 +498,7 @@ func TestUpdateDB_DeleteUpdateSetFail(t *testing.T) {
 
 	mockDB.EXPECT().Delete(key).Return(expectedErr)
 
-	db := &updateDB{mockDB}
+	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
 	err := db.DeleteUpdateSet(blockNum)
 
 	assert.Equal(t, expectedErr, err)
@@ -477,25 +509,26 @@ func TestUpdateDB_NewUpdateSetIterator(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockDB := NewMockCodeDB(ctrl)
-	db := &updateDB{mockDB}
+	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
 
 	start := uint64(1)
 	end := uint64(4)
 
 	// Create a mock iterator that would be returned internally
 	kv := &testutil.KeyValue{}
-	rlpData, _ := trlp.EncodeToBytes(updateset.UpdateSetRLP{
-		WorldState: updateset.UpdateSet{
-			WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
-			Block:           0,
-			DeletedAccounts: []types.Address{},
-		}.ToWorldStateRLP(),
+	updateSet := &updateset.UpdateSet{
+		WorldState:      substate.NewWorldState().Add(types.Address{1}, 1, new(uint256.Int).SetUint64(1), nil),
+		Block:           0,
 		DeletedAccounts: []types.Address{},
-	})
-	kv.PutU(UpdateDBKey(1), rlpData)
-	kv.PutU(UpdateDBKey(2), rlpData)
-	kv.PutU(UpdateDBKey(3), rlpData)
-	kv.PutU(UpdateDBKey(4), rlpData)
+	}
+	encodedData, err := encodeUpdateSetPB(*updateSet, []types.Address{{}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	kv.PutU(UpdateDBKey(1), encodedData)
+	kv.PutU(UpdateDBKey(2), encodedData)
+	kv.PutU(UpdateDBKey(3), encodedData)
+	kv.PutU(UpdateDBKey(4), encodedData)
 	mockIter := iterator.NewArrayIterator(kv)
 
 	// Set up expectations for the newUpdateSetIterator behavior
