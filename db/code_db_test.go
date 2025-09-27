@@ -118,13 +118,13 @@ func TestCodeDB_HashCodeSuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	db := &codeDB{
-		BaseDB: baseDb,
+		baseDb, nil, nil,
 	}
 
 	input := types.BytesToHash([]byte{1})
-	baseDb.EXPECT().Has(CodeDBKey(input)).Return(true, nil)
+	baseDb.EXPECT().Has(CodeDBKey(input), nil).Return(true, nil)
 	has, err := db.HasCode(input)
 	assert.Nil(t, err)
 	assert.Equal(t, true, has)
@@ -134,9 +134,9 @@ func TestCodeDB_HashCodeEmptyFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	db := &codeDB{
-		BaseDB: baseDb,
+		baseDb, nil, nil,
 	}
 
 	input := types.BytesToHash([]byte{})
@@ -149,13 +149,13 @@ func TestCodeDB_HashCodeReadFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	db := &codeDB{
-		BaseDB: baseDb,
+		baseDb, nil, nil,
 	}
 
 	input := types.BytesToHash([]byte{1})
-	baseDb.EXPECT().Has(CodeDBKey(input)).Return(false, leveldb.ErrNotFound)
+	baseDb.EXPECT().Has(CodeDBKey(input), nil).Return(false, leveldb.ErrNotFound)
 	has, err := db.HasCode(input)
 	assert.Equal(t, leveldb.ErrNotFound, err)
 	assert.Equal(t, false, has)
@@ -165,14 +165,14 @@ func TestCodeDB_GetCodeSuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	db := &codeDB{
-		BaseDB: baseDb,
+		baseDb, nil, nil,
 	}
 
 	input := types.BytesToHash([]byte{1})
 	expectedCode := []byte{1, 2, 3}
-	baseDb.EXPECT().Get(CodeDBKey(input)).Return(expectedCode, nil)
+	baseDb.EXPECT().Get(CodeDBKey(input), nil).Return(expectedCode, nil)
 	code, err := db.GetCode(input)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedCode, code)
@@ -182,9 +182,9 @@ func TestCodeDB_GetCodeEmptyFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	db := &codeDB{
-		BaseDB: baseDb,
+		baseDb, nil, nil,
 	}
 
 	input := types.BytesToHash([]byte{})
@@ -197,13 +197,13 @@ func TestCodeDB_GetCodeReadFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	db := &codeDB{
-		BaseDB: baseDb,
+		baseDb, nil, nil,
 	}
 
 	input := types.BytesToHash([]byte{1})
-	baseDb.EXPECT().Get(CodeDBKey(input)).Return(nil, leveldb.ErrNotFound)
+	baseDb.EXPECT().Get(CodeDBKey(input), nil).Return(nil, leveldb.ErrNotFound)
 	code, err := db.GetCode(input)
 	assert.NotNil(t, err)
 	assert.Nil(t, code)
@@ -213,14 +213,14 @@ func TestCodeDB_PutCodeSuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	db := &codeDB{
-		BaseDB: baseDb,
+		baseDb, nil, nil,
 	}
 
 	inputCode := []byte{1, 2, 3}
 	inputHash := hash.Keccak256Hash(inputCode)
-	baseDb.EXPECT().Put(CodeDBKey(inputHash), inputCode).Return(nil)
+	baseDb.EXPECT().Put(CodeDBKey(inputHash), inputCode, nil).Return(nil)
 	err := db.PutCode(inputCode)
 	assert.Nil(t, err)
 }
@@ -229,14 +229,14 @@ func TestCodeDB_PutCodeWriteFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	db := &codeDB{
-		BaseDB: baseDb,
+		baseDb, nil, nil,
 	}
 
 	inputCode := []byte{1, 2, 3}
 	inputHash := hash.Keccak256Hash(inputCode)
-	baseDb.EXPECT().Put(CodeDBKey(inputHash), inputCode).Return(leveldb.ErrReadOnly)
+	baseDb.EXPECT().Put(CodeDBKey(inputHash), inputCode, nil).Return(leveldb.ErrReadOnly)
 	err := db.PutCode(inputCode)
 	assert.NotNil(t, err)
 }
@@ -245,13 +245,13 @@ func TestCodeDB_DeleteCodeSuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	db := &codeDB{
-		BaseDB: baseDb,
+		baseDb, nil, nil,
 	}
 
 	input := types.BytesToHash([]byte{1})
-	baseDb.EXPECT().Delete(CodeDBKey(input)).Return(nil)
+	baseDb.EXPECT().Delete(CodeDBKey(input), nil).Return(nil)
 	err := db.DeleteCode(input)
 	assert.Nil(t, err)
 }
@@ -260,9 +260,9 @@ func TestCodeDB_DeleteCodeEmptyFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	db := &codeDB{
-		BaseDB: baseDb,
+		baseDb, nil, nil,
 	}
 
 	input := types.BytesToHash([]byte{})
@@ -274,13 +274,13 @@ func TestCodeDB_DeleteCodeWriteFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	db := &codeDB{
-		BaseDB: baseDb,
+		baseDb, nil, nil,
 	}
 
 	input := types.BytesToHash([]byte{1})
-	baseDb.EXPECT().Delete(CodeDBKey(input)).Return(leveldb.ErrReadOnly)
+	baseDb.EXPECT().Delete(CodeDBKey(input), nil).Return(leveldb.ErrReadOnly)
 	err := db.DeleteCode(input)
 	assert.NotNil(t, err)
 }

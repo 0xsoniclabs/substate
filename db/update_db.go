@@ -69,7 +69,7 @@ func MakeDefaultUpdateDBFromBaseDB(db BaseDB) UpdateDB {
 		panic(fmt.Sprintf("failed to create default update-db encoding: %v", err))
 	}
 	return &updateDB{
-		&codeDB{&baseDB{backend: db.GetBackend()}},
+		&codeDB{db.GetBackend(), nil, nil},
 		*encoding,
 	}
 }
@@ -80,7 +80,7 @@ func MakeDefaultUpdateDBFromBaseDBWithEncoding(db BaseDB, schema SubstateEncodin
 		return nil, err
 	}
 	return &updateDB{
-		&codeDB{&baseDB{backend: db.GetBackend()}},
+		&codeDB{db.GetBackend(), nil, nil},
 		*encoding,
 	}, nil
 }

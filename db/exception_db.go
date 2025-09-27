@@ -49,11 +49,11 @@ func NewExceptionDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.R
 }
 
 func MakeDefaultExceptionDB(db *leveldb.DB) ExceptionDB {
-	return &exceptionDB{&codeDB{&baseDB{backend: db}}}
+	return &exceptionDB{&codeDB{backend: db}}
 }
 
 func MakeDefaultExceptionDBFromBaseDB(db BaseDB) ExceptionDB {
-	return &exceptionDB{&codeDB{&baseDB{backend: db.GetBackend()}}}
+	return &exceptionDB{&codeDB{backend: db.GetBackend()}}
 }
 
 // NewReadOnlyExceptionDB creates a new instance of read-only ExceptionDB.
@@ -62,7 +62,7 @@ func NewReadOnlyExceptionDB(path string) (ExceptionDB, error) {
 }
 
 func MakeExceptionDB(db *leveldb.DB, wo *opt.WriteOptions, ro *opt.ReadOptions) ExceptionDB {
-	return &exceptionDB{&codeDB{&baseDB{backend: db, wo: wo, ro: ro}}}
+	return &exceptionDB{&codeDB{backend: db, wo: wo, ro: ro}}
 }
 
 func newExceptionDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.ReadOptions) (*exceptionDB, error) {
