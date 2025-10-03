@@ -7,12 +7,10 @@ import (
 	"testing"
 
 	"github.com/0xsoniclabs/substate/types"
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
-
-	"github.com/syndtr/goleveldb/leveldb"
-
 	"github.com/0xsoniclabs/substate/types/hash"
+	"github.com/stretchr/testify/assert"
+	"github.com/syndtr/goleveldb/leveldb"
+	"go.uber.org/mock/gomock"
 )
 
 var testCode = []byte{1}
@@ -79,14 +77,14 @@ func TestCodeDB_DeleteCode(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	hash := hash.Keccak256Hash(testCode)
+	h := hash.Keccak256Hash(testCode)
 
-	err = db.DeleteCode(hash)
+	err = db.DeleteCode(h)
 	if err != nil {
 		t.Fatalf("delete code returned error; %v", err)
 	}
 
-	code, err := db.GetCode(hash)
+	code, err := db.GetCode(h)
 	if err == nil {
 		t.Fatal("get code must fail")
 	}
@@ -311,4 +309,84 @@ func TestDecodeCodeDBKey_InvalidPrefix(t *testing.T) {
 	output, err := DecodeCodeDBKey([]byte("00" + string(make([]byte, 32))))
 	assert.NotNil(t, err)
 	assert.NotNil(t, output)
+}
+
+func TestDecodeCodeDB_BasicOperations(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBackend := NewMockDbAdapter(ctrl)
+	db := &codeDB{
+		mockBackend, nil, nil,
+	}
+
+	// Test stats
+	stats := &leveldb.DBStats{}
+	mockBackend.EXPECT().Stats(gomock.Any()).Return(nil)
+	err := db.stats(stats)
+	assert.Nil(t, err)
+
+	// Test GetBackend
+	backend := db.GetBackend()
+	assert.Equal(t, mockBackend, backend)
+
+	// Test Put
+	mockBackend.EXPECT().Put([]byte("key"), []byte("value"), gomock.Any()).Return(nil)
+	err = db.Put([]byte("key"), []byte("value"))
+	assert.Nil(t, err)
+
+	// Test Get
+	mockBackend.EXPECT().Get([]byte("key"), gomock.Any()).Return([]byte("value"), nil)
+	value, err := db.Get([]byte("key"))
+	assert.Nil(t, err)
+	assert.Equal(t, []byte("value"), value)
+
+	// Test Has
+	mockBackend.EXPECT().Has([]byte("key"), gomock.Any()).Return(true, nil)
+	exists, err := db.Has([]byte("key"))
+	assert.Nil(t, err)
+	assert.True(t, exists)
+
+	// Test Delete
+	mockBackend.EXPECT().Delete([]byte("key"), gomock.Any()).Return(nil)
+	err = db.Delete([]byte("key"))
+	assert.Nil(t, err)
+
+	// Test Close
+	mockBackend.EXPECT().Close().Return(nil)
+	err = db.Close()
+	assert.Nil(t, err)
+
+	// Test NewBatch
+	b := db.NewBatch()
+	assert.NotNil(t, b)
+}
+
+func TestDecodeCodeDB_Compact(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBackend := NewMockDbAdapter(ctrl)
+	db := &codeDB{
+		mockBackend, nil, nil,
+	}
+
+	mockBackend.EXPECT().CompactRange(gomock.Any()).Return(nil)
+	err := db.Compact([]byte("start"), []byte("limit"))
+	assert.Nil(t, err)
+}
+
+func TestDecodeCodeDB_Stat(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBackend := NewMockDbAdapter(ctrl)
+	db := &codeDB{
+		mockBackend, nil, nil,
+	}
+
+	mockBackend.EXPECT().GetProperty("property").Return("value", nil)
+	stat, err := db.Stat("property")
+	assert.Nil(t, err)
+	assert.Equal(t, "value", stat)
 }
