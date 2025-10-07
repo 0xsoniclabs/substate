@@ -6,7 +6,9 @@ import (
 
 	"github.com/0xsoniclabs/substate/types"
 	"github.com/syndtr/goleveldb/leveldb"
+	ldbiterator "github.com/syndtr/goleveldb/leveldb/iterator"
 	"github.com/syndtr/goleveldb/leveldb/opt"
+	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
 const (
@@ -51,7 +53,9 @@ func MakeDefaultDestroyedAccountDBFromBaseDB(db BaseDB) DestroyedAccountDB {
 		panic(fmt.Sprintf("failed to create default destroyed account encoding: %v", err))
 	}
 	return &destroyedAccountDB{
-		&baseDB{backend: db.GetBackend()},
+		db.GetBackend(),
+		nil,
+		nil,
 		*encoding,
 	}
 }
@@ -62,7 +66,9 @@ func MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(db BaseDB, schema Subst
 		return nil, err
 	}
 	return &destroyedAccountDB{
-		&baseDB{backend: db.GetBackend()},
+		db.GetBackend(),
+		nil,
+		nil,
 		*encoding,
 	}, nil
 }
@@ -72,15 +78,26 @@ func NewReadOnlyDestroyedAccountDB(destroyedAccountDir string) (DestroyedAccount
 }
 
 func newDestroyedAccountDB(destroyedAccountDir string, o *opt.Options, wo *opt.WriteOptions, ro *opt.ReadOptions) (DestroyedAccountDB, error) {
-	backend, err := newBaseDB(destroyedAccountDir, o, wo, ro)
+	backend, err := leveldb.OpenFile(destroyedAccountDir, o)
 	if err != nil {
 		return nil, fmt.Errorf("error opening deletion-db %s: %w", destroyedAccountDir, err)
 	}
-	return MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(backend, DefaultEncodingSchema)
+	encoding, err := newDestroyedAccountEncoding(DefaultEncodingSchema)
+	if err != nil {
+		return nil, err
+	}
+	return &destroyedAccountDB{
+		backend:  backend,
+		wo:       wo,
+		ro:       ro,
+		encoding: *encoding,
+	}, nil
 }
 
 type destroyedAccountDB struct {
-	BaseDB
+	backend  DbAdapter
+	wo       *opt.WriteOptions
+	ro       *opt.ReadOptions
 	encoding destroyedAccountEncoding
 }
 
@@ -185,6 +202,96 @@ func (db *destroyedAccountDB) GetLastKey() (uint64, error) {
 		return block, nil
 	}
 	return 0, leveldb.ErrNotFound
+}
+
+func (db *destroyedAccountDB) stats(stats *leveldb.DBStats) error {
+	return db.backend.Stats(stats)
+}
+
+func (db *destroyedAccountDB) GetBackend() DbAdapter {
+	return db.backend
+}
+
+func (db *destroyedAccountDB) Put(key []byte, value []byte) error {
+	return db.backend.Put(key, value, db.wo)
+}
+
+func (db *destroyedAccountDB) Delete(key []byte) error {
+	return db.backend.Delete(key, db.wo)
+}
+
+func (db *destroyedAccountDB) Close() error {
+	return db.backend.Close()
+}
+
+func (db *destroyedAccountDB) Has(key []byte) (bool, error) {
+	return db.backend.Has(key, db.ro)
+}
+
+func (db *destroyedAccountDB) Get(key []byte) ([]byte, error) {
+	return db.backend.Get(key, db.ro)
+}
+
+func (db *destroyedAccountDB) NewBatch() Batch {
+	return newBatch(db.backend)
+}
+
+func (db *destroyedAccountDB) NewIterator(prefix []byte, start []byte) ldbiterator.Iterator {
+	r := util.BytesPrefix(prefix)
+	r.Start = append(r.Start, start...)
+	return db.backend.NewIterator(r, db.ro)
+}
+
+func (db *destroyedAccountDB) newIterator(r *util.Range) ldbiterator.Iterator {
+	return db.backend.NewIterator(r, db.ro)
+}
+
+func (db *destroyedAccountDB) Stat(property string) (string, error) {
+	return db.backend.GetProperty(property)
+}
+
+func (db *destroyedAccountDB) Compact(start []byte, limit []byte) error {
+	return db.backend.CompactRange(util.Range{Start: start, Limit: limit})
+}
+
+func (db *destroyedAccountDB) hasKeyValuesFor(prefix []byte, start []byte) bool {
+	iter := db.NewIterator(prefix, start)
+	defer iter.Release()
+	return iter.Next()
+}
+
+func (db *destroyedAccountDB) binarySearchForLastPrefixKey(lastKeyPrefix []byte) (byte, error) {
+	var mMin uint16 = 0
+	var mMax uint16 = 255
+
+	startIndex := make([]byte, 1)
+
+	for mMax-mMin > 1 {
+		searchHalf := (mMax + mMin) / 2
+		startIndex[0] = byte(searchHalf)
+		if db.hasKeyValuesFor(lastKeyPrefix, startIndex) {
+			mMin = searchHalf
+		} else {
+			mMax = searchHalf
+		}
+	}
+
+	// shouldn't occur
+	if mMax-mMin == 0 {
+		return 0, fmt.Errorf("undefined behaviour in GetLastSubstate search; mMax - mMin == 0")
+	}
+
+	startIndex[0] = byte(mMin)
+	if db.hasKeyValuesFor(lastKeyPrefix, startIndex) {
+		startIndex[0] = byte(mMax)
+		if db.hasKeyValuesFor(lastKeyPrefix, startIndex) {
+			return byte(mMax), nil
+		} else {
+			return byte(mMin), nil
+		}
+	} else {
+		return 0, fmt.Errorf("undefined behaviour in GetLastSubstate search")
+	}
 }
 
 func EncodeDestroyedAccountKey(block uint64, tx int) []byte {

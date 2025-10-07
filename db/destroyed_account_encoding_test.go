@@ -14,7 +14,7 @@ func TestDestroyedAccountDB_GetSubstateEncoding(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 
 	actual := db.GetSubstateEncoding()
@@ -25,7 +25,7 @@ func TestDestroyedAccountDB_SetSubstateEncoding(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 	err := db.SetSubstateEncoding(DefaultEncodingSchema)
 	assert.Nil(t, err)

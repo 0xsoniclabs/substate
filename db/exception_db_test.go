@@ -42,8 +42,8 @@ func TestExceptionDB_PutAndGetException(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDB := NewMockBaseDB(ctrl)
-	db := &exceptionDB{&codeDB{mockDB}}
+	mockDB := NewMockCodeDB(ctrl)
+	db := &exceptionDB{mockDB}
 
 	block := uint64(42)
 	exc := &substate.Exception{
@@ -66,8 +66,8 @@ func TestExceptionDB_GetException_NotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDB := NewMockBaseDB(ctrl)
-	db := &exceptionDB{&codeDB{mockDB}}
+	mockDB := NewMockCodeDB(ctrl)
+	db := &exceptionDB{mockDB}
 
 	block := uint64(100)
 	mockDB.EXPECT().Get(ExceptionDBBlockPrefix(block)).Return(nil, leveldb.ErrNotFound)
@@ -80,8 +80,8 @@ func TestExceptionDB_GetException_EmptyData(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDB := NewMockBaseDB(ctrl)
-	db := &exceptionDB{&codeDB{mockDB}}
+	mockDB := NewMockCodeDB(ctrl)
+	db := &exceptionDB{mockDB}
 
 	block := uint64(101)
 	mockDB.EXPECT().Get(ExceptionDBBlockPrefix(block)).Return([]byte{}, nil)
@@ -283,12 +283,16 @@ func TestMakeDefaultExceptionDB(t *testing.T) {
 }
 
 func TestMakeDefaultExceptionDBFromBaseDB(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	dir := t.TempDir()
 	dbPath := filepath.Join(dir, "ldb3")
 	ldb, err := leveldb.OpenFile(dbPath, nil)
 	assert.NoError(t, err)
 
-	baseDB := &baseDB{backend: ldb}
+	baseDB := NewMockBaseDB(ctrl)
+	baseDB.EXPECT().GetBackend().Return(ldb)
 	exdb := MakeDefaultExceptionDBFromBaseDB(baseDB)
 	assert.NotNil(t, exdb)
 	err = ldb.Close()

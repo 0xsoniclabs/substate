@@ -11,14 +11,16 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/iterator"
 	"github.com/syndtr/goleveldb/leveldb/testutil"
+	"github.com/syndtr/goleveldb/leveldb/util"
 	"go.uber.org/mock/gomock"
 )
 
-func newTestDestroyedAccountDB(t *testing.T, db BaseDB, schema SubstateEncodingSchema) *destroyedAccountDB {
+func newTestDestroyedAccountDB(t *testing.T, db DbAdapter, schema SubstateEncodingSchema) *destroyedAccountDB {
 	encoding, err := newDestroyedAccountEncoding(schema)
 	require.NoError(t, err)
 	return &destroyedAccountDB{
 		db,
+		nil, nil,
 		*encoding,
 	}
 }
@@ -27,7 +29,7 @@ func TestDestroyedAccountDB_SetDestroyedAccountsSuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 
 	block := uint64(1)
@@ -35,7 +37,7 @@ func TestDestroyedAccountDB_SetDestroyedAccountsSuccess(t *testing.T) {
 	destroyed := []types.Address{{1}, {2}}
 	resurrected := []types.Address{{3}}
 
-	baseDb.EXPECT().Put(EncodeDestroyedAccountKey(block, tx), gomock.Any()).Return(nil)
+	baseDb.EXPECT().Put(EncodeDestroyedAccountKey(block, tx), gomock.Any(), nil).Return(nil)
 	err := db.SetDestroyedAccounts(block, tx, destroyed, resurrected)
 	assert.Nil(t, err)
 }
@@ -44,7 +46,7 @@ func TestDestroyedAccountDB_SetDestroyedAccountsFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 
 	block := uint64(1)
@@ -53,7 +55,7 @@ func TestDestroyedAccountDB_SetDestroyedAccountsFail(t *testing.T) {
 	resurrected := []types.Address{{3}}
 
 	mockErr := errors.New("mock error")
-	baseDb.EXPECT().Put(EncodeDestroyedAccountKey(block, tx), gomock.Any()).Return(mockErr)
+	baseDb.EXPECT().Put(EncodeDestroyedAccountKey(block, tx), gomock.Any(), nil).Return(mockErr)
 	err := db.SetDestroyedAccounts(block, tx, destroyed, resurrected)
 	assert.Equal(t, mockErr, err)
 }
@@ -81,7 +83,7 @@ func TestDestroyedAccountDB_GetDestroyedAccountsSuccess(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			baseDb := NewMockBaseDB(ctrl)
+			baseDb := NewMockDbAdapter(ctrl)
 			db := newTestDestroyedAccountDB(t, baseDb, tc.schema)
 
 			block := uint64(1)
@@ -92,7 +94,7 @@ func TestDestroyedAccountDB_GetDestroyedAccountsSuccess(t *testing.T) {
 			list := SuicidedAccountLists{DestroyedAccounts: expectedDestroyed, ResurrectedAccounts: expectedResurrected}
 			value, _ := tc.encodeFn(list)
 
-			baseDb.EXPECT().Get(EncodeDestroyedAccountKey(block, tx)).Return(value, nil)
+			baseDb.EXPECT().Get(EncodeDestroyedAccountKey(block, tx), nil).Return(value, nil)
 			destroyed, resurrected, err := db.GetDestroyedAccounts(block, tx)
 			assert.Nil(t, err)
 			assert.Equal(t, expectedDestroyed, destroyed)
@@ -105,20 +107,20 @@ func TestDestroyedAccountDB_GetDestroyedAccountsFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 
 	block := uint64(1)
 	tx := 2
 	mockErr := errors.New("mock error")
 
-	baseDb.EXPECT().Get(EncodeDestroyedAccountKey(block, tx)).Return(nil, nil)
+	baseDb.EXPECT().Get(EncodeDestroyedAccountKey(block, tx), nil).Return(nil, nil)
 	destroyed, resurrected, err := db.GetDestroyedAccounts(block, tx)
 	assert.Nil(t, err)
 	assert.Nil(t, destroyed)
 	assert.Nil(t, resurrected)
 
-	baseDb.EXPECT().Get(EncodeDestroyedAccountKey(block, tx)).Return([]byte{}, mockErr)
+	baseDb.EXPECT().Get(EncodeDestroyedAccountKey(block, tx), nil).Return([]byte{}, mockErr)
 	destroyed, resurrected, err = db.GetDestroyedAccounts(block, tx)
 	assert.Equal(t, mockErr, err)
 	assert.Nil(t, destroyed)
@@ -148,7 +150,7 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeSuccess(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			baseDb := NewMockBaseDB(ctrl)
+			baseDb := NewMockDbAdapter(ctrl)
 			kv := &testutil.KeyValue{}
 			key1 := EncodeDestroyedAccountKey(5, 0)
 			list1 := SuicidedAccountLists{
@@ -180,8 +182,9 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeSuccess(t *testing.T) {
 
 			startingBlockBytes := make([]byte, 8)
 			binary.BigEndian.PutUint64(startingBlockBytes, from)
-
-			baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), startingBlockBytes).Return(iter)
+			r := util.BytesPrefix([]byte(DestroyedAccountPrefix))
+			r.Start = append(r.Start, startingBlockBytes...)
+			baseDb.EXPECT().NewIterator(r, nil).Return(iter)
 
 			accounts, err := db.GetAccountsDestroyedInRange(from, to)
 			assert.NoError(t, err)
@@ -194,7 +197,7 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeDecodeKeyFail(t *testing.
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	kv := &testutil.KeyValue{}
 	kv.PutU([]byte{1}, []byte("invalid_key"))
 	iter := iterator.NewArrayIterator(kv)
@@ -205,8 +208,9 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeDecodeKeyFail(t *testing.
 
 	startingBlockBytes := make([]byte, 8)
 	binary.BigEndian.PutUint64(startingBlockBytes, from)
-
-	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), startingBlockBytes).Return(iter)
+	r := util.BytesPrefix([]byte(DestroyedAccountPrefix))
+	r.Start = append(r.Start, startingBlockBytes...)
+	baseDb.EXPECT().NewIterator(r, nil).Return(iter)
 
 	accounts, err := db.GetAccountsDestroyedInRange(from, to)
 	assert.NotNil(t, err)
@@ -217,7 +221,7 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeDecodeValueFail(t *testin
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	kv := &testutil.KeyValue{}
 	key := EncodeDestroyedAccountKey(5, 0)
 	kv.PutU(key, []byte("invalid_key"))
@@ -230,7 +234,9 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeDecodeValueFail(t *testin
 	startingBlockBytes := make([]byte, 8)
 	binary.BigEndian.PutUint64(startingBlockBytes, from)
 
-	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), startingBlockBytes).Return(iter)
+	r := util.BytesPrefix([]byte(DestroyedAccountPrefix))
+	r.Start = append(r.Start, startingBlockBytes...)
+	baseDb.EXPECT().NewIterator(r, nil).Return(iter)
 
 	accounts, err := db.GetAccountsDestroyedInRange(from, to)
 	assert.NotNil(t, err)
@@ -241,7 +247,7 @@ func TestDestroyedAccountDB_GetFirstKeySuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 
 	kv := &testutil.KeyValue{}
 	kv.PutU(EncodeDestroyedAccountKey(5, 0), []byte("value0"))
@@ -249,7 +255,8 @@ func TestDestroyedAccountDB_GetFirstKeySuccess(t *testing.T) {
 	iter := iterator.NewArrayIterator(kv)
 	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 
-	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
+	r := util.BytesPrefix([]byte(DestroyedAccountPrefix))
+	baseDb.EXPECT().NewIterator(r, nil).Return(iter)
 
 	block, err := db.GetFirstKey()
 	assert.Nil(t, err)
@@ -260,14 +267,15 @@ func TestDestroyedAccountDB_GetFirstKeyDecodeFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 
 	// case decode key fail
 	kv := &testutil.KeyValue{}
 	kv.PutU([]byte{1}, []byte("value"))
 	iter := iterator.NewArrayIterator(kv)
 	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
-	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
+	r := util.BytesPrefix([]byte(DestroyedAccountPrefix))
+	baseDb.EXPECT().NewIterator(r, nil).Return(iter)
 	block, err := db.GetFirstKey()
 	assert.NotNil(t, err)
 	assert.Equal(t, uint64(0), block)
@@ -275,7 +283,7 @@ func TestDestroyedAccountDB_GetFirstKeyDecodeFail(t *testing.T) {
 	// case empty iterator
 	kv = &testutil.KeyValue{}
 	iter = iterator.NewArrayIterator(kv)
-	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
+	baseDb.EXPECT().NewIterator(r, nil).Return(iter)
 	block, err = db.GetFirstKey()
 	assert.Equal(t, leveldb.ErrNotFound, err)
 	assert.Equal(t, uint64(0), block)
@@ -285,12 +293,13 @@ func TestDestroyedAccountDB_GetFirstKeyNoUpdateSetFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	kv := &testutil.KeyValue{}
 	iter := iterator.NewArrayIterator(kv)
 	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 
-	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
+	r := util.BytesPrefix([]byte(DestroyedAccountPrefix))
+	baseDb.EXPECT().NewIterator(r, nil).Return(iter)
 
 	block, err := db.GetFirstKey()
 	assert.NotNil(t, err)
@@ -301,7 +310,7 @@ func TestDestroyedAccountDB_GetLastKeySuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 	kv := &testutil.KeyValue{}
 	kv.PutU(EncodeDestroyedAccountKey(5, 0), []byte("value0"))
 	kv.PutU(EncodeDestroyedAccountKey(10, 1), []byte("value1"))
@@ -309,7 +318,8 @@ func TestDestroyedAccountDB_GetLastKeySuccess(t *testing.T) {
 
 	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 
-	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
+	r := util.BytesPrefix([]byte(DestroyedAccountPrefix))
+	baseDb.EXPECT().NewIterator(r, nil).Return(iter)
 
 	block, err := db.GetLastKey()
 	assert.Nil(t, err)
@@ -320,14 +330,16 @@ func TestDestroyedAccountDB_GetLastKeyFail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	baseDb := NewMockBaseDB(ctrl)
+	baseDb := NewMockDbAdapter(ctrl)
 
 	// case decode key fail
 	kv := &testutil.KeyValue{}
 	kv.PutU([]byte{1}, []byte("invalid_key"))
 	iter := iterator.NewArrayIterator(kv)
 	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
-	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
+
+	r := util.BytesPrefix([]byte(DestroyedAccountPrefix))
+	baseDb.EXPECT().NewIterator(r, nil).Return(iter)
 
 	block, err := db.GetLastKey()
 	assert.NotNil(t, err)
@@ -336,10 +348,160 @@ func TestDestroyedAccountDB_GetLastKeyFail(t *testing.T) {
 	// case empty iterator
 	kv = &testutil.KeyValue{}
 	iter = iterator.NewArrayIterator(kv)
-	baseDb.EXPECT().NewIterator([]byte(DestroyedAccountPrefix), nil).Return(iter)
+	baseDb.EXPECT().NewIterator(r, nil).Return(iter)
 	block, err = db.GetLastKey()
 	assert.Equal(t, leveldb.ErrNotFound, err)
 	assert.Equal(t, uint64(0), block)
+}
+
+func TestDestroyedAccountDB_BasicOperations(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBackend := NewMockDbAdapter(ctrl)
+	db := newTestDestroyedAccountDB(t, mockBackend, DefaultEncodingSchema)
+
+	// Test stats
+	stats := &leveldb.DBStats{}
+	mockBackend.EXPECT().Stats(gomock.Any()).Return(nil)
+	err := db.stats(stats)
+	assert.Nil(t, err)
+
+	// Test GetBackend
+	backend := db.GetBackend()
+	assert.Equal(t, mockBackend, backend)
+
+	// Test Put
+	mockBackend.EXPECT().Put([]byte("key"), []byte("value"), gomock.Any()).Return(nil)
+	err = db.Put([]byte("key"), []byte("value"))
+	assert.Nil(t, err)
+
+	// Test Get
+	mockBackend.EXPECT().Get([]byte("key"), gomock.Any()).Return([]byte("value"), nil)
+	value, err := db.Get([]byte("key"))
+	assert.Nil(t, err)
+	assert.Equal(t, []byte("value"), value)
+
+	// Test Has
+	mockBackend.EXPECT().Has([]byte("key"), gomock.Any()).Return(true, nil)
+	exists, err := db.Has([]byte("key"))
+	assert.Nil(t, err)
+	assert.True(t, exists)
+
+	// Test Delete
+	mockBackend.EXPECT().Delete([]byte("key"), gomock.Any()).Return(nil)
+	err = db.Delete([]byte("key"))
+	assert.Nil(t, err)
+
+	// Test Close
+	mockBackend.EXPECT().Close().Return(nil)
+	err = db.Close()
+	assert.Nil(t, err)
+
+	// Test NewBatch
+	b := db.NewBatch()
+	assert.NotNil(t, b)
+}
+
+func TestDestroyedAccountDB_newIterator(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBackend := NewMockDbAdapter(ctrl)
+	mockIter := iterator.NewArrayIterator(&testutil.KeyValue{})
+	db := newTestDestroyedAccountDB(t, mockBackend, DefaultEncodingSchema)
+
+	mockBackend.EXPECT().NewIterator(gomock.Any(), gomock.Any()).Return(mockIter)
+	iter := db.newIterator(util.BytesPrefix([]byte{1}))
+	assert.Equal(t, mockIter, iter)
+}
+
+func TestDestroyedAccountDB_Compact(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBackend := NewMockDbAdapter(ctrl)
+	db := newTestDestroyedAccountDB(t, mockBackend, DefaultEncodingSchema)
+
+	mockBackend.EXPECT().CompactRange(gomock.Any()).Return(nil)
+	err := db.Compact([]byte("start"), []byte("limit"))
+	assert.Nil(t, err)
+}
+
+func TestDestroyedAccountDB_Stat(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBackend := NewMockDbAdapter(ctrl)
+	db := newTestDestroyedAccountDB(t, mockBackend, DefaultEncodingSchema)
+
+	mockBackend.EXPECT().GetProperty("property").Return("value", nil)
+	stat, err := db.Stat("property")
+	assert.Nil(t, err)
+	assert.Equal(t, "value", stat)
+}
+
+func TestDestroyedAccountDB_BinarySearchForLastPrefixKeySuccess(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBackend := NewMockDbAdapter(ctrl)
+	db := newTestDestroyedAccountDB(t, mockBackend, DefaultEncodingSchema)
+
+	// Case 1: found at max value
+	kv := &testutil.KeyValue{}
+	kv.PutU([]byte{1}, []byte("value"))
+	mockBackend.EXPECT().NewIterator(gomock.Any(), gomock.Any()).Return(iterator.NewArrayIterator(kv)).Times(8)
+	mockBackend.EXPECT().NewIterator(gomock.Any(), gomock.Any()).Return(iterator.NewArrayIterator(kv))
+	mockBackend.EXPECT().NewIterator(gomock.Any(), gomock.Any()).Return(iterator.NewArrayIterator(kv))
+
+	result, err := db.binarySearchForLastPrefixKey([]byte{1})
+	assert.Nil(t, err)
+	assert.Equal(t, byte(0x80), result)
+
+	// Case 2: found at min value
+	kv = &testutil.KeyValue{}
+	kv.PutU([]byte{1}, []byte("value"))
+	mockBackend.EXPECT().NewIterator(gomock.Any(), gomock.Any()).Return(iterator.NewArrayIterator(kv)).Times(8)
+	mockBackend.EXPECT().NewIterator(gomock.Any(), gomock.Any()).Return(iterator.NewArrayIterator(kv)).Times(2)
+
+	result, err = db.binarySearchForLastPrefixKey([]byte{1})
+	assert.Nil(t, err)
+	assert.Equal(t, byte(0x7f), result)
+}
+
+func TestDestroyedAccountDB_BinarySearchForLastPrefixKeyFail(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBackend := NewMockDbAdapter(ctrl)
+	db := newTestDestroyedAccountDB(t, mockBackend, DefaultEncodingSchema)
+
+	// Case 1: undefined behavior
+	kv := &testutil.KeyValue{}
+	kv.PutU([]byte{1}, []byte("value"))
+	mockBackend.EXPECT().NewIterator(gomock.Any(), gomock.Any()).Return(iterator.NewArrayIterator(kv)).Times(9)
+
+	result, err := db.binarySearchForLastPrefixKey([]byte{1})
+	assert.NotNil(t, err)
+	assert.Equal(t, byte(0), result)
+}
+
+func TestDestroyedAccountDB_HasKeyValuesFor(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBackend := NewMockDbAdapter(ctrl)
+	db := newTestDestroyedAccountDB(t, mockBackend, DefaultEncodingSchema)
+
+	// Case 1: Success - found at max value
+	kv := &testutil.KeyValue{}
+	kv.PutU([]byte{1}, []byte("value"))
+	mockBackend.EXPECT().NewIterator(gomock.Any(), gomock.Any()).Return(iterator.NewArrayIterator(kv))
+
+	result := db.hasKeyValuesFor([]byte{1}, []byte{1})
+
+	assert.True(t, result)
 }
 
 func TestDestroyedAccountDB_encodeDestroyedAccountKey(t *testing.T) {

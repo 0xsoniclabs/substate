@@ -67,7 +67,7 @@ func NewSubstateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.Re
 }
 
 func MakeDefaultSubstateDB(db *leveldb.DB) SubstateDB {
-	sdb := &substateDB{&codeDB{&baseDB{backend: db}}, nil}
+	sdb := &substateDB{&codeDB{db, nil, nil}, nil}
 	err := sdb.findAndSetEncoding()
 	if err != nil {
 		panic(fmt.Sprintf("failed to set substate encoding: %v", err))
@@ -76,7 +76,7 @@ func MakeDefaultSubstateDB(db *leveldb.DB) SubstateDB {
 }
 
 func MakeDefaultSubstateDBFromBaseDB(db BaseDB) SubstateDB {
-	sdb := &substateDB{&codeDB{&baseDB{backend: db.GetBackend()}}, nil}
+	sdb := &substateDB{&codeDB{db.GetBackend(), nil, nil}, nil}
 	err := sdb.findAndSetEncoding()
 	if err != nil {
 		panic(fmt.Sprintf("failed to set substate encoding: %v", err))
@@ -90,7 +90,7 @@ func NewReadOnlySubstateDB(path string) (SubstateDB, error) {
 }
 
 func MakeSubstateDB(db *leveldb.DB, wo *opt.WriteOptions, ro *opt.ReadOptions) SubstateDB {
-	sdb := &substateDB{&codeDB{&baseDB{backend: db, wo: wo, ro: ro}}, nil}
+	sdb := &substateDB{&codeDB{backend: db, wo: wo, ro: ro}, nil}
 	err := sdb.findAndSetEncoding()
 	if err != nil {
 		panic(fmt.Sprintf("failed to set substate encoding: %v", err))
