@@ -17,13 +17,20 @@ func EncodeExceptionBlock(s *substate.ExceptionBlock) ([]byte, error) {
 	}
 
 	var pre *Alloc
+	var err error
 	if s.PreBlock != nil {
-		pre = toProtobufAlloc(*s.PreBlock)
+		pre, err = toProtobufAlloc(*s.PreBlock)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var post *Alloc
 	if s.PostBlock != nil {
-		post = toProtobufAlloc(*s.PostBlock)
+		post, err = toProtobufAlloc(*s.PostBlock)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return proto.Marshal(&ExceptionBlock{
@@ -36,12 +43,19 @@ func EncodeExceptionBlock(s *substate.ExceptionBlock) ([]byte, error) {
 // EncodeExceptionTx converts ExceptionTx struct into protobuf-encoded ExceptionTx
 func EncodeExceptionTx(tx *substate.ExceptionTx) (*ExceptionTx, error) {
 	var pre *Alloc
+	var err error
 	if tx.PreTransaction != nil {
-		pre = toProtobufAlloc(*tx.PreTransaction)
+		pre, err = toProtobufAlloc(*tx.PreTransaction)
+		if err != nil {
+			return nil, err
+		}
 	}
 	var post *Alloc
 	if tx.PostTransaction != nil {
-		post = toProtobufAlloc(*tx.PostTransaction)
+		post, err = toProtobufAlloc(*tx.PostTransaction)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &ExceptionTx{
 		PreTransaction:  pre,

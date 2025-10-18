@@ -45,19 +45,12 @@ func NewDefaultDestroyedAccountDB(destroyedAccountDir string) (DestroyedAccountD
 	return newDestroyedAccountDB(destroyedAccountDir, nil, nil, nil)
 }
 
-// Deprecated: use MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding instead
-func MakeDefaultDestroyedAccountDBFromBaseDB(db BaseDB) DestroyedAccountDB {
-	encoding, err := newDestroyedAccountEncoding(DefaultEncodingSchema)
+func MakeDefaultDestroyedAccountDBFromBaseDB(db BaseDB) (DestroyedAccountDB, error) {
+	value, err := MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(db, DefaultEncodingSchema)
 	if err != nil {
-		// This should not happen
-		panic(fmt.Sprintf("failed to create default destroyed account encoding: %v", err))
+		return nil, err
 	}
-	return &destroyedAccountDB{
-		db.GetBackend(),
-		nil,
-		nil,
-		*encoding,
-	}
+	return value, nil
 }
 
 func MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(db BaseDB, schema SubstateEncodingSchema) (DestroyedAccountDB, error) {

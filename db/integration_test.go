@@ -14,7 +14,8 @@ func TestUpdateDB_MakeDefaultUpdateDBFromBaseDB(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	db2 := MakeDefaultUpdateDBFromBaseDB(db)
+	db2, err := MakeDefaultUpdateDBFromBaseDB(db)
+	assert.NoError(t, err)
 	assert.NotNil(t, db2)
 	assert.Equal(t, db.GetSubstateEncoding(), db2.GetSubstateEncoding())
 	assert.Equal(t, db2.GetBackend(), db.GetBackend())
@@ -133,7 +134,8 @@ func TestSubstateDB_MakeDefaultDestroyedAccountDBFromBaseDB(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	db2 := MakeDefaultDestroyedAccountDBFromBaseDB(db)
+	db2, err := MakeDefaultDestroyedAccountDBFromBaseDB(db)
+	assert.NoError(t, err)
 	assert.NotNil(t, db2)
 	assert.Equal(t, db2.GetSubstateEncoding(), db.GetSubstateEncoding())
 	assert.Equal(t, db2.GetBackend(), db.GetBackend())
@@ -208,22 +210,20 @@ func TestSubstateDB_MakeDefaultSubstateDBFromBaseDB(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	db2 := MakeDefaultSubstateDBFromBaseDB(db)
+	db2, err := MakeDefaultSubstateDBFromBaseDB(db)
+	assert.NoError(t, err)
 	assert.NotNil(t, db2)
-
-	_ = MakeDefaultSubstateDBFromBaseDB(db)
 }
 
 func TestSubstateDB_MakeDefaultSubstateDB(t *testing.T) {
 	dbPath := t.TempDir() + "test-db"
 	db, err := NewDefaultSubstateDB(dbPath)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	// cast interface to struct
 	backend := db.GetBackend().(*leveldb.DB)
-	db2 := MakeDefaultSubstateDB(backend)
+	db2, err := MakeDefaultSubstateDB(backend)
+	assert.NoError(t, err)
 	assert.NotNil(t, db2)
 }
 
@@ -236,6 +236,7 @@ func TestSubstateDB_MakeSubstateDB(t *testing.T) {
 
 	// cast interface to struct
 	backend := db.GetBackend().(*leveldb.DB)
-	db2 := MakeSubstateDB(backend, nil, nil)
+	db2, err := MakeSubstateDB(backend, nil, nil)
 	assert.NotNil(t, db2)
+	assert.NoError(t, err)
 }

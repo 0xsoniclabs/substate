@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/0xsoniclabs/substate/utils"
 	"github.com/holiman/uint256"
 
 	"github.com/0xsoniclabs/substate/types"
-	"github.com/0xsoniclabs/substate/types/hash"
 )
 
 // Account holds any information about account used in a transaction.
@@ -70,8 +70,8 @@ func (a *Account) Copy() *Account {
 }
 
 // CodeHash returns hashed code
-func (a *Account) CodeHash() types.Hash {
-	return hash.Keccak256Hash(a.Code)
+func (a *Account) CodeHash() (types.Hash, error) {
+	return utils.Keccak256Hash(a.Code)
 }
 
 func (a *Account) String() string {

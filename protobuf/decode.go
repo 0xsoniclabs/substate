@@ -7,7 +7,7 @@ import (
 
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
-	"github.com/0xsoniclabs/substate/types/hash"
+	"github.com/0xsoniclabs/substate/utils"
 	"github.com/holiman/uint256"
 	"github.com/syndtr/goleveldb/leveldb"
 )
@@ -33,8 +33,14 @@ func (s *Substate) Decode(lookup getCodeFunc, block uint64, tx int) (*substate.S
 		return nil, err
 	}
 
-	contractAddress := s.GetTxMessage().getContractAddress()
-	result := s.GetResult().decode(contractAddress)
+	contractAddress, err := s.GetTxMessage().getContractAddress()
+	if err != nil {
+		return nil, err
+	}
+	result, err := s.GetResult().decode(contractAddress)
+	if err != nil {
+		return nil, err
+	}
 
 	return &substate.Substate{
 		InputSubstate:  *input,
@@ -257,10 +263,10 @@ func (entry *Substate_TxMessage_SetCodeAuthorization) decode() ([]byte, []byte, 
 
 // getContractAddress returns, the address.Bytes() of the newly created contract,
 // returns nil if no contract is created.
-func (msg *Substate_TxMessage) getContractAddress() types.Address {
+func (msg *Substate_TxMessage) getContractAddress() (types.Address, error) {
 	// *to==nil means no contract creation
 	if msg.GetTo() != nil {
-		return types.Address{}
+		return types.Address{}, nil
 	}
 
 	return createAddress(types.BytesToAddress(msg.GetFrom()), msg.GetNonce())
@@ -268,7 +274,7 @@ func (msg *Substate_TxMessage) getContractAddress() types.Address {
 
 // createAddress creates an address given the bytes and the nonce
 // mimics crypto.CreateAddress, to avoid cyclical dependency.
-func createAddress(addr types.Address, nonce uint64) types.Address {
+func createAddress(addr types.Address, nonce uint64) (types.Address, error) {
 	// This is equivalent to the RLP encoding of []interface{}{addr, nonce}
 	// Old code using trlp:
 	// data, _ := trlp.EncodeToBytes([]interface{}{addr, nonce})
@@ -298,7 +304,11 @@ func createAddress(addr types.Address, nonce uint64) types.Address {
 	// Get the final byte slice representing the encoded data
 	data := buffer.Bytes()
 
-	return types.BytesToAddress(hash.Keccak256Hash(data).Bytes()[12:])
+	hash, err := utils.Keccak256Hash(data)
+	if err != nil {
+		return types.Address{}, err
+	}
+	return types.BytesToAddress(hash.Bytes()[12:]), nil
 }
 
 // encodeUint encodes a uint64 into a byte array.
@@ -377,19 +387,23 @@ func putInt(b []byte, i uint64) (size int) {
 }
 
 // decode converts protobuf-encoded Substate_Result into aida-comprehensible Result
-func (res *Substate_Result) decode(contractAddress types.Address) *substate.Result {
+func (res *Substate_Result) decode(contractAddress types.Address) (*substate.Result, error) {
 	logs := make([]*types.Log, len(res.GetLogs()))
 	for i, log := range res.GetLogs() {
 		logs[i] = log.decode()
 	}
 
+	bloom, err := utils.BytesToBloom(res.Bloom)
+	if err != nil {
+		return nil, err
+	}
 	return &substate.Result{
 		Status:          res.GetStatus(),
-		Bloom:           types.BytesToBloom(res.Bloom),
+		Bloom:           bloom,
 		Logs:            logs,
 		ContractAddress: contractAddress,
 		GasUsed:         res.GetGasUsed(),
-	}
+	}, nil
 }
 
 func (log *Substate_Result_Log) decode() *types.Log {

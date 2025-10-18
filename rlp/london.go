@@ -5,6 +5,7 @@ import (
 
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
+	"github.com/0xsoniclabs/substate/utils"
 )
 
 func NewLondonRLP(substate *substate.Substate) *londonRLP {
@@ -113,7 +114,7 @@ func newLondonMessage(message *substate.Message) londonMessage {
 
 	if m.To == nil {
 		// put contract creation init code into codeDB
-		dataHash := message.DataHash()
+		dataHash := utils.Must(message.DataHash())
 		m.InitCodeHash = &dataHash
 		m.Data = nil
 	}

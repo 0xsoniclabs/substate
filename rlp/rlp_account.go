@@ -3,6 +3,7 @@ package rlp
 import (
 	"sort"
 
+	"github.com/0xsoniclabs/substate/utils"
 	"github.com/holiman/uint256"
 
 	"github.com/0xsoniclabs/substate/substate"
@@ -13,7 +14,7 @@ func NewRLPAccount(acc *substate.Account) *SubstateAccountRLP {
 	a := &SubstateAccountRLP{
 		Nonce:    acc.Nonce,
 		Balance:  new(uint256.Int).Set(acc.Balance),
-		CodeHash: acc.CodeHash(),
+		CodeHash: utils.Must(acc.CodeHash()),
 		Storage:  [][2]types.Hash{},
 	}
 

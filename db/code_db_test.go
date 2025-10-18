@@ -43,7 +43,8 @@ func TestCodeDB_HasCode(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	has, err := db.HasCode(hash.Keccak256Hash(testCode))
+	hash := hash.Keccak256Hash(testCode)
+	has, err := db.HasCode(hash)
 	if err != nil {
 		t.Fatalf("get code returned error; %v", err)
 	}
@@ -60,7 +61,8 @@ func TestCodeDB_GetCode(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	code, err := db.GetCode(hash.Keccak256Hash(testCode))
+	hash := hash.Keccak256Hash(testCode)
+	code, err := db.GetCode(hash)
 	if err != nil {
 		t.Fatalf("get code returned error; %v", err)
 	}

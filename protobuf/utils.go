@@ -3,7 +3,7 @@ package protobuf
 import (
 	"math/big"
 
-	"github.com/0xsoniclabs/substate/types/hash"
+	"github.com/0xsoniclabs/substate/utils"
 	"github.com/holiman/uint256"
 	"google.golang.org/protobuf/proto"
 
@@ -90,8 +90,12 @@ func Uint256ToBytes(x *uint256.Int) []byte {
 //
 // Returns:
 // - A types.Hash object containing the Keccak256 hash of the input code.
-func CodeHash(code []byte) types.Hash {
-	return hash.Keccak256Hash(code)
+func CodeHash(code []byte) (types.Hash, error) {
+	value, err := utils.Keccak256Hash(code)
+	if err != nil {
+		return types.Hash{}, err
+	}
+	return value, nil
 }
 
 // HashToBytes converts a types.Hash object to a byte slice.
@@ -112,17 +116,20 @@ func HashToBytes(hash *types.Hash) []byte {
 //
 // Returns:
 // - A new Substate object with code hashes instead of code bytes.
-func (s *Substate) HashedCopy() *Substate {
+func (s *Substate) HashedCopy() (*Substate, error) {
 	y := proto.Clone(s).(*Substate)
 
 	if y == nil {
-		return nil
+		return nil, nil
 	}
 
 	for _, entry := range y.InputAlloc.Alloc {
 		account := entry.Account
 		if code := account.GetCode(); code != nil {
-			codeHash := CodeHash(code)
+			codeHash, err := CodeHash(code)
+			if err != nil {
+				return nil, nil
+			}
 			account.Contract = &Account_CodeHash{
 				CodeHash: HashToBytes(&codeHash),
 			}
@@ -132,7 +139,10 @@ func (s *Substate) HashedCopy() *Substate {
 	for _, entry := range y.OutputAlloc.Alloc {
 		account := entry.Account
 		if code := account.GetCode(); code != nil {
-			codeHash := CodeHash(code)
+			codeHash, err := CodeHash(code)
+			if err != nil {
+				return nil, nil
+			}
 			account.Contract = &Account_CodeHash{
 				CodeHash: HashToBytes(&codeHash),
 			}
@@ -141,12 +151,15 @@ func (s *Substate) HashedCopy() *Substate {
 
 	if y.TxMessage.To == nil {
 		if code := y.TxMessage.GetData(); code != nil {
-			codeHash := CodeHash(code)
+			codeHash, err := CodeHash(code)
+			if err != nil {
+				return nil, nil
+			}
 			y.TxMessage.Input = &Substate_TxMessage_InitCodeHash{
 				InitCodeHash: HashToBytes(&codeHash),
 			}
 		}
 	}
 
-	return y
+	return y, nil
 }

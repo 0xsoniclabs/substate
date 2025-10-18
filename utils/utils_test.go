@@ -35,3 +35,135 @@ func TestParseBlockSegment(t *testing.T) {
 		assert.Equal(t, expected, err.Error())
 	}
 }
+
+func TestKeccak256Hash(t *testing.T) {
+	tests := []struct {
+		name        string
+		input       [][]byte
+		expectError bool
+	}{
+		{
+			name:        "empty input",
+			input:       [][]byte{},
+			expectError: false,
+		},
+		{
+			name:        "single byte array",
+			input:       [][]byte{[]byte("hello")},
+			expectError: false,
+		},
+		{
+			name:        "multiple byte arrays",
+			input:       [][]byte{[]byte("hello"), []byte("world")},
+			expectError: false,
+		},
+		{
+			name:        "nil byte array",
+			input:       [][]byte{nil},
+			expectError: false,
+		},
+		{
+			name:        "empty byte array",
+			input:       [][]byte{{}},
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := Keccak256Hash(tt.input...)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.NotEmpty(t, result)
+			}
+		})
+	}
+}
+
+func TestBytesToBloom(t *testing.T) {
+	tests := []struct {
+		name        string
+		input       []byte
+		expectError bool
+	}{
+		{
+			name:        "nil input",
+			input:       nil,
+			expectError: false,
+		},
+		{
+			name:        "empty byte array",
+			input:       []byte{},
+			expectError: false,
+		},
+		{
+			name:        "valid 256 bytes",
+			input:       make([]byte, 256),
+			expectError: false,
+		},
+		{
+			name:        "small byte array",
+			input:       []byte{1, 2, 3, 4, 5},
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := BytesToBloom(tt.input)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, result)
+			}
+		})
+	}
+}
+
+func TestMust(t *testing.T) {
+	tests := []struct {
+		name        string
+		value       interface{}
+		err         error
+		expectPanic bool
+	}{
+		{
+			name:        "no error",
+			value:       42,
+			err:         nil,
+			expectPanic: false,
+		},
+		{
+			name:        "with error",
+			value:       0,
+			err:         assert.AnError,
+			expectPanic: true,
+		},
+		{
+			name:        "string value no error",
+			value:       "test",
+			err:         nil,
+			expectPanic: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.expectPanic {
+				assert.Panics(t, func() {
+					Must(tt.value, tt.err)
+				})
+			} else {
+				assert.NotPanics(t, func() {
+					result := Must(tt.value, tt.err)
+					assert.Equal(t, tt.value, result)
+				})
+			}
+		})
+	}
+}

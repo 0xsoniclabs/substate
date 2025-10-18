@@ -5,7 +5,7 @@ import (
 
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
-	"github.com/0xsoniclabs/substate/types/hash"
+	"github.com/0xsoniclabs/substate/utils"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -13,7 +13,15 @@ import (
 func Encode(ss *substate.Substate, block uint64, tx int) ([]byte, error) {
 	// Field `Account.contract.code_hash` and `TxMessage.input.init_code_hash` are required by the decoder
 	// We need to ensure that the code hashes are not nil by calling `HashedCopy` method
-	bytes, err := proto.Marshal(toProtobufSubstate(ss).HashedCopy())
+	pSubstate, err := toProtobufSubstate(ss)
+	if err != nil {
+		return nil, err
+	}
+	h, err := pSubstate.HashedCopy()
+	if err != nil {
+		return nil, nil
+	}
+	bytes, err := proto.Marshal(h)
 	if err != nil {
 		return nil, fmt.Errorf("cannot encode substate into protobuf block: %v,tx %v; %w", block, tx, err)
 	}
@@ -21,18 +29,30 @@ func Encode(ss *substate.Substate, block uint64, tx int) ([]byte, error) {
 	return bytes, nil
 }
 
-func toProtobufSubstate(ss *substate.Substate) *Substate {
-	return &Substate{
-		InputAlloc:  toProtobufAlloc(ss.InputSubstate),
-		OutputAlloc: toProtobufAlloc(ss.OutputSubstate),
-		BlockEnv:    toProtobufBlockEnv(ss.Env),
-		TxMessage:   toProtobufTxMessage(ss.Message),
-		Result:      toProtobufResult(ss.Result),
+func toProtobufSubstate(ss *substate.Substate) (*Substate, error) {
+	input, err := toProtobufAlloc(ss.InputSubstate)
+	if err != nil {
+		return nil, err
 	}
+	output, err := toProtobufAlloc(ss.OutputSubstate)
+	if err != nil {
+		return nil, err
+	}
+	message, err := toProtobufTxMessage(ss.Message)
+	if err != nil {
+		return nil, err
+	}
+	return &Substate{
+		InputAlloc:  input,
+		OutputAlloc: output,
+		BlockEnv:    toProtobufBlockEnv(ss.Env),
+		TxMessage:   message,
+		Result:      toProtobufResult(ss.Result),
+	}, nil
 }
 
 // toProtobufAlloc converts substate.WorldState into protobuf-encoded Alloc
-func toProtobufAlloc(sw substate.WorldState) *Alloc {
+func toProtobufAlloc(sw substate.WorldState) (*Alloc, error) {
 	world := make([]*AllocEntry, 0, len(sw))
 	for addr, acct := range sw {
 		storage := make([]*Account_StorageEntry, 0, len(acct.Storage))
@@ -43,6 +63,10 @@ func toProtobufAlloc(sw substate.WorldState) *Alloc {
 			})
 		}
 
+		hash, err := utils.Keccak256Hash(acct.Code)
+		if err != nil {
+			return nil, err
+		}
 		world = append(world, &AllocEntry{
 			Address: addr.Bytes(),
 			Account: &Account{
@@ -50,13 +74,13 @@ func toProtobufAlloc(sw substate.WorldState) *Alloc {
 				Balance: acct.Balance.Bytes(),
 				Storage: storage,
 				Contract: &Account_CodeHash{
-					CodeHash: hash.Keccak256Hash(acct.Code).Bytes(),
+					CodeHash: hash.Bytes(),
 				},
 			},
 		})
 	}
 
-	return &Alloc{Alloc: world}
+	return &Alloc{Alloc: world}, nil
 }
 
 // encode converts substate.Env into protobuf-encoded Substate_BlockEnv
@@ -83,7 +107,7 @@ func toProtobufBlockEnv(se *substate.Env) *Substate_BlockEnv {
 }
 
 // encode converts substate.Message into protobuf-encoded Substate_TxMessage
-func toProtobufTxMessage(sm *substate.Message) *Substate_TxMessage {
+func toProtobufTxMessage(sm *substate.Message) (*Substate_TxMessage, error) {
 	txType := Substate_TxMessage_TXTYPE_LEGACY
 	if sm.ProtobufTxType != nil {
 		txType = Substate_TxMessage_TxType(*sm.ProtobufTxType)
@@ -101,7 +125,11 @@ func toProtobufTxMessage(sm *substate.Message) *Substate_TxMessage {
 
 	var txInput isSubstate_TxMessage_Input
 	if sm.To == nil {
-		txInput = &Substate_TxMessage_InitCodeHash{InitCodeHash: sm.DataHash().Bytes()}
+		hash, err := sm.DataHash()
+		if err != nil {
+			return nil, err
+		}
+		txInput = &Substate_TxMessage_InitCodeHash{InitCodeHash: hash.Bytes()}
 	} else {
 		txInput = &Substate_TxMessage_Data{Data: sm.Data}
 	}
@@ -123,7 +151,7 @@ func toProtobufTxMessage(sm *substate.Message) *Substate_TxMessage {
 		BlobGasFeeCap:         BigIntToWrapperspbBytes(sm.BlobGasFeeCap),
 		BlobHashes:            blobHashes,
 		SetCodeAuthorizations: setCodeAuthorizationsList,
-	}
+	}, nil
 }
 
 // convertMessageSetCodeAuthorizationToProtobufList convert substate.Message.SetCodeAuthorization into protobuf-encoded Substate_TxMessage_SetCodeAuthorization

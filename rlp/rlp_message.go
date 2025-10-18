@@ -6,6 +6,7 @@ import (
 
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
+	"github.com/0xsoniclabs/substate/utils"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
@@ -29,7 +30,7 @@ func NewMessage(sm *substate.Message) *Message {
 
 	if mess.To == nil {
 		// put contract creation init code into codeDB
-		dataHash := sm.DataHash()
+		dataHash := utils.Must(sm.DataHash())
 		mess.InitCodeHash = &dataHash
 		mess.Data = nil
 	}
