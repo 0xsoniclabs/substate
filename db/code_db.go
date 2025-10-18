@@ -4,13 +4,12 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/0xsoniclabs/substate/types"
 	"github.com/0xsoniclabs/substate/utils"
 	"github.com/syndtr/goleveldb/leveldb"
 	ldbiterator "github.com/syndtr/goleveldb/leveldb/iterator"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/util"
-
-	"github.com/0xsoniclabs/substate/types"
 )
 
 const CodeDBPrefix = "1c" // CodeDBPrefix + codeHash (256-bit) -> code
