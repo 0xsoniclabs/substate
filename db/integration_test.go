@@ -215,6 +215,24 @@ func TestSubstateDB_MakeDefaultSubstateDBFromBaseDB(t *testing.T) {
 	assert.NotNil(t, db2)
 }
 
+func TestSubstateDB_MakeDefaultSubstateDBFromBaseDBWithEncoding(t *testing.T) {
+	dbPath := t.TempDir() + "test-db"
+	db, err := NewDefaultSubstateDB(dbPath)
+	assert.NoError(t, err)
+
+	t.Run("success", func(t *testing.T) {
+		db2, err := MakeDefaultSubstateDBFromBaseDBWithEncoding(db, DefaultEncodingSchema)
+		assert.NoError(t, err)
+		assert.NotNil(t, db2)
+		assert.Equal(t, db2.GetSubstateEncoding(), db.GetSubstateEncoding())
+		assert.Equal(t, db2.GetBackend(), db.GetBackend())
+	})
+	t.Run("error", func(t *testing.T) {
+		db2, err := MakeDefaultSubstateDBFromBaseDBWithEncoding(db, "invalid-schema")
+		assert.Error(t, err)
+		assert.Nil(t, db2)
+	})
+}
 func TestSubstateDB_MakeDefaultSubstateDB(t *testing.T) {
 	dbPath := t.TempDir() + "test-db"
 	db, err := NewDefaultSubstateDB(dbPath)

@@ -71,6 +71,21 @@ func (mr *MockDestroyedAccountDBMockRecorder) Compact(start, limit any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Compact", reflect.TypeOf((*MockDestroyedAccountDB)(nil).Compact), start, limit)
 }
 
+// Decode mocks base method.
+func (m *MockDestroyedAccountDB) Decode(data []byte) (SuicidedAccountLists, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Decode", data)
+	ret0, _ := ret[0].(SuicidedAccountLists)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Decode indicates an expected call of Decode.
+func (mr *MockDestroyedAccountDBMockRecorder) Decode(data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Decode", reflect.TypeOf((*MockDestroyedAccountDB)(nil).Decode), data)
+}
+
 // Delete mocks base method.
 func (m *MockDestroyedAccountDB) Delete(key []byte) error {
 	m.ctrl.T.Helper()
@@ -83,6 +98,21 @@ func (m *MockDestroyedAccountDB) Delete(key []byte) error {
 func (mr *MockDestroyedAccountDBMockRecorder) Delete(key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockDestroyedAccountDB)(nil).Delete), key)
+}
+
+// Encode mocks base method.
+func (m *MockDestroyedAccountDB) Encode(list SuicidedAccountLists) ([]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Encode", list)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Encode indicates an expected call of Encode.
+func (mr *MockDestroyedAccountDBMockRecorder) Encode(list any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Encode", reflect.TypeOf((*MockDestroyedAccountDB)(nil).Encode), list)
 }
 
 // Get mocks base method.

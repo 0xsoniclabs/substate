@@ -143,6 +143,20 @@ func (mr *MockCodeDBMockRecorder) GetCode(arg0 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCode", reflect.TypeOf((*MockCodeDB)(nil).GetCode), arg0)
 }
 
+// GetSubstateEncoding mocks base method.
+func (m *MockCodeDB) GetSubstateEncoding() SubstateEncodingSchema {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSubstateEncoding")
+	ret0, _ := ret[0].(SubstateEncodingSchema)
+	return ret0
+}
+
+// GetSubstateEncoding indicates an expected call of GetSubstateEncoding.
+func (mr *MockCodeDBMockRecorder) GetSubstateEncoding() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubstateEncoding", reflect.TypeOf((*MockCodeDB)(nil).GetSubstateEncoding))
+}
+
 // Has mocks base method.
 func (m *MockCodeDB) Has(arg0 []byte) (bool, error) {
 	m.ctrl.T.Helper()

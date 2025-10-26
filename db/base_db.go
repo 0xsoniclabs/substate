@@ -66,6 +66,9 @@ type BaseDB interface {
 
 	io.Closer
 
+	// GetSubstateEncoding returns the encoding schema in use.
+	GetSubstateEncoding() SubstateEncodingSchema
+
 	// Has returns true if the baseDB does contain the given key.
 	Has([]byte) (bool, error)
 

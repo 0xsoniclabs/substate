@@ -159,6 +159,20 @@ func (mr *MockExceptionDBMockRecorder) GetLastKey() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastKey", reflect.TypeOf((*MockExceptionDB)(nil).GetLastKey))
 }
 
+// GetSubstateEncoding mocks base method.
+func (m *MockExceptionDB) GetSubstateEncoding() SubstateEncodingSchema {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSubstateEncoding")
+	ret0, _ := ret[0].(SubstateEncodingSchema)
+	return ret0
+}
+
+// GetSubstateEncoding indicates an expected call of GetSubstateEncoding.
+func (mr *MockExceptionDBMockRecorder) GetSubstateEncoding() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubstateEncoding", reflect.TypeOf((*MockExceptionDB)(nil).GetSubstateEncoding))
+}
+
 // Has mocks base method.
 func (m *MockExceptionDB) Has(arg0 []byte) (bool, error) {
 	m.ctrl.T.Helper()
