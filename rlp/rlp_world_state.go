@@ -8,7 +8,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
-func NewWorldState(worldState substate.WorldState) WorldState {
+func NewWorldState(worldState substate.WorldState) (WorldState, error) {
 	ws := WorldState{
 		Addresses: []types.Address{},
 		Accounts:  []*SubstateAccountRLP{},
@@ -16,10 +16,14 @@ func NewWorldState(worldState substate.WorldState) WorldState {
 
 	for addr, acc := range worldState {
 		ws.Addresses = append(ws.Addresses, addr)
-		ws.Accounts = append(ws.Accounts, NewRLPAccount(acc))
+		newAcc, err := NewRLPAccount(acc)
+		if err != nil {
+			return WorldState{}, err
+		}
+		ws.Accounts = append(ws.Accounts, newAcc)
 	}
 
-	return ws
+	return ws, nil
 }
 
 type WorldState struct {

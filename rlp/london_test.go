@@ -59,9 +59,10 @@ func TestNewLondonRLP(t *testing.T) {
 	}
 
 	// when
-	result := NewLondonRLP(ss)
+	result, err := NewLondonRLP(ss)
 
 	// then
+	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.NotNil(t, result.InputSubstate)
 	assert.NotNil(t, result.OutputSubstate)
@@ -154,9 +155,10 @@ func TestNewLondonMessage(t *testing.T) {
 	}
 
 	// when
-	result := newLondonMessage(message)
+	result, err := newLondonMessage(message)
 
 	// then
+	assert.NoError(t, err)
 	assert.Equal(t, message.Nonce, result.Nonce)
 	assert.Equal(t, message.CheckNonce, result.CheckNonce)
 	assert.Equal(t, message.GasPrice, result.GasPrice)
@@ -184,9 +186,10 @@ func TestNewLondonMessage_ContractCreation(t *testing.T) {
 	}
 
 	// when
-	result := newLondonMessage(message)
+	result, err := newLondonMessage(message)
 
 	// then
+	assert.NoError(t, err)
 	assert.Nil(t, result.To)
 	assert.NotNil(t, result.InitCodeHash)
 	assert.Nil(t, result.Data)

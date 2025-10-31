@@ -5,7 +5,6 @@ import (
 
 	"github.com/0xsoniclabs/substate/protobuf"
 	"github.com/0xsoniclabs/substate/rlp"
-	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
 	trlp "github.com/0xsoniclabs/substate/types/rlp"
 	"github.com/0xsoniclabs/substate/updateset"
@@ -91,7 +90,7 @@ func decodeUpdateSetPB(block uint64, getCode func(codeHash types.Hash) ([]byte, 
 }
 
 func encodeUpdateSetRLP(updateSet updateset.UpdateSet, deletedAccounts []types.Address) ([]byte, error) {
-	up, err := rlpNewUpdateSetRLP(updateSet.WorldState, deletedAccounts)
+	up, err := rlp.NewUpdateSetRLP(updateSet.WorldState, deletedAccounts)
 	if err != nil {
 		return nil, err
 	}
@@ -112,14 +111,4 @@ func decodeUpdateSetRLP(block uint64, getCode func(codeHash types.Hash) ([]byte,
 		return nil, err
 	}
 	return updateset.NewUpdateSet(*ws, block), nil
-}
-
-func rlpNewUpdateSetRLP(worldState substate.WorldState, deletedAccounts []types.Address) (out *rlp.UpdateSetRLP, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("failed to create RLP update set: %v", r)
-		}
-	}()
-	out = rlp.NewUpdateSetRLP(worldState, deletedAccounts)
-	return out, nil
 }

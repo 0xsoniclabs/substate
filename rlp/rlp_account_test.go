@@ -22,9 +22,10 @@ func TestNewRLPAccount(t *testing.T) {
 	}
 
 	// when
-	result := NewRLPAccount(acc)
+	result, err := NewRLPAccount(acc)
 
 	// then
+	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Equal(t, uint64(5), result.Nonce)
 	assert.Equal(t, uint256.NewInt(1000), result.Balance)

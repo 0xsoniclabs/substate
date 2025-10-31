@@ -3,18 +3,20 @@ package rlp
 import (
 	"sort"
 
-	"github.com/0xsoniclabs/substate/utils"
-	"github.com/holiman/uint256"
-
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
+	"github.com/holiman/uint256"
 )
 
-func NewRLPAccount(acc *substate.Account) *SubstateAccountRLP {
+func NewRLPAccount(acc *substate.Account) (*SubstateAccountRLP, error) {
+	codeHash, err := acc.CodeHash()
+	if err != nil {
+		return nil, err
+	}
 	a := &SubstateAccountRLP{
 		Nonce:    acc.Nonce,
 		Balance:  new(uint256.Int).Set(acc.Balance),
-		CodeHash: utils.Must(acc.CodeHash()),
+		CodeHash: codeHash,
 		Storage:  [][2]types.Hash{},
 	}
 
@@ -32,7 +34,7 @@ func NewRLPAccount(acc *substate.Account) *SubstateAccountRLP {
 		a.Storage = append(a.Storage, [2]types.Hash{key, value})
 	}
 
-	return a
+	return a, nil
 }
 
 type SubstateAccountRLP struct {

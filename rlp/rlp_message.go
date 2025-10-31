@@ -6,11 +6,10 @@ import (
 
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
-	"github.com/0xsoniclabs/substate/utils"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
-func NewMessage(sm *substate.Message) *Message {
+func NewMessage(sm *substate.Message) (*Message, error) {
 	mess := &Message{
 		Nonce:                 sm.Nonce,
 		CheckNonce:            sm.CheckNonce,
@@ -30,12 +29,15 @@ func NewMessage(sm *substate.Message) *Message {
 
 	if mess.To == nil {
 		// put contract creation init code into codeDB
-		dataHash := utils.Must(sm.DataHash())
+		dataHash, err := sm.DataHash()
+		if err != nil {
+			return nil, err
+		}
 		mess.InitCodeHash = &dataHash
 		mess.Data = nil
 	}
 
-	return mess
+	return mess, nil
 }
 
 type Message struct {

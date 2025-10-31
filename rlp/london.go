@@ -5,17 +5,28 @@ import (
 
 	"github.com/0xsoniclabs/substate/substate"
 	"github.com/0xsoniclabs/substate/types"
-	"github.com/0xsoniclabs/substate/utils"
 )
 
-func NewLondonRLP(substate *substate.Substate) *londonRLP {
-	return &londonRLP{
-		InputSubstate:  NewWorldState(substate.InputSubstate),
-		OutputSubstate: NewWorldState(substate.OutputSubstate),
-		Env:            newLondonEnv(substate.Env),
-		Message:        newLondonMessage(substate.Message),
-		Result:         NewResult(substate.Result),
+func NewLondonRLP(substate *substate.Substate) (*londonRLP, error) {
+	input, err := NewWorldState(substate.InputSubstate)
+	if err != nil {
+		return nil, err
 	}
+	output, err := NewWorldState(substate.OutputSubstate)
+	if err != nil {
+		return nil, err
+	}
+	message, err := newLondonMessage(substate.Message)
+	if err != nil {
+		return nil, err
+	}
+	return &londonRLP{
+		InputSubstate:  input,
+		OutputSubstate: output,
+		Env:            newLondonEnv(substate.Env),
+		Message:        message,
+		Result:         NewResult(substate.Result),
+	}, nil
 }
 
 // londonRLP represents RLP structure after londonBlock and before cancun fork.
@@ -96,7 +107,7 @@ func (e londonEnv) toEnv() *Env {
 	}
 }
 
-func newLondonMessage(message *substate.Message) londonMessage {
+func newLondonMessage(message *substate.Message) (londonMessage, error) {
 	m := londonMessage{
 		Nonce:        message.Nonce,
 		CheckNonce:   message.CheckNonce,
@@ -114,12 +125,15 @@ func newLondonMessage(message *substate.Message) londonMessage {
 
 	if m.To == nil {
 		// put contract creation init code into codeDB
-		dataHash := utils.Must(message.DataHash())
+		dataHash, err := message.DataHash()
+		if err != nil {
+			return londonMessage{}, err
+		}
 		m.InitCodeHash = &dataHash
 		m.Data = nil
 	}
 
-	return m
+	return m, nil
 }
 
 type londonMessage struct {
