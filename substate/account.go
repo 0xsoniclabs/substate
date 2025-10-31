@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/0xsoniclabs/substate/types"
 	"github.com/0xsoniclabs/substate/utils"
 	"github.com/holiman/uint256"
-
-	"github.com/0xsoniclabs/substate/types"
 )
 
 // Account holds any information about account used in a transaction.
