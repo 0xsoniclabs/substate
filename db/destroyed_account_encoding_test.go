@@ -43,6 +43,30 @@ func TestDestroyedAccountDB_SetSubstateEncoding(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestDestroyedAccountDB_Encode(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	baseDb := NewMockDbAdapter(ctrl)
+	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
+
+	actual, err := db.Encode(SuicidedAccountLists{})
+	assert.NoError(t, err)
+	assert.Equal(t, []uint8([]byte{}), actual)
+}
+
+func TestDestroyedAccountDB_Decode(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	baseDb := NewMockDbAdapter(ctrl)
+	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
+
+	actual, err := db.Decode([]uint8([]byte{}))
+	assert.NoError(t, err)
+	assert.Equal(t, SuicidedAccountLists{}, actual)
+}
+
 func TestDestroyedAccountEncoding_newDestroyedAccountEncoding(t *testing.T) {
 	encoding, err := newDestroyedAccountEncoding(DefaultEncodingSchema)
 	assert.NoError(t, err)

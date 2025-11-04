@@ -114,6 +114,20 @@ func createDbAndPutCode(dbPath string) (*codeDB, error) {
 	return db, nil
 }
 
+func TestCodeDB_GetSubstateEncoding(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	baseDb := NewMockDbAdapter(ctrl)
+	db := &codeDB{
+		baseDb, nil, nil,
+	}
+
+	encoding := db.GetSubstateEncoding()
+
+	assert.Equal(t, DefaultEncodingSchema, encoding)
+}
+
 func TestCodeDB_HashCodeSuccess(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
