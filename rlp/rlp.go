@@ -6,14 +6,26 @@ import (
 	"github.com/0xsoniclabs/substate/types/rlp"
 )
 
-func NewRLP(substate *substate.Substate) *RLP {
-	return &RLP{
-		InputSubstate:  NewWorldState(substate.InputSubstate),
-		OutputSubstate: NewWorldState(substate.OutputSubstate),
-		Env:            NewEnv(substate.Env),
-		Message:        NewMessage(substate.Message),
-		Result:         NewResult(substate.Result),
+func NewRLP(substate *substate.Substate) (*RLP, error) {
+	input, err := NewWorldState(substate.InputSubstate)
+	if err != nil {
+		return nil, err
 	}
+	output, err := NewWorldState(substate.OutputSubstate)
+	if err != nil {
+		return nil, err
+	}
+	message, err := NewMessage(substate.Message)
+	if err != nil {
+		return nil, err
+	}
+	return &RLP{
+		InputSubstate:  input,
+		OutputSubstate: output,
+		Env:            NewEnv(substate.Env),
+		Message:        message,
+		Result:         NewResult(substate.Result),
+	}, nil
 }
 
 type RLP struct {

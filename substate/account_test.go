@@ -108,7 +108,9 @@ func TestAccount_Copy(t *testing.T) {
 func TestAccount_CodeHash(t *testing.T) {
 	acc := NewAccount(1, new(uint256.Int).SetUint64(1), []byte{1})
 	expectedHash := hash.Keccak256Hash(acc.Code)
-	assert.Equal(t, expectedHash, acc.CodeHash())
+	actualHash, err := acc.CodeHash()
+	assert.NoError(t, err)
+	assert.Equal(t, expectedHash, actualHash)
 }
 
 func TestAccount_String(t *testing.T) {

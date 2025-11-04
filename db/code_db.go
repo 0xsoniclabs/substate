@@ -4,13 +4,12 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/0xsoniclabs/substate/types"
+	"github.com/0xsoniclabs/substate/utils"
 	"github.com/syndtr/goleveldb/leveldb"
 	ldbiterator "github.com/syndtr/goleveldb/leveldb/iterator"
 	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/util"
-
-	"github.com/0xsoniclabs/substate/types"
-	"github.com/0xsoniclabs/substate/types/hash"
 )
 
 const CodeDBPrefix = "1c" // CodeDBPrefix + codeHash (256-bit) -> code
@@ -104,9 +103,12 @@ func (db *codeDB) GetCode(codeHash types.Hash) ([]byte, error) {
 
 // PutCode creates hash for given code and inserts it into the baseDB.
 func (db *codeDB) PutCode(code []byte) error {
-	codeHash := hash.Keccak256Hash(code)
+	codeHash, err := utils.Keccak256Hash(code)
+	if err != nil {
+		return fmt.Errorf("cannot hash code: %w", err)
+	}
 	key := CodeDBKey(codeHash)
-	err := db.Put(key, code)
+	err = db.Put(key, code)
 	if err != nil {
 		return fmt.Errorf("cannot put code %s: %w", codeHash, err)
 	}

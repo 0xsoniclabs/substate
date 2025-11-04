@@ -202,25 +202,20 @@ func TestMessage_DataHashReturnsIfExists(t *testing.T) {
 	want := types.BytesToHash([]byte{1})
 	msg := &Message{dataHash: &want}
 
-	got := msg.DataHash()
-	if want != got {
-		t.Fatalf("hashes are different\nwant: %v\ngot: %v", want, got)
-	}
+	got, err := msg.DataHash()
+	assert.NoError(t, err)
+	assert.Equal(t, want, got)
 }
 
 func TestMessage_DataHashGeneratesNewHashIfNil(t *testing.T) {
 	msg := &Message{Data: []byte{1}}
-	got := msg.DataHash()
+	got, err := msg.DataHash()
+	assert.NoError(t, err)
 
 	want := hash.Keccak256Hash(msg.Data)
 
-	if got.IsEmpty() {
-		t.Fatal("dataHash is nil")
-	}
-
-	if want != got {
-		t.Fatalf("hashes are different\nwant: %v\ngot: %v", want, got)
-	}
+	assert.False(t, got.IsEmpty())
+	assert.Equal(t, want, got)
 }
 
 func TestMessage_EqualSetCodeAuthorization(t *testing.T) {

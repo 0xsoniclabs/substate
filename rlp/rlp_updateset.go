@@ -13,19 +13,23 @@ type UpdateSetRLP struct {
 	DeletedAccounts []types.Address
 }
 
-func NewUpdateSetRLP(ws substate.WorldState, deletedAccounts []types.Address) *UpdateSetRLP {
+func NewUpdateSetRLP(ws substate.WorldState, deletedAccounts []types.Address) (*UpdateSetRLP, error) {
 	a := WorldState{
 		Addresses: []types.Address{},
 		Accounts:  []*SubstateAccountRLP{},
 	}
 	for addr, acc := range ws {
 		a.Addresses = append(a.Addresses, addr)
-		a.Accounts = append(a.Accounts, NewRLPAccount(acc))
+		newAcc, err := NewRLPAccount(acc)
+		if err != nil {
+			return nil, err
+		}
+		a.Accounts = append(a.Accounts, newAcc)
 	}
 	return &UpdateSetRLP{
 		WorldState:      a,
 		DeletedAccounts: deletedAccounts,
-	}
+	}, nil
 }
 
 func (up *UpdateSetRLP) ToWorldState(lookup func(codeHash types.Hash) ([]byte, error)) (*substate.WorldState, error) {

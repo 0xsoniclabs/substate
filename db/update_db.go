@@ -61,17 +61,12 @@ func NewUpdateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.Read
 	return newUpdateDB(path, o, wo, ro)
 }
 
-// Deprecated: use MakeDefaultUpdateDBFromBaseDBWithEncoding instead
-func MakeDefaultUpdateDBFromBaseDB(db BaseDB) UpdateDB {
-	encoding, err := newUpdateSetEncoding(DefaultEncodingSchema)
+func MakeDefaultUpdateDBFromBaseDB(db BaseDB) (UpdateDB, error) {
+	value, err := MakeDefaultUpdateDBFromBaseDBWithEncoding(db, DefaultEncodingSchema)
 	if err != nil {
-		// This should not happen
-		panic(fmt.Sprintf("failed to create default update-db encoding: %v", err))
+		return nil, err
 	}
-	return &updateDB{
-		&codeDB{db.GetBackend(), nil, nil},
-		*encoding,
-	}
+	return value, nil
 }
 
 func MakeDefaultUpdateDBFromBaseDBWithEncoding(db BaseDB, schema SubstateEncodingSchema) (UpdateDB, error) {

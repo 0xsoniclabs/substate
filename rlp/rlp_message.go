@@ -9,7 +9,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
-func NewMessage(sm *substate.Message) *Message {
+func NewMessage(sm *substate.Message) (*Message, error) {
 	mess := &Message{
 		Nonce:                 sm.Nonce,
 		CheckNonce:            sm.CheckNonce,
@@ -29,12 +29,15 @@ func NewMessage(sm *substate.Message) *Message {
 
 	if mess.To == nil {
 		// put contract creation init code into codeDB
-		dataHash := sm.DataHash()
+		dataHash, err := sm.DataHash()
+		if err != nil {
+			return nil, err
+		}
 		mess.InitCodeHash = &dataHash
 		mess.Data = nil
 	}
 
-	return mess
+	return mess, nil
 }
 
 type Message struct {

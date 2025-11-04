@@ -53,7 +53,10 @@ func newUpdateSetEncoding(encoding SubstateEncodingSchema) (*updateSetEncoding, 
 }
 
 func encodeUpdateSetPB(updateSet updateset.UpdateSet, deletedAccounts []types.Address) ([]byte, error) {
-	up := protobuf.NewUpdateSetPB(updateSet.WorldState, deletedAccounts)
+	up, err := protobuf.NewUpdateSetPB(updateSet.WorldState, deletedAccounts)
+	if err != nil {
+		return nil, err
+	}
 	addrs := make([][]byte, 0, len(up.DeletedAccounts))
 	for _, addr := range up.DeletedAccounts {
 		addrs = append(addrs, addr.Bytes())
@@ -87,7 +90,10 @@ func decodeUpdateSetPB(block uint64, getCode func(codeHash types.Hash) ([]byte, 
 }
 
 func encodeUpdateSetRLP(updateSet updateset.UpdateSet, deletedAccounts []types.Address) ([]byte, error) {
-	up := rlp.NewUpdateSetRLP(updateSet.WorldState, deletedAccounts)
+	up, err := rlp.NewUpdateSetRLP(updateSet.WorldState, deletedAccounts)
+	if err != nil {
+		return nil, err
+	}
 	value, err := trlp.EncodeToBytes(up)
 	if err != nil {
 		return nil, err

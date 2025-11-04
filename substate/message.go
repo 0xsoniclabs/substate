@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/0xsoniclabs/substate/types"
-	"github.com/0xsoniclabs/substate/types/hash"
+	"github.com/0xsoniclabs/substate/utils"
 )
 
 // Transaction types.
@@ -157,12 +157,15 @@ func (m *Message) Equal(y *Message) bool {
 }
 
 // DataHash returns m.dataHash if it exists. If not, it is generated using Keccak256 algorithm.
-func (m *Message) DataHash() types.Hash {
+func (m *Message) DataHash() (types.Hash, error) {
 	if m.dataHash == nil {
-		dataHash := hash.Keccak256Hash(m.Data)
+		dataHash, err := utils.Keccak256Hash(m.Data)
+		if err != nil {
+			return types.Hash{}, err
+		}
 		m.dataHash = &dataHash
 	}
-	return *m.dataHash
+	return *m.dataHash, nil
 }
 
 func (m *Message) String() string {

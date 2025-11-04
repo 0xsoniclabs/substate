@@ -39,8 +39,9 @@ func bytesPadding(data []byte, length int) []byte {
 //
 // Returns:
 // - A pointer to a types.Hash containing the Keccak-256 hash of the input data.
-func codeHash(data []byte) *types.Hash {
-	h := CodeHash(data)
+func codeHash(t *testing.T, data []byte) *types.Hash {
+	h, err := CodeHash(data)
+	assert.Nil(t, err)
 	return &h
 }
 
@@ -223,11 +224,13 @@ func TestBytesToUint256(t *testing.T) {
 func TestCodeHash(t *testing.T) {
 	code := []byte{0x01, 0x02, 0x03, 0x04}
 	expected := hash.Keccak256Hash(code)
-	actual := CodeHash(code)
+	actual, err := CodeHash(code)
+	assert.Nil(t, err)
 	assert.Equal(t, expected, actual)
 
 	expected = hash.Keccak256Hash(nil)
-	actual = CodeHash(nil)
+	actual, err = CodeHash(nil)
+	assert.Nil(t, err)
 	assert.Equal(t, expected, actual)
 }
 
@@ -271,16 +274,18 @@ func TestHashedCopy(t *testing.T) {
 			},
 		},
 	}
-	output := input.HashedCopy()
+	output, err := input.HashedCopy()
+	assert.Nil(t, err)
 	inputAllocAcc := output.GetInputAlloc().GetAlloc()[0].GetAccount().GetCodeHash()
 	outputAllocAcc := output.GetOutputAlloc().GetAlloc()[0].GetAccount().GetCodeHash()
 	txMessageInput := output.GetTxMessage().GetInitCodeHash()
 
-	assert.Equal(t, inputAllocAcc, HashToBytes(codeHash([]byte{0x01, 0x02, 0x03, 0x04})))
-	assert.Equal(t, outputAllocAcc, HashToBytes(codeHash([]byte{0x02, 0x03, 0x04, 0x05})))
-	assert.Equal(t, txMessageInput, HashToBytes(codeHash([]byte{0x03, 0x04, 0x05, 0x06})))
+	assert.Equal(t, inputAllocAcc, HashToBytes(codeHash(t, []byte{0x01, 0x02, 0x03, 0x04})))
+	assert.Equal(t, outputAllocAcc, HashToBytes(codeHash(t, []byte{0x02, 0x03, 0x04, 0x05})))
+	assert.Equal(t, txMessageInput, HashToBytes(codeHash(t, []byte{0x03, 0x04, 0x05, 0x06})))
 
 	var nilSubstate *Substate
-	output = nilSubstate.HashedCopy()
+	output, err = nilSubstate.HashedCopy()
+	assert.NoError(t, err)
 	assert.Nil(t, output)
 }

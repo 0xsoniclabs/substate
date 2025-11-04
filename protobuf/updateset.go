@@ -10,11 +10,15 @@ type UpdateSetPB struct {
 	DeletedAccounts []types.Address
 }
 
-func NewUpdateSetPB(ws substate.WorldState, deletedAccounts []types.Address) *UpdateSetPB {
-	return &UpdateSetPB{
-		WorldState:      toProtobufAlloc(ws),
-		DeletedAccounts: deletedAccounts,
+func NewUpdateSetPB(ws substate.WorldState, deletedAccounts []types.Address) (*UpdateSetPB, error) {
+	data, err := toProtobufAlloc(ws)
+	if err != nil {
+		return nil, err
 	}
+	return &UpdateSetPB{
+		WorldState:      data,
+		DeletedAccounts: deletedAccounts,
+	}, nil
 }
 
 func (up *UpdateSetPB) ToWorldState(lookup func(codeHash types.Hash) ([]byte, error)) (*substate.WorldState, error) {

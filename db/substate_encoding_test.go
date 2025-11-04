@@ -31,7 +31,8 @@ var (
 	simplePb, _ = protobuf.Encode(getTestSubstate(ProtobufEncodingSchema), blk, tx)
 	testPb      = encTest{bytes: simplePb, blk: blk, tx: tx}
 
-	simpleRlp, _ = trlp.EncodeToBytes(rlp.NewRLP(getTestSubstate(RLPEncodingSchema)))
+	newRlp, _    = rlp.NewRLP(getTestSubstate(RLPEncodingSchema))
+	simpleRlp, _ = trlp.EncodeToBytes(newRlp)
 	testRlp      = encTest{bytes: simpleRlp, blk: blk, tx: tx}
 
 	supportedEncoding = map[SubstateEncodingSchema]encTest{

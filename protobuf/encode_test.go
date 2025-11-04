@@ -132,7 +132,8 @@ func TestEncode_WorldState(t *testing.T) {
 		},
 	}
 
-	alloc := toProtobufAlloc(ws)
+	alloc, err := toProtobufAlloc(ws)
+	assert.NoError(t, err)
 	assert.Equal(t, 1, len(alloc.Alloc))
 	assert.Equal(t, ws[types.Address{1}].Balance.Bytes(), alloc.Alloc[0].Account.Balance)
 }
@@ -184,7 +185,8 @@ func TestEncode_TxMessage(t *testing.T) {
 			}},
 	}
 
-	encoded := toProtobufTxMessage(msg)
+	encoded, err := toProtobufTxMessage(msg)
+	assert.NoError(t, err)
 	assert.Equal(t, msg.Nonce, *encoded.Nonce)
 	assert.Equal(t, msg.GasPrice.Bytes(), encoded.GasPrice)
 	assert.Equal(t, msg.From.Bytes(), encoded.From)
@@ -198,7 +200,8 @@ func TestEncode_TxMessageWithInitCode(t *testing.T) {
 		Data: []byte{1, 2, 3},
 	}
 
-	encoded := toProtobufTxMessage(msg)
+	encoded, err := toProtobufTxMessage(msg)
+	assert.NoError(t, err)
 	assert.NotNil(t, encoded.GetInitCodeHash())
 }
 

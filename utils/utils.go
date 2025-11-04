@@ -5,6 +5,9 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/0xsoniclabs/substate/types"
+	"github.com/0xsoniclabs/substate/types/hash"
 )
 
 type blockSegment struct {
@@ -66,4 +69,34 @@ func ParseBlockSegment(s string) (*blockSegment, error) {
 		return nil, fmt.Errorf("block segment first is larger than last: %v-%v", seg.First, seg.Last)
 	}
 	return seg, nil
+}
+
+// Keccak256Hash wraps hash.Keccak256Hash to provide error handling in case of panic.
+func Keccak256Hash(data ...[]byte) (out types.Hash, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("failed to compute code hash: %v", r)
+		}
+	}()
+
+	out = hash.Keccak256Hash(data...)
+	return out, err
+}
+
+// BytesToBloom wraps types.BytesToBloom to provide error handling in case of panic.
+func BytesToBloom(b []byte) (out types.Bloom, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("failed to convert bytes to bloom: %v", r)
+		}
+	}()
+	return types.BytesToBloom(b), nil
+}
+
+// Must is a helper function that panics if the provided error is non-nil.
+func Must[T any](v T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+	return v
 }

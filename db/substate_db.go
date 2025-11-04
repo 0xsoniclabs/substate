@@ -66,22 +66,22 @@ func NewSubstateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.Re
 	return newSubstateDB(path, o, wo, ro)
 }
 
-func MakeDefaultSubstateDB(db *leveldb.DB) SubstateDB {
+func MakeDefaultSubstateDB(db *leveldb.DB) (SubstateDB, error) {
 	sdb := &substateDB{&codeDB{db, nil, nil}, nil}
 	err := sdb.findAndSetEncoding()
 	if err != nil {
-		panic(fmt.Sprintf("failed to set substate encoding: %v", err))
+		return nil, err
 	}
-	return sdb
+	return sdb, nil
 }
 
-func MakeDefaultSubstateDBFromBaseDB(db BaseDB) SubstateDB {
+func MakeDefaultSubstateDBFromBaseDB(db BaseDB) (SubstateDB, error) {
 	sdb := &substateDB{&codeDB{db.GetBackend(), nil, nil}, nil}
 	err := sdb.findAndSetEncoding()
 	if err != nil {
-		panic(fmt.Sprintf("failed to set substate encoding: %v", err))
+		return nil, err
 	}
-	return sdb
+	return sdb, nil
 }
 
 // NewReadOnlySubstateDB creates a new instance of read-only SubstateDB.
@@ -89,13 +89,13 @@ func NewReadOnlySubstateDB(path string) (SubstateDB, error) {
 	return newSubstateDB(path, &opt.Options{ReadOnly: true}, nil, nil)
 }
 
-func MakeSubstateDB(db *leveldb.DB, wo *opt.WriteOptions, ro *opt.ReadOptions) SubstateDB {
+func MakeSubstateDB(db *leveldb.DB, wo *opt.WriteOptions, ro *opt.ReadOptions) (SubstateDB, error) {
 	sdb := &substateDB{&codeDB{backend: db, wo: wo, ro: ro}, nil}
 	err := sdb.findAndSetEncoding()
 	if err != nil {
-		panic(fmt.Sprintf("failed to set substate encoding: %v", err))
+		return nil, err
 	}
-	return sdb
+	return sdb, nil
 }
 
 func newSubstateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.ReadOptions) (*substateDB, error) {
