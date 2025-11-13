@@ -23,6 +23,14 @@ func (db *destroyedAccountDB) SetSubstateEncoding(schema SubstateEncodingSchema)
 	return nil
 }
 
+func (db *destroyedAccountDB) Encode(list SuicidedAccountLists) ([]byte, error) {
+	return db.encoding.encode(list)
+}
+
+func (db *destroyedAccountDB) Decode(data []byte) (SuicidedAccountLists, error) {
+	return db.encoding.decode(data)
+}
+
 type destroyedAccountEncoding struct {
 	schema SubstateEncodingSchema
 	encode func(list SuicidedAccountLists) ([]byte, error)

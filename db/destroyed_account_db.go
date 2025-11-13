@@ -25,6 +25,12 @@ type DestroyedAccountDB interface {
 	// GetSubstateEncoding returns the encoding schema in use.
 	GetSubstateEncoding() SubstateEncodingSchema
 
+	// Encode encodes the SuicidedAccountLists into bytes
+	Encode(list SuicidedAccountLists) ([]byte, error)
+
+	// Decode decodes the bytes into SuicidedAccountLists
+	Decode(data []byte) (SuicidedAccountLists, error)
+
 	// Set the accounts that were destroyed in a specific block and transaction
 	SetDestroyedAccounts(block uint64, tx int, destroyed []types.Address, resurrected []types.Address) error
 
@@ -46,7 +52,7 @@ func NewDefaultDestroyedAccountDB(destroyedAccountDir string) (DestroyedAccountD
 }
 
 func MakeDefaultDestroyedAccountDBFromBaseDB(db BaseDB) (DestroyedAccountDB, error) {
-	value, err := MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(db, DefaultEncodingSchema)
+	value, err := MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(db, db.GetSubstateEncoding())
 	if err != nil {
 		return nil, err
 	}

@@ -71,6 +71,10 @@ type codeDB struct {
 	ro      *opt.ReadOptions
 }
 
+func (db *codeDB) GetSubstateEncoding() SubstateEncodingSchema {
+	return DefaultEncodingSchema
+}
+
 var ErrorEmptyHash = errors.New("give hash is empty")
 
 // HasCode returns true if the baseDB does contain given code hash.

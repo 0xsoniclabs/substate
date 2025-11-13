@@ -76,8 +76,12 @@ func MakeDefaultSubstateDB(db *leveldb.DB) (SubstateDB, error) {
 }
 
 func MakeDefaultSubstateDBFromBaseDB(db BaseDB) (SubstateDB, error) {
+	return MakeDefaultSubstateDBFromBaseDBWithEncoding(db, db.GetSubstateEncoding())
+}
+
+func MakeDefaultSubstateDBFromBaseDBWithEncoding(db BaseDB, schema SubstateEncodingSchema) (SubstateDB, error) {
 	sdb := &substateDB{&codeDB{db.GetBackend(), nil, nil}, nil}
-	err := sdb.findAndSetEncoding()
+	err := sdb.SetSubstateEncoding(schema)
 	if err != nil {
 		return nil, err
 	}

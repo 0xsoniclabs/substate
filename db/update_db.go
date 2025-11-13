@@ -62,7 +62,7 @@ func NewUpdateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.Read
 }
 
 func MakeDefaultUpdateDBFromBaseDB(db BaseDB) (UpdateDB, error) {
-	value, err := MakeDefaultUpdateDBFromBaseDBWithEncoding(db, DefaultEncodingSchema)
+	value, err := MakeDefaultUpdateDBFromBaseDBWithEncoding(db, db.GetSubstateEncoding())
 	if err != nil {
 		return nil, err
 	}
