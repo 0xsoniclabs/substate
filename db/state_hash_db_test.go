@@ -72,7 +72,30 @@ func TestStateHashDb_GetStateRootHash(t *testing.T) {
 	assert.Equal(t, types.Hash{}, hash)
 }
 
-func TestStateHashDb_SaveStateRoot(t *testing.T) {
+func TestStateHashDb_PutStateHash(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// case success
+	mockDbAdapter := NewMockDbAdapter(ctrl)
+	mockDb := NewMockCodeDB(ctrl)
+	mockDb.EXPECT().GetBackend().Return(mockDbAdapter)
+	mockDbAdapter.EXPECT().Put(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	stateHash := MakeDefaultStateHashDBFromBaseDB(mockDb)
+	err := stateHash.PutStateHash(123, []byte("345"))
+	assert.NoError(t, err)
+
+	// case error
+	mockDb = NewMockCodeDB(ctrl)
+	mockDb.EXPECT().GetBackend().Return(mockDbAdapter)
+	mockDbAdapter.EXPECT().Put(gomock.Any(), gomock.Any(), gomock.Any()).Return(leveldb.ErrNotFound)
+	stateHash = MakeDefaultStateHashDBFromBaseDB(mockDb)
+	err = stateHash.PutStateHash(123, []byte("5678"))
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "leveldb: not found")
+}
+
+func TestStateHashDb_PutStateHashString(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
