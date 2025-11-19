@@ -10,10 +10,10 @@ import (
 	ldbiterator "github.com/syndtr/goleveldb/leveldb/iterator"
 )
 
+//go:generate mockgen -source=base_db.go -destination=./base_db_mock.go -package=db
+
 // DbAdapter defines the interface for a database adapter that provides
 // basic database operations such as Put, Get, Delete, and iteration.
-//
-//go:generate mockgen -source=base_db.go -destination=./base_db_mock.go -package=db
 type DbAdapter interface {
 	// Delete removes the key-value pair associated with the given key.
 	// wo specifies the write options.
