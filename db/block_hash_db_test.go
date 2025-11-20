@@ -92,9 +92,9 @@ func TestBlockHashDb_GetFirstBlockHash(t *testing.T) {
 		err := testDb.Close()
 		assert.NoError(t, err, "error closing test database")
 	}()
-
-	keyFirst := fmt.Sprintf("0x%x", 1+rand.Intn(1000))
-	err := testDb.PutBlockHashString(keyFirst, "0x1234")
+	keyFirstNum := 1 + rand.Intn(1000)
+	keyFirst := fmt.Sprintf("0x%x", keyFirstNum)
+	err := testDb.PutBlockHash(uint64(keyFirstNum), []byte("1234"))
 	assert.NoError(t, err, "error saving blockHash "+keyFirst)
 	keyLast := fmt.Sprintf("0x%x", 1000+rand.Intn(1000))
 	err = testDb.PutBlockHashString(keyLast, "0x1234")
