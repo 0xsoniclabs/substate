@@ -26,7 +26,9 @@ import (
 
 	"github.com/0xsoniclabs/substate/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/iterator"
+	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/testutil"
 	"go.uber.org/mock/gomock"
 )
@@ -244,4 +246,59 @@ func TestBlockHashDb_LastBlockHash_InvalidKey(t *testing.T) {
 	}
 	assert.Equal(t, "invalid length of blockHash key, expected at least 10, got 5", err.Error())
 	assert.Equal(t, uint64(0), output)
+}
+
+func TestBlockHashDBConstructors(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Test NewDefaultBlockHashDB
+	db1, err := NewDefaultBlockHashDB(tmpDir + "/db1")
+	if err != nil || db1 == nil {
+		t.Errorf("NewDefaultBlockHashDB failed: %v", err)
+	}
+
+	// Test NewBlockHashDB with custom options
+	optOptions := &opt.Options{ErrorIfMissing: false}
+	wo := &opt.WriteOptions{Sync: true}
+	ro := &opt.ReadOptions{DontFillCache: true}
+	db2, err := NewBlockHashDB(tmpDir+"/db2", optOptions, wo, ro)
+	if err != nil || db2 == nil {
+		t.Errorf("NewBlockHashDB failed: %v", err)
+	}
+
+	// Test MakeDefaultBlockHashDB
+	ldb3, err := leveldb.OpenFile(tmpDir+"/db3", nil)
+	if err != nil {
+		t.Fatalf("leveldb.OpenFile failed: %v", err)
+	}
+	db3 := MakeDefaultBlockHashDB(ldb3)
+	if db3 == nil {
+		t.Errorf("MakeDefaultBlockHashDB failed")
+	}
+
+	// Test MakeDefaultBlockHashDBFromBaseDB
+	db4 := MakeDefaultBlockHashDBFromBaseDB(db3)
+	if db4 == nil {
+		t.Errorf("MakeDefaultBlockHashDBFromBaseDB failed")
+	}
+
+	assert.NoError(t, ldb3.Close(), "error closing leveldb")
+
+	// Test NewReadOnlyBlockHashDB
+	db5, err := NewReadOnlyBlockHashDB(tmpDir + "/db3")
+	if err != nil || db5 == nil {
+		t.Errorf("NewReadOnlyBlockHashDB failed: %v", err)
+	}
+
+	ldb6, err := leveldb.OpenFile(tmpDir+"/db6", nil)
+	if err != nil {
+		t.Fatalf("leveldb.OpenFile failed: %v", err)
+	}
+	// Test MakeBlockHashDB
+	wo2 := &opt.WriteOptions{Sync: false}
+	ro2 := &opt.ReadOptions{DontFillCache: false}
+	db6 := MakeBlockHashDB(ldb6, wo2, ro2)
+	if db6 == nil {
+		t.Errorf("MakeBlockHashDB failed")
+	}
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/0xsoniclabs/substate/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/syndtr/goleveldb/leveldb/opt"
 	"go.uber.org/mock/gomock"
 )
 
@@ -200,4 +201,60 @@ func TestStateHashDb_GetStateRootHash_IntegrationTests(t *testing.T) {
 			assert.Equal(t, got, test.want)
 		})
 	}
+}
+
+func TestStateHashDBConstructors(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Test NewDefaultStateHashDB
+	db1, err := NewDefaultStateHashDB(tmpDir + "/db1")
+	if err != nil || db1 == nil {
+		t.Errorf("NewDefaultStateHashDB failed: %v", err)
+	}
+
+	// Test NewStateHashDB with custom options
+	optOptions := &opt.Options{ErrorIfMissing: false}
+	wo := &opt.WriteOptions{Sync: true}
+	ro := &opt.ReadOptions{DontFillCache: true}
+	db2, err := NewStateHashDB(tmpDir+"/db2", optOptions, wo, ro)
+	if err != nil || db2 == nil {
+		t.Errorf("NewStateHashDB failed: %v", err)
+	}
+
+	// Test MakeDefaultStateHashDB
+	ldb3, err := leveldb.OpenFile(tmpDir+"/db3", nil)
+	if err != nil {
+		t.Fatalf("leveldb.OpenFile failed: %v", err)
+	}
+	db3 := MakeDefaultStateHashDB(ldb3)
+	if db3 == nil {
+		t.Errorf("MakeDefaultStateHashDB failed")
+	}
+
+	// Test MakeDefaultStateHashDBFromBaseDB
+	db4 := MakeDefaultStateHashDBFromBaseDB(db3)
+	if db4 == nil {
+		t.Errorf("MakeDefaultStateHashDBFromBaseDB failed")
+	}
+
+	assert.NoError(t, ldb3.Close(), "error closing leveldb")
+
+	// Test NewReadOnlyStateHashDB
+	db5, err := NewReadOnlyStateHashDB(tmpDir + "/db3")
+	if err != nil || db5 == nil {
+		t.Errorf("NewReadOnlyStateHashDB failed: %v", err)
+	}
+
+	ldb6, err := leveldb.OpenFile(tmpDir+"/db6", nil)
+	if err != nil {
+		t.Fatalf("leveldb.OpenFile failed: %v", err)
+	}
+	// Test MakeStateHashDB
+	wo2 := &opt.WriteOptions{Sync: false}
+	ro2 := &opt.ReadOptions{DontFillCache: false}
+	db6 := MakeStateHashDB(ldb6, wo2, ro2)
+	if db6 == nil {
+		t.Errorf("MakeStateHashDB failed")
+	}
+	assert.NoError(t, ldb6.Close(), "error closing leveldb")
 }
