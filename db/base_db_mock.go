@@ -23,7 +23,6 @@ import (
 type MockDbAdapter struct {
 	ctrl     *gomock.Controller
 	recorder *MockDbAdapterMockRecorder
-	isgomock struct{}
 }
 
 // MockDbAdapterMockRecorder is the mock recorder for MockDbAdapter.
@@ -190,7 +189,6 @@ func (mr *MockDbAdapterMockRecorder) Write(batch, wo any) *gomock.Call {
 type MockKeyValueWriter struct {
 	ctrl     *gomock.Controller
 	recorder *MockKeyValueWriterMockRecorder
-	isgomock struct{}
 }
 
 // MockKeyValueWriterMockRecorder is the mock recorder for MockKeyValueWriter.
@@ -242,7 +240,6 @@ func (mr *MockKeyValueWriterMockRecorder) Put(key, value any) *gomock.Call {
 type MockBaseDB struct {
 	ctrl     *gomock.Controller
 	recorder *MockBaseDBMockRecorder
-	isgomock struct{}
 }
 
 // MockBaseDBMockRecorder is the mock recorder for MockBaseDB.
