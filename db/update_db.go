@@ -62,7 +62,7 @@ func NewUpdateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.Read
 }
 
 func MakeDefaultUpdateDBFromBaseDB(db BaseDB) (UpdateDB, error) {
-	value, err := MakeDefaultUpdateDBFromBaseDBWithEncoding(db, db.GetSubstateEncoding())
+	value, err := MakeDefaultUpdateDBFromBaseDBWithEncoding(db, RLPEncodingSchema)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func newUpdateDB(path string, o *opt.Options, wo *opt.WriteOptions, ro *opt.Read
 	if err != nil {
 		return nil, err
 	}
-	encoding, err := newUpdateSetEncoding(DefaultEncodingSchema)
+	encoding, err := newUpdateSetEncoding(RLPEncodingSchema)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create default update-db encoding: %v", err)
 	}

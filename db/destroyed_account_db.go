@@ -52,7 +52,7 @@ func NewDefaultDestroyedAccountDB(destroyedAccountDir string) (DestroyedAccountD
 }
 
 func MakeDefaultDestroyedAccountDBFromBaseDB(db BaseDB) (DestroyedAccountDB, error) {
-	value, err := MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(db, db.GetSubstateEncoding())
+	value, err := MakeDefaultDestroyedAccountDBFromBaseDBWithEncoding(db, RLPEncodingSchema)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func newDestroyedAccountDB(destroyedAccountDir string, o *opt.Options, wo *opt.W
 	if err != nil {
 		return nil, fmt.Errorf("error opening deletion-db %s: %w", destroyedAccountDir, err)
 	}
-	encoding, err := newDestroyedAccountEncoding(DefaultEncodingSchema)
+	encoding, err := newDestroyedAccountEncoding(RLPEncodingSchema)
 	if err != nil {
 		return nil, err
 	}

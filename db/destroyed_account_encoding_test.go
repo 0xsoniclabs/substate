@@ -18,7 +18,7 @@ func TestDestroyedAccountDB_GetSubstateEncoding(t *testing.T) {
 	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 
 	actual := db.GetSubstateEncoding()
-	assert.Equal(t, ProtobufEncodingSchema, actual)
+	assert.Equal(t, RLPEncodingSchema, actual)
 }
 
 func TestDestroyedAccountDB_SetSubstateEncoding(t *testing.T) {
@@ -27,17 +27,21 @@ func TestDestroyedAccountDB_SetSubstateEncoding(t *testing.T) {
 
 	baseDb := NewMockDbAdapter(ctrl)
 	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
-	err := db.SetSubstateEncoding(DefaultEncodingSchema)
-	assert.Nil(t, err)
-	assert.Equal(t, ProtobufEncodingSchema, db.GetSubstateEncoding())
-
-	err = db.SetSubstateEncoding(RLPEncodingSchema)
+	// Test setting to RLP
+	err := db.SetSubstateEncoding(RLPEncodingSchema)
 	assert.Nil(t, err)
 	assert.Equal(t, RLPEncodingSchema, db.GetSubstateEncoding())
 
+	// Test setting to Protobuf (should error)
 	err = db.SetSubstateEncoding(ProtobufEncodingSchema)
+	assert.Error(t, err)
+	assert.Equal(t, "failed to set decoder; protobuf encoding is disabled for destroyed account db", err.Error())
+	assert.Equal(t, RLPEncodingSchema, db.GetSubstateEncoding()) // Should remain RLP
+
+	// Test setting to Default (should map to RLP)
+	err = db.SetSubstateEncoding(DefaultEncodingSchema)
 	assert.Nil(t, err)
-	assert.Equal(t, ProtobufEncodingSchema, db.GetSubstateEncoding())
+	assert.Equal(t, RLPEncodingSchema, db.GetSubstateEncoding())
 
 	err = db.SetSubstateEncoding("invalid")
 	assert.Error(t, err)
@@ -52,7 +56,10 @@ func TestDestroyedAccountDB_Encode(t *testing.T) {
 
 	actual, err := db.Encode(SuicidedAccountLists{})
 	assert.NoError(t, err)
-	assert.Equal(t, []uint8([]byte{}), actual)
+	// 0xc2 = list prefix for 2 bytes
+	// 0xc0 = empty list (DestroyedAccounts)
+	// 0xc0 = empty list (ResurrectedAccounts)
+	assert.Equal(t, []uint8{0xc2, 0xc0, 0xc0}, actual)
 }
 
 func TestDestroyedAccountDB_Decode(t *testing.T) {
@@ -62,19 +69,22 @@ func TestDestroyedAccountDB_Decode(t *testing.T) {
 	baseDb := NewMockDbAdapter(ctrl)
 	db := newTestDestroyedAccountDB(t, baseDb, DefaultEncodingSchema)
 
-	actual, err := db.Decode([]uint8([]byte{}))
+	actual, err := db.Decode([]uint8{0xc2, 0xc0, 0xc0})
 	assert.NoError(t, err)
-	assert.Equal(t, SuicidedAccountLists{}, actual)
+	assert.Equal(t, SuicidedAccountLists{
+		DestroyedAccounts:   []types.Address{},
+		ResurrectedAccounts: []types.Address{},
+	}, actual)
 }
 
 func TestDestroyedAccountEncoding_newDestroyedAccountEncoding(t *testing.T) {
 	encoding, err := newDestroyedAccountEncoding(DefaultEncodingSchema)
 	assert.NoError(t, err)
-	assert.Equal(t, ProtobufEncodingSchema, encoding.schema)
+	assert.Equal(t, RLPEncodingSchema, encoding.schema)
 
 	encoding, err = newDestroyedAccountEncoding(ProtobufEncodingSchema)
-	assert.NoError(t, err)
-	assert.Equal(t, ProtobufEncodingSchema, encoding.schema)
+	assert.Error(t, err)
+	assert.Nil(t, encoding)
 
 	encoding, err = newDestroyedAccountEncoding(RLPEncodingSchema)
 	assert.NoError(t, err)
