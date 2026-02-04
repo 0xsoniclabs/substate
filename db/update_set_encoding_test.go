@@ -40,7 +40,7 @@ func TestUpdateDB_SetSubstateEncoding(t *testing.T) {
 	// Test setting to Protobuf (should error)
 	err = db.SetSubstateEncoding(ProtobufEncodingSchema)
 	assert.Error(t, err)
-	assert.Equal(t, "protobuf encoding is disabled for update set db", err.Error())
+	assert.Equal(t, "failed to set decoder; protobuf encoding is disabled for update set db", err.Error())
 	assert.Equal(t, RLPEncodingSchema, db.encoding.schema)
 
 	// Test setting to Default (should map to RLP)

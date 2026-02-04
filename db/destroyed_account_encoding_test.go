@@ -56,6 +56,7 @@ func TestDestroyedAccountDB_Encode(t *testing.T) {
 
 	actual, err := db.Encode(SuicidedAccountLists{})
 	assert.NoError(t, err)
+	// RLP encoding header
 	// 0xc2 = list prefix for 2 bytes
 	// 0xc0 = empty list (DestroyedAccounts)
 	// 0xc0 = empty list (ResurrectedAccounts)

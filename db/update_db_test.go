@@ -48,7 +48,6 @@ func TestUpdateDB_PutUpdateSet(t *testing.T) {
 		schema SubstateEncodingSchema
 	}{
 		{"RLP", RLPEncodingSchema},
-		{"PB", ProtobufEncodingSchema},
 	}
 
 	for _, tc := range testCases {
@@ -96,7 +95,6 @@ func TestUpdateDB_GetUpdateSet(t *testing.T) {
 		schema SubstateEncodingSchema
 	}{
 		{"RLP", RLPEncodingSchema},
-		{"PB", ProtobufEncodingSchema},
 	}
 
 	for _, tc := range testCases {
@@ -216,7 +214,7 @@ func TestUpdateDB_GetFirstKeySuccess(t *testing.T) {
 
 	mockDB.EXPECT().newIterator(gomock.Any()).Return(mockIter)
 
-	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
+	db := newTestUpdateDB(t, mockDB, RLPEncodingSchema)
 
 	result, err := db.GetFirstKey()
 
@@ -233,7 +231,7 @@ func TestUpdateDB_GetFirstKeyFail(t *testing.T) {
 	// case 1 not found
 	kv := &testutil.KeyValue{}
 	mockIter := iterator.NewArrayIterator(kv)
-	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
+	db := newTestUpdateDB(t, mockDB, RLPEncodingSchema)
 
 	mockDB.EXPECT().newIterator(gomock.Any()).Return(mockIter)
 
@@ -267,7 +265,7 @@ func TestUpdateDB_GetLastKeySuccess(t *testing.T) {
 
 	mockDB.EXPECT().newIterator(gomock.Any()).Return(mockIter)
 
-	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
+	db := newTestUpdateDB(t, mockDB, RLPEncodingSchema)
 
 	result, err := db.GetLastKey()
 
@@ -284,7 +282,7 @@ func TestUpdateDB_GetLastKeyFail(t *testing.T) {
 	// case 1: no updateset found
 	kv := &testutil.KeyValue{}
 	mockIter := iterator.NewArrayIterator(kv)
-	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
+	db := newTestUpdateDB(t, mockDB, RLPEncodingSchema)
 
 	mockDB.EXPECT().newIterator(gomock.Any()).Return(mockIter)
 
@@ -317,7 +315,7 @@ func TestUpdateDB_HasUpdateSetSuccess(t *testing.T) {
 
 	mockDB.EXPECT().Has(key).Return(true, nil)
 
-	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
+	db := newTestUpdateDB(t, mockDB, RLPEncodingSchema)
 	result, err := db.HasUpdateSet(blockNum)
 
 	assert.Nil(t, err)
@@ -335,7 +333,7 @@ func TestUpdateDB_HasUpdateSetFail(t *testing.T) {
 
 	mockDB.EXPECT().Has(key).Return(false, expectedErr)
 
-	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
+	db := newTestUpdateDB(t, mockDB, RLPEncodingSchema)
 	result, err := db.HasUpdateSet(blockNum)
 
 	assert.Equal(t, expectedErr, err)
@@ -355,9 +353,9 @@ func TestUpdateDB_GetUpdateSetSuccess(t *testing.T) {
 		Block:           0,
 		DeletedAccounts: []types.Address{},
 	}
-	encodedData, _ := encodeUpdateSetPB(*updateSet, []types.Address{{}})
+	encodedData, _ := encodeUpdateSetRLP(*updateSet, []types.Address{{}})
 
-	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
+	db := newTestUpdateDB(t, mockDB, RLPEncodingSchema)
 
 	// case 1: Get success
 	mockDB.EXPECT().Get(key).Return(encodedData, nil)
@@ -389,7 +387,7 @@ func TestUpdateDB_GetUpdateSetFail(t *testing.T) {
 	expectedErr := errors.New("database error")
 	mockDB.EXPECT().Get(key).Return(nil, expectedErr)
 
-	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
+	db := newTestUpdateDB(t, mockDB, RLPEncodingSchema)
 	result, err := db.GetUpdateSet(blockNum)
 
 	assert.Error(t, err)
@@ -429,7 +427,7 @@ func TestUpdateDB_PutUpdateSetSuccess(t *testing.T) {
 	mockDB.EXPECT().PutCode(gomock.Any()).Return(nil)
 	mockDB.EXPECT().Put(key, gomock.Any()).Return(nil)
 
-	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
+	db := newTestUpdateDB(t, mockDB, RLPEncodingSchema)
 	err := db.PutUpdateSet(updateSet, deletedAccounts)
 
 	assert.Nil(t, err)
@@ -458,7 +456,7 @@ func TestUpdateDB_PutUpdateSetFail(t *testing.T) {
 	// Case 1: PutCode error
 	mockDB.EXPECT().PutCode(gomock.Any()).Return(expectedErr)
 
-	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
+	db := newTestUpdateDB(t, mockDB, RLPEncodingSchema)
 	err := db.PutUpdateSet(updateSet, deletedAccounts)
 
 	assert.Equal(t, expectedErr, err)
@@ -481,7 +479,7 @@ func TestUpdateDB_DeleteUpdateSetSuccess(t *testing.T) {
 
 	mockDB.EXPECT().Delete(key).Return(nil)
 
-	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
+	db := newTestUpdateDB(t, mockDB, RLPEncodingSchema)
 	err := db.DeleteUpdateSet(blockNum)
 
 	assert.Nil(t, err)
@@ -498,7 +496,7 @@ func TestUpdateDB_DeleteUpdateSetFail(t *testing.T) {
 
 	mockDB.EXPECT().Delete(key).Return(expectedErr)
 
-	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
+	db := newTestUpdateDB(t, mockDB, RLPEncodingSchema)
 	err := db.DeleteUpdateSet(blockNum)
 
 	assert.Equal(t, expectedErr, err)
@@ -509,7 +507,7 @@ func TestUpdateDB_NewUpdateSetIterator(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockDB := NewMockCodeDB(ctrl)
-	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
+	db := newTestUpdateDB(t, mockDB, RLPEncodingSchema)
 
 	start := uint64(1)
 	end := uint64(4)
@@ -521,7 +519,7 @@ func TestUpdateDB_NewUpdateSetIterator(t *testing.T) {
 		Block:           0,
 		DeletedAccounts: []types.Address{},
 	}
-	encodedData, err := encodeUpdateSetPB(*updateSet, []types.Address{{}})
+	encodedData, err := encodeUpdateSetRLP(*updateSet, []types.Address{{}})
 	if err != nil {
 		t.Fatal(err)
 	}
