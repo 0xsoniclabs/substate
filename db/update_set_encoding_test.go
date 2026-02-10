@@ -19,10 +19,10 @@ func TestUpdateDB_GetSubstateEncoding(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockDB := NewMockCodeDB(ctrl)
-	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
+	db := newTestUpdateDB(t, mockDB, RLPEncodingSchema)
 
 	encoding := db.GetSubstateEncoding()
-	assert.Equal(t, ProtobufEncodingSchema, encoding)
+	assert.Equal(t, RLPEncodingSchema, encoding)
 }
 
 func TestUpdateDB_SetSubstateEncoding(t *testing.T) {
@@ -30,22 +30,23 @@ func TestUpdateDB_SetSubstateEncoding(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockDB := NewMockCodeDB(ctrl)
-	db := newTestUpdateDB(t, mockDB, ProtobufEncodingSchema)
+	db := newTestUpdateDB(t, mockDB, RLPEncodingSchema)
 
 	// Test setting to RLP
 	err := db.SetSubstateEncoding(RLPEncodingSchema)
 	assert.Nil(t, err)
 	assert.Equal(t, RLPEncodingSchema, db.encoding.schema)
 
-	// Test setting to Protobuf
+	// Test setting to Protobuf (should error)
 	err = db.SetSubstateEncoding(ProtobufEncodingSchema)
-	assert.Nil(t, err)
-	assert.Equal(t, ProtobufEncodingSchema, db.encoding.schema)
+	assert.Error(t, err)
+	assert.Equal(t, "failed to set decoder; protobuf encoding is disabled for update set db", err.Error())
+	assert.Equal(t, RLPEncodingSchema, db.encoding.schema)
 
-	// Test setting to Default (should map to Protobuf)
+	// Test setting to Default (should map to RLP)
 	err = db.SetSubstateEncoding(DefaultEncodingSchema)
 	assert.Nil(t, err)
-	assert.Equal(t, ProtobufEncodingSchema, db.encoding.schema)
+	assert.Equal(t, RLPEncodingSchema, db.encoding.schema)
 
 	// Test setting to an unknown schema
 	err = db.SetSubstateEncoding(SubstateEncodingSchema("unknown"))
@@ -56,11 +57,11 @@ func TestUpdateDB_SetSubstateEncoding(t *testing.T) {
 func TestUpdateSetEncoding_newUpdateSetEncoding(t *testing.T) {
 	encoding, err := newUpdateSetEncoding(DefaultEncodingSchema)
 	assert.NoError(t, err)
-	assert.Equal(t, ProtobufEncodingSchema, encoding.schema)
+	assert.Equal(t, RLPEncodingSchema, encoding.schema)
 
 	encoding, err = newUpdateSetEncoding(ProtobufEncodingSchema)
-	assert.NoError(t, err)
-	assert.Equal(t, ProtobufEncodingSchema, encoding.schema)
+	assert.Error(t, err)
+	assert.Nil(t, encoding)
 
 	encoding, err = newUpdateSetEncoding(RLPEncodingSchema)
 	assert.NoError(t, err)

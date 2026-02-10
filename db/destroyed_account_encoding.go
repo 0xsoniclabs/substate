@@ -39,18 +39,14 @@ type destroyedAccountEncoding struct {
 
 func newDestroyedAccountEncoding(encoding SubstateEncodingSchema) (*destroyedAccountEncoding, error) {
 	switch encoding {
-	case DefaultEncodingSchema, ProtobufEncodingSchema:
-		return &destroyedAccountEncoding{
-			schema: ProtobufEncodingSchema,
-			encode: encodeSuicidedAccountListPB,
-			decode: decodeSuicidedAccountListPB,
-		}, nil
-	case RLPEncodingSchema:
+	case DefaultEncodingSchema, RLPEncodingSchema:
 		return &destroyedAccountEncoding{
 			schema: RLPEncodingSchema,
 			encode: encodeSuicidedAccountListRLP,
 			decode: decodeSuicidedAccountListRLP,
 		}, nil
+	case ProtobufEncodingSchema:
+		return nil, fmt.Errorf("protobuf encoding is disabled for destroyed account db")
 	default:
 		return nil, fmt.Errorf("encoding not supported: %s", encoding)
 	}

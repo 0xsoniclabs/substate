@@ -35,18 +35,14 @@ type updateSetEncoding struct {
 
 func newUpdateSetEncoding(encoding SubstateEncodingSchema) (*updateSetEncoding, error) {
 	switch encoding {
-	case DefaultEncodingSchema, ProtobufEncodingSchema:
-		return &updateSetEncoding{
-			schema: ProtobufEncodingSchema,
-			encode: encodeUpdateSetPB,
-			decode: decodeUpdateSetPB,
-		}, nil
-	case RLPEncodingSchema:
+	case DefaultEncodingSchema, RLPEncodingSchema:
 		return &updateSetEncoding{
 			schema: RLPEncodingSchema,
 			encode: encodeUpdateSetRLP,
 			decode: decodeUpdateSetRLP,
 		}, nil
+	case ProtobufEncodingSchema:
+		return nil, fmt.Errorf("protobuf encoding is disabled for update set db")
 	default:
 		return nil, fmt.Errorf("encoding not supported: %s", encoding)
 	}

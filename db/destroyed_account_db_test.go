@@ -74,11 +74,6 @@ func TestDestroyedAccountDB_GetDestroyedAccountsSuccess(t *testing.T) {
 			schema:   RLPEncodingSchema,
 			encodeFn: encodeSuicidedAccountListRLP,
 		},
-		{
-			name:     "PB Encoding",
-			schema:   ProtobufEncodingSchema,
-			encodeFn: encodeSuicidedAccountListPB,
-		},
 	}
 
 	for _, tc := range testCases {
@@ -140,11 +135,6 @@ func TestDestroyedAccountDB_GetAccountsDestroyedInRangeSuccess(t *testing.T) {
 			name:     "RLP Encoding",
 			schema:   RLPEncodingSchema,
 			encodeFn: encodeSuicidedAccountListRLP,
-		},
-		{
-			name:     "PB Encoding",
-			schema:   ProtobufEncodingSchema,
-			encodeFn: encodeSuicidedAccountListPB,
 		},
 	}
 
